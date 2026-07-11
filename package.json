@@ -1,0 +1,65 @@
+{
+  "name": "go-for-launch",
+  "version": "0.4.0",
+  "private": false,
+  "description": "Go for Launch, a toolbox for Astro sites: migrate and maintain sites, automate web and native mobile Safari testing, enforce SEO and PageSpeed release gates, and configure optional design-system review.",
+  "author": "GovSoft, LLC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/govsoftusa/go-for-launch.git"
+  },
+  "homepage": "https://github.com/govsoftusa/go-for-launch#readme",
+  "bugs": {
+    "url": "https://github.com/govsoftusa/go-for-launch/issues"
+  },
+  "keywords": [
+    "astro",
+    "cloudflare",
+    "migration",
+    "safari",
+    "seo",
+    "testing",
+    "webkit"
+  ],
+  "files": [
+    "*.md",
+    "LICENSE",
+    "case-studies/",
+    "scripts/",
+    "src/",
+    "templates/",
+    "tsconfig.json"
+  ],
+  "type": "module",
+  "scripts": {
+    "design:gate": "node scripts/run-design-gate.mjs --config=templates/design-gate.config.mjs",
+    "open-graph:regenerate": "node scripts/generate-open-graph.mjs --config=templates/open-graph.config.mjs --regenerate",
+    "open-graph:verify": "node scripts/generate-open-graph.mjs --config=templates/open-graph.config.mjs && node scripts/review-open-graph.mjs --config=templates/open-graph.config.mjs --check",
+    "open-graph:review": "node scripts/review-open-graph.mjs --config=templates/open-graph.config.mjs",
+    "brand-assets:verify": "node scripts/verify-brand-assets.mjs --config=templates/brand-assets.config.mjs",
+    "render:sharpness": "node scripts/verify-render-sharpness.mjs --root=dist --output=artifacts/render-sharpness-report.json",
+    "semantic-seo:verify": "node scripts/verify-semantic-seo.mjs --config=templates/semantic-seo.config.mjs",
+    "content-quality:verify": "node scripts/verify-content-quality.mjs --config=templates/content-quality.config.mjs",
+    "ahrefs:verify": "node scripts/verify-ahrefs-site-audit.mjs --config=templates/ahrefs-site-audit.config.mjs",
+    "cloudflare:observe": "node scripts/verify-cloudflare-observability.mjs --config=templates/cloudflare-observability.config.mjs",
+    "side-navigation:verify": "node scripts/verify-side-navigation.mjs --root=dist --require=true --output=artifacts/side-navigation-report.json",
+    "visual-composition:verify": "node scripts/verify-visual-composition.mjs --config=templates/visual-composition.config.mjs",
+    "interface-quality:verify": "node scripts/verify-interface-quality.mjs --config=templates/interface-quality.config.mjs",
+    "case-studies:verify": "node scripts/verify-case-study-normalization.mjs",
+    "site-health:verify": "node scripts/verify-site-health.mjs --config=templates/site-health.config.mjs",
+    "prepack": "npm run case-studies:verify && node scripts/check-docs.mjs",
+    "prepublishOnly": "npm test",
+    "test": "astro check && node scripts/check-docs.mjs && node scripts/verify-case-study-normalization.mjs && node scripts/test-case-study-normalization.mjs && node scripts/test-sitemap-verifier.mjs && node scripts/test-seo-verifier.mjs && node scripts/test-semantic-seo-verifier.mjs && node scripts/test-content-quality-verifier.mjs && node scripts/test-site-health-verifier.mjs && node scripts/test-ahrefs-site-audit.mjs && node scripts/test-cloudflare-observability.mjs && node scripts/test-redirect-verifier.mjs && node scripts/test-open-graph-generator.mjs && node scripts/test-artwork-suitability.mjs && node scripts/test-brand-assets.mjs && node scripts/test-design-gate.mjs && node scripts/test-render-sharpness.mjs && node scripts/test-side-navigation-verifier.mjs && node scripts/test-visual-composition.mjs && node scripts/test-interface-quality-verifier.mjs"
+  },
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "sharp": "0.35.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.9",
+    "@playwright/test": "1.61.1",
+    "astro": "^7.1.3",
+    "typescript": "^6.0.3"
+  },
+  "license": "MIT"
+}
