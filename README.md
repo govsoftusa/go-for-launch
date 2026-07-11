@@ -1,0 +1,129 @@
+# Go for Launch
+
+A toolbox for [Astro](https://astro.build) sites. Open-source documentation, checklists, and templates for building and operating Astro websites to a strict production standard.
+
+Go for Launch is a community project and is not affiliated with or endorsed by the Astro project or Astro Technology Company.
+
+## What Go for Launch Covers
+
+The toolbox serves four purposes:
+
+1. **Converting existing sites to Astro.** Complete workflows for rebuilding websites in Astro without losing content, design fidelity, responsive behavior, SEO, accessibility, performance, or browser reliability. The Webflow and WordPress workflows are proven in production, and the platform-neutral framework extends to Squarespace, Wix, Drupal, static HTML, and custom content management systems as alpha guidance.
+2. **Keeping existing Astro sites current.** A maintenance process for updating Astro sites already in production to the latest compatible Astro version and dependency set, with every upgrade passing the same release gates as a new migration. See [AUTOMATION-INTEGRATION.md](AUTOMATION-INTEGRATION.md).
+3. **Automated testing on web and mobile.** Browser test guidance covering Chromium, Playwright WebKit with iPhone device profiles, and native mobile Safari through the macOS Xcode iOS Simulator using a pinned device UDID. See the [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md) and the [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md).
+4. **A 100/100 PageSpeed standard.** A mandatory release gate requiring PageSpeed Insights scores of 100 for Performance, Accessibility, Best Practices, and SEO, on both mobile and desktop, before any production deployment. See the [Production Release Policy](PRODUCTION-RELEASE-POLICY.md).
+
+## Why This Exists
+
+A migration or upgrade is not complete because the homepage looks similar or `astro build` succeeds. A production release must account for:
+
+- Every public route and redirect.
+- CMS content and publication state.
+- Images, fonts, documents, and other assets.
+- Shared navigation, footer, forms, and interactions.
+- Desktop, tablet, mobile, and native Safari behavior.
+- Metadata, structured data, social previews, sitemaps, and crawler guidance.
+- Accessibility and keyboard behavior.
+- Performance budgets and deployment verification.
+
+This repository documents the process used to close those gaps while replacing legacy runtime code with maintainable Astro components.
+
+## Start Here
+
+1. [Webflow to Astro Migration Guide](WEBFLOW-TO-ASTRO-MIGRATION.md)
+2. [Platform-Agnostic Migration Framework](PLATFORM-MIGRATION-FRAMEWORK.md)
+3. [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md)
+4. [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md)
+5. [Production Release Policy](PRODUCTION-RELEASE-POLICY.md)
+6. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
+7. [Contributing Guide](CONTRIBUTING.md)
+8. [Roadmap](ROADMAP.md)
+
+## Repository Structure
+
+```text
+.
+├── README.md
+├── WEBFLOW-TO-ASTRO-MIGRATION.md
+├── PLATFORM-MIGRATION-FRAMEWORK.md
+├── ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md
+├── TESTING-AND-RELEASE-CHECKLIST.md
+├── PRODUCTION-RELEASE-POLICY.md
+├── AUTOMATION-INTEGRATION.md
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── case-studies/
+│   ├── webflow-astro-ios-safari.md
+│   └── wordpress-astro-safari-seo-performance.md
+└── templates/
+    ├── route-and-content-inventory.md
+    ├── gap-analysis.md
+    └── migration-acceptance-record.md
+```
+
+## Core Principles
+
+1. Treat the source platform as evidence, not as the new runtime architecture.
+2. Capture routes, content, assets, behavior, and metadata before rebuilding.
+3. Build static, meaningful HTML that does not depend on client JavaScript to appear.
+4. Create typed components around real content patterns rather than one universal component.
+5. Preserve native links and controls wherever possible.
+6. Test WebKit and native iOS Safari, not only Chromium at a narrow viewport.
+7. Promote the exact candidate that passed staging checks.
+8. Verify the canonical public hostname after deployment.
+9. Record intentional differences so accessibility and performance improvements are not mistaken for missing parity.
+10. Turn every discovered migration defect into a reusable test or checklist item.
+
+## Evidence Model
+
+Strong migration evidence combines:
+
+- Exported source files and CMS data.
+- Live source-site inspection.
+- A route and section inventory.
+- Asset manifests with hashes and missing-file reports.
+- Automated route, interaction, accessibility, and metadata checks.
+- Screenshot comparisons at multiple breakpoints.
+- Playwright WebKit touch tests.
+- Native iPhone Simulator inspection.
+- Staging performance audits.
+- Canonical production verification.
+
+No single screenshot, Lighthouse result, or passing build proves migration completeness.
+
+## Mandatory Production Standard
+
+Every site using Go for Launch must pass the following gate before production deployment:
+
+1. Build the production candidate.
+2. Run the automated browser, WebKit, accessibility, form, and route tests against that candidate.
+3. Test the candidate in native iOS Safari through Xcode Simulator using a pinned device UDID.
+4. Deploy the same candidate to staging.
+5. Run PageSpeed Insights against staging for mobile and desktop.
+6. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+7. Block production when any required test fails or any PageSpeed category is below 100.
+8. Verify the canonical production hostname in WebKit and native iOS Safari after deployment.
+
+The detailed policy is in [PRODUCTION-RELEASE-POLICY.md](PRODUCTION-RELEASE-POLICY.md).
+
+## Project Status and Platform Maturity
+
+Webflow and WordPress are the only source platforms this toolbox has been used on in real production migrations so far. Both are backed by the implementation case studies in `case-studies/`.
+
+Guidance for every other platform, including Squarespace, Wix, Drupal, static HTML, and custom content management systems, is an alpha implementation. It is derived from the platform-neutral framework but has not yet been exercised end to end on a production migration. Expect gaps, verify each step against the actual source platform, and treat the mandatory production gate as the safety net. Production-tested corrections and case studies for these platforms are the most valuable contributions this project can receive.
+
+The documentation currently includes a complete Webflow-to-Astro workflow, an upgrade and dependency-maintenance process for existing Astro sites, reusable Safari testing guidance, release checklists, templates, and two implementation case studies.
+
+## Validate Documentation
+
+Run the repository's dependency-free documentation checks:
+
+```bash
+npm test
+```
+
+The check validates relative Markdown links and fenced code-block balance.
+
+## License
+
+This project is available under the [MIT License](LICENSE).

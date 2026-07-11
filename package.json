@@ -1,0 +1,12 @@
+{
+  "name": "go-for-launch",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Go for Launch, a toolbox for Astro sites: convert sites to Astro, keep existing Astro sites on the latest compatible versions and dependencies, automate web and native mobile Safari testing through the macOS iOS Simulator, and enforce a 100/100 PageSpeed release gate in every category.",
+  "type": "module",
+  "scripts": {
+    "test": "node scripts/check-docs.mjs"
+  },
+  "license": "MIT"
+}
+
