@@ -2,7 +2,7 @@
 
 A toolbox for [Astro](https://astro.build) sites. Open-source documentation, checklists, and templates for building and operating Astro websites to a strict production standard.
 
-Go for Launch was started and is sponsored by [GovSoft, LLC](https://www.govsoft.com), and is open to community contributions. It is a community project and is not affiliated with or endorsed by the Astro project or Astro Technology Company.
+Go for Launch was started and is sponsored by [GovSoft](https://www.govsoft.com), and is open to community contributions. It is a community project and is not affiliated with or endorsed by the Astro project or Astro Technology Company.
 
 ## What Go for Launch Covers
 
@@ -126,7 +126,7 @@ The check validates relative Markdown links and fenced code-block balance.
 
 ## Sponsors
 
-[GovSoft, LLC](https://www.govsoft.com) sponsors Go for Launch and funds its ongoing development.
+[GovSoft](https://www.govsoft.com) sponsors Go for Launch and funds its ongoing development.
 
 Additional sponsors are welcome. Sponsorship supports production validation of the alpha platform guidance, new adapters and test tooling, and continued maintenance. To learn more, email [hello@govsoft.com](mailto:hello@govsoft.com).
 
