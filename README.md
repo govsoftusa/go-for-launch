@@ -36,8 +36,10 @@ This repository documents the process used to close those gaps while replacing l
 4. [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md)
 5. [Production Release Policy](PRODUCTION-RELEASE-POLICY.md)
 6. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
-7. [Contributing Guide](CONTRIBUTING.md)
-8. [Roadmap](ROADMAP.md)
+7. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
+8. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
+9. [Contributing Guide](CONTRIBUTING.md)
+10. [Roadmap](ROADMAP.md)
 
 ## Repository Structure
 
@@ -50,11 +52,14 @@ This repository documents the process used to close those gaps while replacing l
 ├── TESTING-AND-RELEASE-CHECKLIST.md
 ├── PRODUCTION-RELEASE-POLICY.md
 ├── AUTOMATION-INTEGRATION.md
+├── AUTOMATED-MAINTENANCE.md
+├── CLOUDFLARE-FORMS.md
 ├── CONTRIBUTING.md
 ├── SECURITY.md
 ├── case-studies/
 │   ├── webflow-astro-ios-safari.md
-│   └── wordpress-astro-safari-seo-performance.md
+│   ├── wordpress-astro-safari-seo-performance.md
+│   └── go4launch-safari-filtered-header-menu.md
 └── templates/
     ├── route-and-content-inventory.md
     ├── gap-analysis.md
@@ -105,6 +110,16 @@ Every site using Go for Launch must pass the following gate before production de
 8. Verify the canonical production hostname in WebKit and native iOS Safari after deployment.
 
 The detailed policy is in [PRODUCTION-RELEASE-POLICY.md](PRODUCTION-RELEASE-POLICY.md).
+
+## Forms on Cloudflare
+
+For informational sites hosted on Cloudflare, use the [Cloudflare Forms Default](CLOUDFLARE-FORMS.md). It pairs mandatory server-side Turnstile validation with a destination-restricted Cloudflare Email Service binding. This pattern keeps secrets out of the browser, prevents caller-controlled recipients, and preserves a small static Astro frontend.
+
+## Commercial and Government Support
+
+[GovSoft](https://www.govsoft.com) provides commercial and government implementation support for Astro websites, including migrations, current-version maintenance, accessibility, performance, native Safari testing, Cloudflare deployment, forms, release evidence, and operational handoff. Contact [hello@govsoft.com](mailto:hello@govsoft.com).
+
+GovSoft and Go for Launch are independent of the Astro open-source project, The Astro Technology Company, and Cloudflare. Astro is named only to identify the open-source framework the work supports.
 
 ## Project Status and Platform Maturity
 

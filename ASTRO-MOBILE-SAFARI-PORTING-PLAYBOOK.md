@@ -153,6 +153,85 @@ link.addEventListener("click", () => {
 
 This is not a general recommendation to delay navigation. It prevents state cleanup from deleting or hiding the event target before the browser completes native link activation.
 
+### Keep mobile menu geometry independent of a filtered fixed header
+
+Safari can treat a fixed element with `backdrop-filter` as a containing block for fixed descendants. A full-screen menu placed inside a fixed, blurred header may then resolve its fixed insets against the header's small box instead of the viewport.
+
+The resulting defect can be state-dependent:
+
+- The menu works at the top of the page.
+- Scrolling adds a class that enables `backdrop-filter` on the header.
+- Opening the menu after that state change collapses its geometry.
+- Navigation links spill out of the menu, overlap the logo and page content, or appear over transparent sections.
+- Chromium testing at the same viewport may not reproduce the failure.
+
+Do not test only the initial header state. Scroll a long page until the sticky or fixed header changes appearance, then open and close the mobile navigation in WebKit and native Safari.
+
+A robust pattern anchors the menu panel below the header with an explicit dynamic viewport height. Remove the header blur while the panel is open:
+
+```css
+.site-header.menu-active {
+  background: var(--header-background);
+  backdrop-filter: none;
+}
+
+@media (max-width: 64rem) {
+  .primary-nav {
+    position: absolute;
+    top: var(--header-height);
+    left: 0;
+    width: 100%;
+    height: calc(100dvh - var(--header-height));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--menu-background);
+  }
+}
+```
+
+Keep the open state synchronized in JavaScript:
+
+```js
+function setMenuOpen(open) {
+  menu.dataset.open = String(open);
+  button.setAttribute("aria-expanded", String(open));
+  header.classList.toggle("menu-active", open);
+  document.body.classList.toggle("menu-open", open);
+}
+```
+
+The regression test should reproduce the state that triggered the defect and assert geometry, not only visibility:
+
+```ts
+test("mobile menu fills the viewport after the header is scrolled", async ({ page }) => {
+  await page.goto("/long-page/");
+  await page.locator("#lower-section").scrollIntoViewIfNeeded();
+  await expect(page.locator("[data-header]")).toHaveClass(/scrolled/);
+
+  await page.locator("[data-menu-button]").tap();
+  const geometry = await page.locator("[data-menu]").evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    const links = Array.from(element.querySelectorAll("a")).map((link) => link.getBoundingClientRect());
+    return {
+      top: box.top,
+      bottom: box.bottom,
+      viewportHeight: window.innerHeight,
+      background: getComputedStyle(element).backgroundColor,
+      links: links.map((link) => ({ top: link.top, bottom: link.bottom }))
+    };
+  });
+
+  expect(geometry.top).toBeGreaterThan(0);
+  expect(Math.abs(geometry.bottom - geometry.viewportHeight)).toBeLessThanOrEqual(1);
+  expect(geometry.background).not.toBe("rgba(0, 0, 0, 0)");
+  for (let index = 1; index < geometry.links.length; index += 1) {
+    expect(geometry.links[index].top).toBeGreaterThanOrEqual(geometry.links[index - 1].bottom);
+  }
+});
+```
+
+This test exists to catch a geometry and compositing defect. A simple `toBeVisible()` assertion would pass even while links overlap the page.
+
 ### Restore scrolling after modals and menus
 
 Every code path that sets `overflow: hidden`, `position: fixed`, or a scroll-lock class must restore it when the UI closes, including Escape, backdrop clicks, successful form submission, route changes, and initialization errors.
@@ -190,6 +269,7 @@ Test at least:
 - One direct top-level navigation link.
 - One link inside every dropdown group.
 - Menu open and close states.
+- Menu geometry after the header enters every scroll-dependent visual state.
 - Modal open, close, validation, and scroll restoration.
 - Top-to-bottom and bottom-to-top scrolling on the longest routes.
 - No horizontal overflow.
