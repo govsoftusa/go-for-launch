@@ -13,6 +13,7 @@ The toolbox serves four purposes:
 3. **Automated testing on web and mobile.** Browser test guidance covering Chromium, Playwright WebKit with iPhone device profiles, and native mobile Safari through the macOS Xcode iOS Simulator using a pinned device UDID. See the [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md) and the [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md).
 4. **A 100/100 PageSpeed standard.** A mandatory release gate requiring PageSpeed Insights scores of 100 for Performance, Accessibility, Best Practices, and SEO, on both mobile and desktop, before any production deployment. See the [Production Release Policy](PRODUCTION-RELEASE-POLICY.md).
 5. **Complete sitemap and Search Console operations.** Every build must prove that its XML sitemap matches all indexable built pages. When approved Search Console access exists, verify the property, inspect its submitted sitemaps, and submit the canonical sitemap when missing. See [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md).
+6. **SEO and answer-engine content strategy.** Research real questions through Search Console, Ahrefs, support, and sales evidence, then publish focused, answer-first content with accurate optional structured data and measurable maintenance. See [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md).
 
 ## Why This Exists
 
@@ -40,8 +41,9 @@ This repository documents the process used to close those gaps while replacing l
 7. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
 8. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
 9. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
-10. [Contributing Guide](CONTRIBUTING.md)
-11. [Roadmap](ROADMAP.md)
+10. [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md)
+11. [Contributing Guide](CONTRIBUTING.md)
+12. [Roadmap](ROADMAP.md)
 
 ## Repository Structure
 
@@ -57,6 +59,7 @@ This repository documents the process used to close those gaps while replacing l
 ├── AUTOMATED-MAINTENANCE.md
 ├── CLOUDFLARE-FORMS.md
 ├── SITEMAPS-AND-SEARCH-CONSOLE.md
+├── ANSWER-ENGINE-OPTIMIZATION.md
 ├── CONTRIBUTING.md
 ├── SECURITY.md
 ├── case-studies/
@@ -76,12 +79,13 @@ This repository documents the process used to close those gaps while replacing l
 3. Build static, meaningful HTML that does not depend on client JavaScript to appear.
 4. Create typed components around real content patterns rather than one universal component.
 5. Generate and validate a complete XML sitemap during every build.
-6. Preserve native links and controls wherever possible.
-7. Test WebKit and native iOS Safari, not only Chromium at a narrow viewport.
-8. Promote the exact candidate that passed staging checks.
-9. Verify the canonical public hostname after deployment.
-10. Record intentional differences so accessibility and performance improvements are not mistaken for missing parity.
-11. Turn every discovered migration defect into a reusable test or checklist item.
+6. Research real search questions and write focused, answer-first content that remains useful outside its surrounding page.
+7. Preserve native links and controls wherever possible.
+8. Test WebKit and native iOS Safari, not only Chromium at a narrow viewport.
+9. Promote the exact candidate that passed staging checks.
+10. Verify the canonical public hostname after deployment.
+11. Record intentional differences so accessibility and performance improvements are not mistaken for missing parity.
+12. Turn every discovered migration defect into a reusable test or checklist item.
 
 ## Evidence Model
 

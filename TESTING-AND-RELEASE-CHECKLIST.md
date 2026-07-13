@@ -96,6 +96,12 @@ This checklist is mandatory before production. Any unchecked required item block
 - [ ] Every indexable public page declares its own unique Open Graph image. No shared fallback image across pages.
 - [ ] Each declared Open Graph image returns HTTP 200, a raster content type, and the exact declared dimensions.
 - [ ] Structured data parses and matches visible content.
+- [ ] Answer-focused pages use complete natural-language question headings and immediate, self-contained answers.
+- [ ] FAQ answers are present in built HTML and remain readable without JavaScript.
+- [ ] FAQ or Q&A structured data is used only for eligible visible content and exactly matches that content.
+- [ ] Technical, regulatory, legal, statistical, and time-sensitive claims cite current primary sources.
+- [ ] A last-reviewed date and responsible reviewer are visible on maintained guidance.
+- [ ] SEO content work records its Search Console, Ahrefs, support, sales, or analytics question evidence.
 - [ ] Public discovery files include only intended public routes.
 - [ ] The staged `/sitemap.xml` and every referenced child sitemap return HTTP 200 with XML content.
 - [ ] Search Console property access and permission were checked when approved access exists.
@@ -120,3 +126,4 @@ This checklist is mandatory before production. Any unchecked required item block
 - [ ] Generated build output is cleaned without reverting source changes.
 - [ ] Final evidence records versions, test counts, scores, and remaining risks.
 - [ ] Final evidence records sitemap counts and Search Console verification and submission status.
+- [ ] Final evidence records the AEO query baseline, reviewed pages, sources, and measurement plan when answer-focused content changed.

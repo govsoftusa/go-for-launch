@@ -24,6 +24,7 @@ Every run must read these files before deciding whether a site can deploy:
 - `PRODUCTION-RELEASE-POLICY.md`
 - `AUTOMATION-INTEGRATION.md`
 - `SITEMAPS-AND-SEARCH-CONSOLE.md`
+- `ANSWER-ENGINE-OPTIMIZATION.md`
 
 If this repository changes, the automation must treat the current files as authoritative instead of relying on older automation memory.
 
@@ -46,6 +47,7 @@ For each eligible Astro root:
 13. Deploy production only when all required gates pass and the production target is unambiguous.
 14. Verify the canonical production hostname with live HTTP checks, sitemap checks, WebKit smoke coverage, and native iOS Safari smoke coverage.
 15. When approved Search Console access exists, verify property access, list submitted sitemaps, submit the canonical sitemap when missing, and record the resulting status.
+16. When SEO or content work is in scope, research query language from approved Search Console, Ahrefs, support, sales, or analytics evidence before adding answer-focused content.
 
 If a site has only a production deploy script and no safe staging target, do not deploy production unless the repo documentation explicitly allows the production target to serve as the release gate for that site.
 
@@ -110,6 +112,25 @@ Ahrefs API access requires a paid plan and calls consume plan quota. Confirm the
 
 If no Ahrefs access exists, fall back to Google Search Console exports and the source platform's own analytics for the baseline, and record that limitation.
 
+## Answer Engine Optimization
+
+Treat AEO as an extension of the site's SEO and content strategy. It does not replace indexing, internal links, canonical metadata, sitemap completeness, performance, accessibility, or source quality.
+
+When content work is authorized:
+
+1. Export relevant Search Console queries and landing pages. Add Ahrefs questions and content gaps when approved access exists.
+2. Add customer language from support, sales, site search, and form submissions when that data is in scope.
+3. Record each proposed question, its evidence source, intent, destination page, supporting source, and measurement plan.
+4. Group questions by one primary page topic. Do not create a catch-all FAQ or duplicate the same answer across many routes.
+5. Write complete question headings and put a direct, self-contained answer immediately below each heading.
+6. Render all answer text in the initial HTML and keep it usable without client-side JavaScript.
+7. Cite primary sources for technical, regulatory, legal, statistical, and time-sensitive claims.
+8. Add optional `FAQPage` JSON-LD only after the visible content is stable, and generate it from the same source object as the visible questions and answers.
+9. Test built HTML, structured-data parsing, visible-to-schema equality, internal links, canonical metadata, Open Graph metadata, and sitemap inclusion.
+10. Record a baseline, then review Search Console, conversions, lead quality, and approved citation-monitoring results at least quarterly.
+
+Google does not require special AI files or special schema for AI Overviews or AI Mode. Do not promise ranking, rich results, or citation. Google currently limits FAQ rich results primarily to well-known government and health sites. Read [ANSWER-ENGINE-OPTIMIZATION.md](ANSWER-ENGINE-OPTIMIZATION.md) before implementing an FAQ or other answer-focused content system.
+
 ## Sitemap and Search Console Gate
 
 Every build must produce a complete sitemap and fail when the sitemap and indexable built canonicals do not match. Copy [`scripts/verify-sitemap.mjs`](scripts/verify-sitemap.mjs) into the target site and invoke it from the site's normal build command after Astro finishes. The validator also requires `robots.txt` to advertise the exact canonical sitemap URL.
@@ -152,6 +173,7 @@ For every site touched by automation, report:
 - Build candidate identity when available.
 - Sitemap URL, indexable page count, sitemap URL count, and validation result.
 - Search Console property, permission, ownership status, and sitemap submission status when access exists.
+- Query evidence, topic map, answer-focused routes, source review, and measurement baseline when SEO content work is in scope.
 - Playwright WebKit result.
 - Simulator UDID record or production-blocking Simulator blocker.
 - Staging target and verification result.
@@ -171,6 +193,7 @@ Stop before production deployment when:
 - Build or required tests fail.
 - The build does not generate a complete sitemap or the sitemap validator fails.
 - The public sitemap or robots declaration is missing or incorrect.
+- Answer-focused content contains unsupported claims, hidden answers, invalid structured data, or schema that does not match visible content.
 - Native iOS Safari testing is unavailable or fails.
 - Staging is unavailable without an explicit production-only release policy.
 - PageSpeed is below 100 in any required category.

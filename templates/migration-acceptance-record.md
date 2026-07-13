@@ -50,6 +50,19 @@
 - Structured data:
 - Forms and anti-spam:
 
+## SEO and Answer Engine Content
+
+- Search Console query baseline:
+- Ahrefs question and content-gap baseline, when access exists:
+- Support, sales, site-search, or form evidence used:
+- Topic and question map:
+- Answer-focused routes reviewed:
+- Primary sources checked:
+- Visible last-reviewed date and reviewer:
+- Structured data and visible-content equality test:
+- Citation and conversion measurement plan:
+- Next quarterly review date:
+
 ## Sitemap and Search Console
 
 - Canonical sitemap URL:

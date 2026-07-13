@@ -47,6 +47,14 @@ Use [SITEMAPS-AND-SEARCH-CONSOLE.md](SITEMAPS-AND-SEARCH-CONSOLE.md) and the reu
 
 When approved Google Search Console access exists, list the accessible properties and record the permission level. Ownership verification must be complete before sitemap submission. Then list submitted sitemaps and submit the exact canonical `/sitemap.xml` URL when it is missing and write permission is available. Missing access, an unverified property, or a rejected submission must be recorded as a blocker or manual handoff, not a silent pass.
 
+## Answer-Focused Content Requirement
+
+When a release adds or materially changes FAQ, AEO, or other answer-focused content, follow [ANSWER-ENGINE-OPTIMIZATION.md](ANSWER-ENGINE-OPTIMIZATION.md). The release evidence must identify the query source, page topic, primary sources, reviewer, last-reviewed date, and measurement baseline.
+
+The built candidate must prove that question headings and complete answers are present in the initial HTML. Any FAQ structured data must parse, describe only visible content, and match the visible wording exactly. Unsupported claims, hidden answers, fabricated questions, ineligible `QAPage` markup, or schema that drifts from the page block production.
+
+Do not promise or require a particular ranking, rich result, AI citation, or answer-engine appearance. Those outcomes are not controlled by the site. The release gate evaluates content quality, technical eligibility, and measurement readiness.
+
 ## Native iOS Safari Requirement
 
 ### Environment
