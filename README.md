@@ -6,7 +6,7 @@ Go for Launch was started and is sponsored by [GovSoft](https://www.govsoft.com)
 
 ## What Go for Launch Covers
 
-The toolbox serves eight purposes:
+The toolbox serves nine purposes:
 
 1. **Converting existing sites to Astro.** Complete workflows for rebuilding websites in Astro without losing content, design fidelity, responsive behavior, SEO, accessibility, performance, or browser reliability. The Webflow and WordPress workflows are proven in production, and the platform-neutral framework extends to Squarespace, Wix, Drupal, static HTML, and custom content management systems as alpha guidance.
 2. **Keeping existing Astro sites current.** A maintenance process for updating Astro sites already in production to the latest compatible Astro version and dependency set, with every upgrade passing the same release gates as a new migration. See [AUTOMATION-INTEGRATION.md](AUTOMATION-INTEGRATION.md).
@@ -16,6 +16,7 @@ The toolbox serves eight purposes:
 6. **SEO and answer-engine content strategy.** Research real questions through Search Console, Ahrefs, support, and sales evidence, then publish focused, answer-first content with accurate optional structured data and measurable maintenance. See [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md).
 7. **Reusable SEO implementation and validation.** Install a typed Astro SEO head, optimized image component, localized route map, deterministic Open Graph generator with hash-bound visual approval, and final-output validators for metadata, JSON-LD, headings, images, hreflang, and redirects. See [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md).
 8. **Project-controlled design-system review.** Keep framework-neutral accessibility and usability checks mandatory while allowing each project to set Material Design, Apple Liquid Glass, custom, or hybrid conformance to off, advisory, or required. See [Configurable Design-System Gate](DESIGN-GATE-POLICY.md) and [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md).
+9. **Mandatory render sharpness validation.** Detect accidental content blur, forced rasterization, persistent fractional transforms, unshipped fonts, and fractionally scaled inline SVGs in the exact production candidate. See [Render Sharpness Gate](RENDER-SHARPNESS.md).
 
 ## Why This Exists
 
@@ -51,8 +52,9 @@ This repository documents the process used to close those gaps while replacing l
 15. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
 16. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
 17. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
-18. [Contributing Guide](CONTRIBUTING.md)
-19. [Roadmap](ROADMAP.md)
+18. [Render Sharpness Gate](RENDER-SHARPNESS.md)
+19. [Contributing Guide](CONTRIBUTING.md)
+20. [Roadmap](ROADMAP.md)
 
 ## Repository Structure
 
@@ -76,6 +78,7 @@ This repository documents the process used to close those gaps while replacing l
 ├── OPEN-GRAPH-GENERATION.md
 ├── DESIGN-GATE-POLICY.md
 ├── DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md
+├── RENDER-SHARPNESS.md
 ├── CONTRIBUTING.md
 ├── SECURITY.md
 ├── scripts/
@@ -84,6 +87,7 @@ This repository documents the process used to close those gaps while replacing l
 │   ├── verify-images.mjs
 │   ├── verify-redirects.mjs
 │   ├── generate-open-graph.mjs
+│   ├── verify-render-sharpness.mjs
 │   └── run-design-gate.mjs
 ├── case-studies/
 │   ├── webflow-astro-ios-safari.md
@@ -120,10 +124,11 @@ This repository documents the process used to close those gaps while replacing l
 12. Preserve recognizable brand anchors unless an authorized stakeholder approves a rebrand.
 13. Preserve native links and controls wherever possible.
 14. Test WebKit and native iOS Safari, not only Chromium at a narrow viewport.
-15. Promote the exact candidate that passed staging checks.
-16. Verify the canonical public hostname after deployment.
-17. Record intentional differences so accessibility and performance improvements are not mistaken for missing parity.
-18. Turn every discovered migration defect into a reusable test or checklist item.
+15. Require text, logos, and interface icons to pass the render sharpness gate.
+16. Promote the exact candidate that passed staging checks.
+17. Verify the canonical public hostname after deployment.
+18. Record intentional differences so accessibility and performance improvements are not mistaken for missing parity.
+19. Turn every discovered migration defect into a reusable test or checklist item.
 
 ## Evidence Model
 
@@ -149,14 +154,15 @@ Every site using Go for Launch must pass the following gate before production de
 
 1. Build the production candidate.
 2. Generate the sitemap and verify it matches every indexable built page.
-3. Run the automated browser, WebKit, accessibility, form, and route tests against that candidate.
-4. Run the configured design-system gate and preserve its result. Only `required` design findings block production.
-5. Test the candidate in native iOS Safari through Xcode Simulator using a pinned device UDID.
-6. Deploy the same candidate to staging.
-7. Run PageSpeed Insights against staging for mobile and desktop.
-8. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
-9. Block production when any required test fails or any PageSpeed category is below 100.
-10. Verify the sitemap and canonical production hostname after deployment.
+3. Run the mandatory render sharpness gate and preserve its machine-readable result.
+4. Run the automated browser, WebKit, accessibility, form, and route tests against that candidate.
+5. Run the configured design-system gate and preserve its result. Only `required` design findings block production.
+6. Test the candidate in native iOS Safari through Xcode Simulator using a pinned device UDID.
+7. Deploy the same candidate to staging.
+8. Run PageSpeed Insights against staging for mobile and desktop.
+9. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+10. Block production when any required test fails or any PageSpeed category is below 100.
+11. Verify the sitemap and canonical production hostname after deployment.
 
 The detailed policy is in [PRODUCTION-RELEASE-POLICY.md](PRODUCTION-RELEASE-POLICY.md).
 

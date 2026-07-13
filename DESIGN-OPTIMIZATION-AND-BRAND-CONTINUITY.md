@@ -209,6 +209,8 @@ Define a restrained type system with roles such as:
 
 Preserve the brand's typographic character while correcting cramped tracking, overly condensed text, weak body contrast, poor line height, and uncontrolled heading wraps. Use responsive sizing with sensible minimum and maximum values. Do not make heading size proportional to viewport width without limits.
 
+Typography must also remain sharp in the rendered candidate. Ship every named first-choice font or use an approved system stack. Keep browser font smoothing and text rendering at their defaults. Avoid persistent transforms, scaling, filters, text shadows, and compositor hints on content-bearing layers. Match inline logo and interface SVG dimensions to their view box when practical. Run the mandatory [Render Sharpness Gate](RENDER-SHARPNESS.md) regardless of the project's optional design mode.
+
 ### Spacing and geometry
 
 Define:

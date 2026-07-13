@@ -14,6 +14,8 @@
 ## Core Interface Gate and Project-Controlled Design Gate
 
 - Treat accessibility, legibility, semantic interaction, responsive reflow, browser behavior, Playwright WebKit, and native iOS Safari as mandatory release requirements for every project.
+- Run the mandatory render sharpness gate against every exact production build. Direct blur on content layers, forced font rasterization, accidental fractional transforms, unshipped first-choice fonts, and fractional inline SVG scaling block production.
+- Use `scripts/verify-render-sharpness.mjs` for the read-only build gate. Use its explicit `--fix` mode only on source, then rebuild and repeat every affected check.
 - Read `DESIGN-GATE-POLICY.md` before adding or changing a design-system requirement.
 - Design-system conformance is project controlled through `design-gate.config.mjs` with `off`, `advisory`, or `required` modes. The default is `off`.
 - Run the design gate for every release and preserve its machine-readable result, including when project policy disables the review.
@@ -26,6 +28,7 @@
 
 - Build the production candidate before production deployment.
 - Generate and validate the complete XML sitemap as part of the normal build command. A build without a passing sitemap check is a failed build.
+- Generate a passing machine-readable render sharpness report from the exact production build.
 - Compare every indexable built page canonical with the sitemap and verify the exact sitemap URL in `robots.txt`.
 - Test the built candidate in Playwright WebKit using an iPhone device profile.
 - Test the built candidate in native iOS Safari using an explicitly selected Xcode Simulator device and UDID.

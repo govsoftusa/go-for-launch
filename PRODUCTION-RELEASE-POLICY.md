@@ -14,6 +14,7 @@ run Astro diagnostics
 run unit, server, form, and build-pipeline tests
 build the production candidate
 complete design and brand continuity review when visual work is in scope
+verify rendered text, logos, and interface icons pass the render sharpness gate
 verify the generated sitemap covers every indexable built page
 verify metadata, JSON-LD, headings, Open Graph files, and image output
 inspect complete Open Graph contact sheets and approve the exact image hashes
@@ -71,6 +72,14 @@ Run the design gate for every release and preserve its machine-readable result. 
 When applicable design review is advisory or required, follow [DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md) and complete the [design optimization brief and acceptance record](templates/design-optimization-brief.md). Review the configured route and viewport scope, interaction states, brand continuity, and selected framework. Require human approval when `reviewerRequired` is true.
 
 Do not claim Material Design, Apple design, Liquid Glass, custom-system, or hybrid conformance unless the applicable review passes.
+
+## Render Sharpness Requirement
+
+Run [RENDER-SHARPNESS.md](RENDER-SHARPNESS.md) against the exact built candidate before staging. Preserve its machine-readable report with release evidence. A missing or failed report blocks production in every design mode.
+
+The check must reject accidental direct blur on content, forced font smoothing, forced text-rendering modes, persistent fractional transforms, permanent compositor hints, unshipped first-choice fonts, and accidental fractional inline SVG scaling. Intentional decorative blur belongs on a separate pseudo-element or must be explicitly documented.
+
+Use auto-fix only against source. Inspect the change, rebuild the candidate, and repeat the complete affected gate. Never repair generated output and promote it as if source had passed.
 
 ## SEO Metadata and Localization Requirement
 
@@ -233,6 +242,7 @@ Stop the production release when:
 - The configured design mode is `required` and applicable design evidence, brand continuity review, or visual acceptance is missing or fails.
 - The configured design mode is `required` and a visual change erases recognizable brand anchors without explicit rebrand approval.
 - Mandatory interaction states, responsive reflow, resize, text spacing, or preference checks fail in any mode.
+- The machine-readable render sharpness report is missing or failed, or native-resolution browser review still shows accidental fuzzy text or logos.
 - The configured design mode is `required` and hierarchy, density, responsive anatomy, or applicable visual review fails.
 - The configured design mode is `required` and a global bar is unclassified, misrepresents evergreen copy as an alert, or lacks required ownership and review information.
 - The configured design policy requires a reviewer and a global logo, navigation, alert, announcement, utility-bar, or sticky-header change lacks human approval of the exact rendered candidate.
@@ -254,6 +264,7 @@ Use [templates/migration-acceptance-record.md](templates/migration-acceptance-re
 - Candidate identifier.
 - Source revision.
 - Build result.
+- Render sharpness status, report path, reviewed viewports, and intentional exceptions.
 - Sitemap URL, indexable page count, sitemap URL count, and validation result.
 - Search Console property, permission, verification, and sitemap submission status when access exists.
 - Automated test results.

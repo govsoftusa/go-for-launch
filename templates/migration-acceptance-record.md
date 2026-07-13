@@ -59,6 +59,18 @@
 - Astro image output and intrinsic dimensions:
 - Forms and anti-spam:
 
+## Render Sharpness
+
+- Gate result:
+- Machine-readable report:
+- CSS files inspected:
+- Markup files inspected:
+- Source auto-fix used:
+- Candidate rebuilt after source fix:
+- Native-resolution viewports reviewed:
+- Intentional effect exceptions:
+- Remaining fuzzy text, logo, or icon findings:
+
 ## Design-System Gate
 
 - Mode: off, advisory, or required
@@ -131,4 +143,5 @@
 - All required iOS Simulator checks passed:
 - All eight PageSpeed category checks equal 100:
 - Sitemap build verification passed:
+- Render sharpness gate passed:
 - Search Console status recorded when access exists:

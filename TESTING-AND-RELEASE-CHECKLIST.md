@@ -38,6 +38,8 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Heading measure, content density, section rhythm, grid transitions, and card anatomy pass visual review.
 - [ ] The site remains recognizable without relying only on the logo.
 - [ ] Glass, translucency, blur, elevation, and motion support hierarchy and remain legible.
+- [ ] Text, logos, and interface icons remain sharp at native capture resolution.
+- [ ] Blur is isolated to decorative layers and is not applied directly to content-bearing containers.
 - [ ] Changed components include all applicable default, hover, focus, active, disabled, loading, success, and error states.
 - [ ] Visual acceptance is recorded for the exact candidate.
 - [ ] A designated human stakeholder approved the exact candidate when `reviewerRequired` is true.
@@ -87,6 +89,9 @@ Complete the remaining items in this section only when design review is applicab
 
 - [ ] Astro diagnostics pass.
 - [ ] Production build passes.
+- [ ] The mandatory render sharpness gate passes against the exact built candidate and its JSON report is preserved.
+- [ ] Every named first-choice font is shipped or replaced with an approved system stack.
+- [ ] Inline logos and interface SVGs avoid accidental fractional view-box scaling.
 - [ ] The normal production build generates `/sitemap.xml` and runs the sitemap verifier.
 - [ ] Every indexable built canonical appears exactly once in the sitemap.
 - [ ] Every sitemap URL maps to an indexable built page on the canonical origin.
@@ -174,6 +179,7 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Native iOS Safari navigation works on production.
 - [ ] Generated build output is cleaned without reverting source changes.
 - [ ] Final evidence records versions, test counts, scores, and remaining risks.
+- [ ] Final evidence records the render sharpness result, report path, native-resolution review, and intentional exceptions.
 - [ ] Final evidence records sitemap counts and Search Console verification and submission status.
 - [ ] Final evidence records the AEO query baseline, reviewed pages, sources, and measurement plan when answer-focused content changed.
 - [ ] Final evidence records the design mode, framework, status, findings, and evidence paths.

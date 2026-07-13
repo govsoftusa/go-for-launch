@@ -22,6 +22,7 @@ The following checks remain required in every mode:
 - Keyboard operation and visible focus.
 - WCAG 2.2 contrast, resize, reflow, text spacing, target size, and motion checks.
 - Legible content, stable layout, and no overlap, clipping, or horizontal overflow.
+- Sharp text, logos, and interface icons without accidental compositor blur, fractional scaling, forced smoothing, or unshipped first-choice fonts.
 - Complete navigation and interaction behavior on supported viewports.
 - Chromium, Playwright WebKit, and native iOS Safari verification.
 - Static first paint and essential content without client-side JavaScript.
@@ -123,7 +124,7 @@ Example disabled result:
 The production workflow should execute in this order:
 
 1. Build the exact candidate and generate the complete sitemap.
-2. Run every mandatory core validator and browser gate.
+2. Run every mandatory core validator, including the render sharpness gate, and every browser gate.
 3. Run the design-system gate and preserve its result.
 4. Stop when a core gate fails.
 5. Stop on a design finding only when the design mode is `required`.

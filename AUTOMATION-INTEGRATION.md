@@ -33,6 +33,7 @@ Every run must read these files before deciding whether a site can deploy:
 - `OPEN-GRAPH-GENERATION.md`
 - `DESIGN-GATE-POLICY.md`
 - `DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md`
+- `RENDER-SHARPNESS.md`
 
 If this repository changes, the automation must treat the current files as authoritative instead of relying on older automation memory.
 
@@ -46,21 +47,22 @@ For each eligible Astro root:
 4. Run available diagnostics, type checks, lint, tests, and app-specific smoke checks.
 5. Read the project design configuration. Keep core interface safety mandatory in every mode. When `advisory` or `required` design review applies, complete the design optimization brief, inventory brand anchors, diagnose hierarchy and density, define responsive anatomy, and record baseline evidence before changing styles.
 6. Build the exact production candidate through a command that generates and validates the complete sitemap.
-7. Compare every indexable built canonical with the generated sitemap and verify the exact sitemap URL in `robots.txt`.
-8. Validate final HTML metadata, JSON-LD, heading hierarchy, Open Graph files, image dimensions, and responsive image output.
-9. For localized sites, validate self-canonicals, reciprocal hreflang clusters, `x-default`, localized sitemap entries, and localized navigation.
-10. Always run accessibility preferences, text resize, reflow, interaction, and responsive safety checks. When design review applies, also capture and inspect the configured viewports, route families, and design-system criteria.
-11. Run Playwright WebKit with an iPhone profile when the repo has Playwright coverage or when the automation adds a temporary smoke suite.
-12. Test the built candidate in native iOS Safari using an explicit Simulator UDID.
-13. Deploy the exact candidate to staging when a staging target is documented.
-14. Verify staging serves the expected candidate, canonical metadata, sitemap, child sitemaps, and robots declaration.
-15. Run PageSpeed Insights against staging for mobile and desktop.
-16. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
-17. Run the design gate, preserve its result, and deploy production only when all core gates and every configured required gate pass and the production target is unambiguous.
-18. Verify the canonical production hostname with live HTTP checks, sitemap checks, redirect checks, WebKit smoke coverage, and native iOS Safari smoke coverage.
-19. Verify the opposite trailing-slash form, alternate origins, and approved legacy routes redirect in one permanent hop with path and query preservation.
-20. When approved Search Console access exists, verify property access, list submitted sitemaps, submit the canonical sitemap when missing, and record the resulting status.
-21. When SEO or content work is in scope, research query language from approved Search Console, Ahrefs, support, sales, or analytics evidence before adding answer-focused content.
+7. Run the mandatory render sharpness gate against the exact build and preserve its JSON report. If explicit source auto-fix changes a file, rebuild before continuing.
+8. Compare every indexable built canonical with the generated sitemap and verify the exact sitemap URL in `robots.txt`.
+9. Validate final HTML metadata, JSON-LD, heading hierarchy, Open Graph files, image dimensions, and responsive image output.
+10. For localized sites, validate self-canonicals, reciprocal hreflang clusters, `x-default`, localized sitemap entries, and localized navigation.
+11. Always run accessibility preferences, text resize, reflow, interaction, and responsive safety checks. When design review applies, also capture and inspect the configured viewports, route families, and design-system criteria.
+12. Run Playwright WebKit with an iPhone profile when the repo has Playwright coverage or when the automation adds a temporary smoke suite.
+13. Test the built candidate in native iOS Safari using an explicit Simulator UDID.
+14. Deploy the exact candidate to staging when a staging target is documented.
+15. Verify staging serves the expected candidate, canonical metadata, sitemap, child sitemaps, and robots declaration.
+16. Run PageSpeed Insights against staging for mobile and desktop.
+17. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+18. Run the design gate, preserve its result, and deploy production only when all core gates and every configured required gate pass and the production target is unambiguous.
+19. Verify the canonical production hostname with live HTTP checks, sitemap checks, redirect checks, WebKit smoke coverage, and native iOS Safari smoke coverage.
+20. Verify the opposite trailing-slash form, alternate origins, and approved legacy routes redirect in one permanent hop with path and query preservation.
+21. When approved Search Console access exists, verify property access, list submitted sitemaps, submit the canonical sitemap when missing, and record the resulting status.
+22. When SEO or content work is in scope, research query language from approved Search Console, Ahrefs, support, sales, or analytics evidence before adding answer-focused content.
 
 If a site has only a production deploy script and no safe staging target, do not deploy production unless the repo documentation explicitly allows the production target to serve as the release gate for that site.
 
@@ -184,6 +186,7 @@ For every site touched by automation, report:
 - Dependency versions changed.
 - Commands run and pass or fail result.
 - Build candidate identity when available.
+- Render sharpness report, result, reviewed viewports, and intentional exceptions.
 - Sitemap URL, indexable page count, sitemap URL count, and validation result.
 - Search Console property, permission, ownership status, and sitemap submission status when access exists.
 - Query evidence, topic map, answer-focused routes, source review, and measurement baseline when SEO content work is in scope.
@@ -205,6 +208,7 @@ Stop before production deployment when:
 - The toolkit files cannot be read.
 - Git baseline is not clean or deliberately snapshot-committed.
 - Build or required tests fail.
+- The render sharpness report is missing or failed, or source changed through auto-fix without a complete rebuild.
 - The configured design mode is `required` and applicable design work begins without an approved brand source, baseline evidence, or diagnosis.
 - The configured design mode is `required` and brand continuity or visual acceptance fails.
 - The configured design mode is `required` and a global bar is unclassified or presents evergreen brand positioning as an alert.

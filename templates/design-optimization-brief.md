@@ -105,6 +105,14 @@ Use preserve, refine, replace with approval, or unknown as the decision.
 - Which keyboard, touch, loading, success, and error behaviors must change?
 - Which interactions differ across compact and expanded layouts?
 
+### Render sharpness
+
+- Which text, logo, or icon areas appear soft at native resolution?
+- Does any content-bearing ancestor use blur, filtering, scaling, fractional transforms, opacity animation, or permanent compositor hints?
+- Is every first-choice font shipped, or does the design use an approved system stack?
+- Do inline logo and interface SVG dimensions align with their view box?
+- Which decorative effects are explicitly intentional and isolated from content?
+
 ## Brand-Safe Design Tokens
 
 ### Color roles
@@ -210,6 +218,11 @@ Use content-led breakpoints. Do not assume that device names define the breakpoi
 - [ ] Evergreen brand positioning is not styled as an alert.
 - [ ] Announcements have a content owner and review or expiration date.
 - [ ] The logo, navigation, optional bars, hero, and first content section form a clear first-viewport hierarchy.
+- [ ] The mandatory render sharpness gate passes against the exact built candidate.
+- [ ] Text, logos, and interface icons were inspected at native capture resolution in Chromium and WebKit.
+- [ ] Blur and filtering are isolated from content-bearing layers.
+- [ ] Named first-choice fonts are shipped or replaced by an approved system stack.
+- [ ] Inline logo and interface SVG dimensions avoid accidental fractional scaling.
 
 ### Accessibility
 
@@ -252,6 +265,8 @@ Use content-led breakpoints. Do not assume that device names define the breakpoi
 - Build result:
 - Automated test result:
 - Accessibility result:
+- Render sharpness report and result:
+- Native-resolution sharpness evidence:
 - Playwright WebKit result:
 - Native iOS Safari device and UDID:
 - Native iOS Safari result:
