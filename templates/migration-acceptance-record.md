@@ -50,6 +50,23 @@
 - Structured data:
 - Forms and anti-spam:
 
+## Sitemap and Search Console
+
+- Canonical sitemap URL:
+- Sitemap verifier command:
+- Indexable built page count:
+- Unique sitemap URL count:
+- Staging sitemap and child sitemap HTTP checks:
+- Production sitemap and child sitemap HTTP checks:
+- Robots sitemap declaration:
+- Search Console property identifier:
+- Search Console permission level:
+- Property ownership verified:
+- Sitemap previously submitted:
+- Sitemap submission performed:
+- Search Console last submitted time, warnings, or errors:
+- Access or verification blocker:
+
 ## Production
 
 - Canonical hostname verified:
@@ -70,3 +87,5 @@
 - Decision:
 - All required iOS Simulator checks passed:
 - All eight PageSpeed category checks equal 100:
+- Sitemap build verification passed:
+- Search Console status recorded when access exists:

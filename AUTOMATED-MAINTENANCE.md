@@ -24,11 +24,13 @@ Grant the narrowest set of tools that can complete the workflow:
 3. Node.js, the package manager named by the lockfile, and access to the package registry.
 4. Astro diagnostics and the project test commands.
 5. Chromium and Playwright WebKit with an iPhone profile.
-6. Native iOS Safari through a pinned Xcode Simulator when the required environment is available.
-7. A staging deployment tool for the documented host.
-8. PageSpeed Insights for mobile and desktop.
-9. Production deployment permission only after every release gate passes.
-10. Read access to secrets through a secret manager, without exposing secret values to output or logs.
+6. Sitemap generation and build-output verification.
+7. Google Search Console access when the owner has approved it.
+8. Native iOS Safari through a pinned Xcode Simulator when the required environment is available.
+9. A staging deployment tool for the documented host.
+10. PageSpeed Insights for mobile and desktop.
+11. Production deployment permission only after every release gate passes.
+12. Read access to secrets through a secret manager, without exposing secret values to output or logs.
 
 Common MCP or API integrations include filesystem and Git tools, GitHub, Cloudflare, browser automation, PageSpeed Insights, and a secret manager. Do not connect a broad cloud account when a site-specific token or project-scoped credential is available.
 
@@ -86,7 +88,7 @@ For a stable informational site, start monthly. Move to weekly only when depende
 
 Separate checks by risk:
 
-- Weekly or monthly: version discovery, dependency audit, Astro diagnostics, build, and browser tests.
+- Weekly or monthly: version discovery, dependency audit, Astro diagnostics, sitemap-verified build, and browser tests.
 - After a validated change: staged deployment and PageSpeed gate.
 - Production: only when the exact staged candidate passes every gate.
 - Daily monitoring: public uptime, certificate, sitemap, robots file, and critical-link checks without source changes.
@@ -102,15 +104,15 @@ Read every applicable AGENTS.md file and the Go for Launch production policy bef
 
 Check current compatible releases for Astro, its integrations, adapter, build tooling, TypeScript, test tooling, and deployment tooling. Never force an incompatible dependency tree. Make only targeted maintenance changes that are justified by current release information or a failing check.
 
-Run install, Astro diagnostics, project tests, production build, Chromium, and Playwright WebKit with an iPhone profile. Test the built candidate in native iOS Safari with one recorded Simulator UDID when the environment is available. If native Safari is required but unavailable, stop before production.
+Run install, Astro diagnostics, project tests, production build, Chromium, and Playwright WebKit with an iPhone profile. The normal build command must generate the XML sitemap, compare every indexable built canonical with the sitemap, and verify the exact sitemap URL in robots.txt. A missing or incomplete sitemap fails the build. Test the built candidate in native iOS Safari with one recorded Simulator UDID when the environment is available. If native Safari is required but unavailable, stop before production.
 
 Deploy the exact built candidate to the documented staging target. Confirm staging serves that candidate. Run PageSpeed Insights for mobile and desktop and require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
 
-Deploy the same candidate to production only when every required gate passes. Verify the canonical hostname, redirects, representative routes, sitemap, robots file, Open Graph images, WebKit behavior, and a native Safari smoke test after production.
+Deploy the same candidate to production only when every required gate passes. Verify the canonical hostname, redirects, representative routes, sitemap, child sitemaps, robots file, Open Graph images, WebKit behavior, and a native Safari smoke test after production. When approved Google Search Console access exists, verify the property and permission, list submitted sitemaps, submit the exact canonical sitemap when missing, and record the status. Sitemap submission must not be treated as property ownership verification.
 
 Never print secrets. Never invent a deployment target or hostname. Never deploy when the repository remains dirty from unrelated work, the build changes after staging, a required test fails, or any PageSpeed score is below 100.
 
-Finish with a report of versions checked, files changed, tests run, staging result, PageSpeed scores, production result, live verification, and any stop condition.
+Finish with a report of versions checked, files changed, tests run, sitemap counts, Search Console status when available, staging result, PageSpeed scores, production result, live verification, and any stop condition.
 ```
 
 ## Stop Conditions
@@ -122,10 +124,10 @@ Stop before production when any of these is true:
 - Unrelated human changes cannot be separated safely.
 - The compatible dependency set cannot be resolved.
 - Diagnostics, tests, build, WebKit, or native Safari checks fail.
+- The build omits sitemap verification, the sitemap is incomplete, or the robots declaration is wrong.
 - Staging does not serve the expected candidate.
 - Any required PageSpeed score is below 100.
 - A secret would need to be printed, committed, or copied into the prompt.
 - Production would require a database, payment, authentication, or destructive content change.
 
 An automation that stops cleanly and explains why is working as designed.
-

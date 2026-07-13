@@ -56,6 +56,10 @@ This checklist is mandatory before production. Any unchecked required item block
 
 - [ ] Astro diagnostics pass.
 - [ ] Production build passes.
+- [ ] The normal production build generates `/sitemap.xml` and runs the sitemap verifier.
+- [ ] Every indexable built canonical appears exactly once in the sitemap.
+- [ ] Every sitemap URL maps to an indexable built page on the canonical origin.
+- [ ] `robots.txt` advertises the exact canonical sitemap URL.
 - [ ] Unit and server-side tests pass.
 - [ ] Chromium desktop tests pass.
 - [ ] Chromium mobile tests pass.
@@ -93,6 +97,9 @@ This checklist is mandatory before production. Any unchecked required item block
 - [ ] Each declared Open Graph image returns HTTP 200, a raster content type, and the exact declared dimensions.
 - [ ] Structured data parses and matches visible content.
 - [ ] Public discovery files include only intended public routes.
+- [ ] The staged `/sitemap.xml` and every referenced child sitemap return HTTP 200 with XML content.
+- [ ] Search Console property access and permission were checked when approved access exists.
+- [ ] The canonical sitemap is submitted in Search Console, or the exact access or verification blocker is recorded.
 - [ ] Private routes use appropriate metadata and response headers.
 - [ ] Third-party scripts load only when needed.
 
@@ -106,8 +113,10 @@ This checklist is mandatory before production. Any unchecked required item block
 - [ ] No production push occurs before the Simulator and PageSpeed gates pass.
 - [ ] Production deployment completes successfully.
 - [ ] The canonical public hostname serves the new candidate.
+- [ ] The production `/sitemap.xml`, child sitemaps, and robots declaration pass public HTTP checks.
 - [ ] Apex and alternate-host redirects behave correctly.
 - [ ] Live WebKit tests pass after propagation.
 - [ ] Native iOS Safari navigation works on production.
 - [ ] Generated build output is cleaned without reverting source changes.
 - [ ] Final evidence records versions, test counts, scores, and remaining risks.
+- [ ] Final evidence records sitemap counts and Search Console verification and submission status.

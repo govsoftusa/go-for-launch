@@ -12,6 +12,7 @@ The toolbox serves four purposes:
 2. **Keeping existing Astro sites current.** A maintenance process for updating Astro sites already in production to the latest compatible Astro version and dependency set, with every upgrade passing the same release gates as a new migration. See [AUTOMATION-INTEGRATION.md](AUTOMATION-INTEGRATION.md).
 3. **Automated testing on web and mobile.** Browser test guidance covering Chromium, Playwright WebKit with iPhone device profiles, and native mobile Safari through the macOS Xcode iOS Simulator using a pinned device UDID. See the [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md) and the [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md).
 4. **A 100/100 PageSpeed standard.** A mandatory release gate requiring PageSpeed Insights scores of 100 for Performance, Accessibility, Best Practices, and SEO, on both mobile and desktop, before any production deployment. See the [Production Release Policy](PRODUCTION-RELEASE-POLICY.md).
+5. **Complete sitemap and Search Console operations.** Every build must prove that its XML sitemap matches all indexable built pages. When approved Search Console access exists, verify the property, inspect its submitted sitemaps, and submit the canonical sitemap when missing. See [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md).
 
 ## Why This Exists
 
@@ -38,8 +39,9 @@ This repository documents the process used to close those gaps while replacing l
 6. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
 7. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
 8. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
-9. [Contributing Guide](CONTRIBUTING.md)
-10. [Roadmap](ROADMAP.md)
+9. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
+10. [Contributing Guide](CONTRIBUTING.md)
+11. [Roadmap](ROADMAP.md)
 
 ## Repository Structure
 
@@ -54,6 +56,7 @@ This repository documents the process used to close those gaps while replacing l
 ├── AUTOMATION-INTEGRATION.md
 ├── AUTOMATED-MAINTENANCE.md
 ├── CLOUDFLARE-FORMS.md
+├── SITEMAPS-AND-SEARCH-CONSOLE.md
 ├── CONTRIBUTING.md
 ├── SECURITY.md
 ├── case-studies/
@@ -72,12 +75,13 @@ This repository documents the process used to close those gaps while replacing l
 2. Capture routes, content, assets, behavior, and metadata before rebuilding.
 3. Build static, meaningful HTML that does not depend on client JavaScript to appear.
 4. Create typed components around real content patterns rather than one universal component.
-5. Preserve native links and controls wherever possible.
-6. Test WebKit and native iOS Safari, not only Chromium at a narrow viewport.
-7. Promote the exact candidate that passed staging checks.
-8. Verify the canonical public hostname after deployment.
-9. Record intentional differences so accessibility and performance improvements are not mistaken for missing parity.
-10. Turn every discovered migration defect into a reusable test or checklist item.
+5. Generate and validate a complete XML sitemap during every build.
+6. Preserve native links and controls wherever possible.
+7. Test WebKit and native iOS Safari, not only Chromium at a narrow viewport.
+8. Promote the exact candidate that passed staging checks.
+9. Verify the canonical public hostname after deployment.
+10. Record intentional differences so accessibility and performance improvements are not mistaken for missing parity.
+11. Turn every discovered migration defect into a reusable test or checklist item.
 
 ## Evidence Model
 
@@ -101,13 +105,14 @@ No single screenshot, Lighthouse result, or passing build proves migration compl
 Every site using Go for Launch must pass the following gate before production deployment:
 
 1. Build the production candidate.
-2. Run the automated browser, WebKit, accessibility, form, and route tests against that candidate.
-3. Test the candidate in native iOS Safari through Xcode Simulator using a pinned device UDID.
-4. Deploy the same candidate to staging.
-5. Run PageSpeed Insights against staging for mobile and desktop.
-6. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
-7. Block production when any required test fails or any PageSpeed category is below 100.
-8. Verify the canonical production hostname in WebKit and native iOS Safari after deployment.
+2. Generate the sitemap and verify it matches every indexable built page.
+3. Run the automated browser, WebKit, accessibility, form, and route tests against that candidate.
+4. Test the candidate in native iOS Safari through Xcode Simulator using a pinned device UDID.
+5. Deploy the same candidate to staging.
+6. Run PageSpeed Insights against staging for mobile and desktop.
+7. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+8. Block production when any required test fails or any PageSpeed category is below 100.
+9. Verify the sitemap and canonical production hostname after deployment.
 
 The detailed policy is in [PRODUCTION-RELEASE-POLICY.md](PRODUCTION-RELEASE-POLICY.md).
 

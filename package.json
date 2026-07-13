@@ -6,8 +6,7 @@
   "author": "GovSoft, LLC",
   "type": "module",
   "scripts": {
-    "test": "node scripts/check-docs.mjs"
+    "test": "node scripts/check-docs.mjs && node scripts/test-sitemap-verifier.mjs"
   },
   "license": "MIT"
 }
-

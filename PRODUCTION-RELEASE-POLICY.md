@@ -13,6 +13,7 @@ install dependencies from the lockfile
 run Astro diagnostics
 run unit, server, form, and build-pipeline tests
 build the production candidate
+verify the generated sitemap covers every indexable built page
 run desktop and mobile browser tests
 run Playwright WebKit with an iPhone profile
 test the built candidate in native iOS Safari through Xcode Simulator
@@ -22,10 +23,29 @@ run PageSpeed Insights on staging for mobile and desktop
 require four scores of 100 in both strategies
 deploy the same candidate to production
 verify the canonical hostname
+verify the public sitemap and robots declaration
 repeat live WebKit and native iOS Safari smoke tests
 ```
 
 Do not rebuild between the successful staging audit and production promotion unless the new output repeats the complete gate.
+
+## Sitemap Requirement
+
+The normal production build command must generate and validate the XML sitemap. A separate optional SEO command is not sufficient because it can be skipped while the build appears successful.
+
+The sitemap validator must compare the final built HTML with the generated XML and fail the build when:
+
+- The conventional `/sitemap.xml` file is missing or invalid.
+- A referenced child sitemap is missing.
+- An indexable built page has no canonical URL.
+- An indexable canonical URL is absent from the sitemap.
+- A sitemap URL has no corresponding indexable built page.
+- A URL is duplicated or uses the wrong origin.
+- `robots.txt` omits the exact canonical sitemap URL.
+
+Use [SITEMAPS-AND-SEARCH-CONSOLE.md](SITEMAPS-AND-SEARCH-CONSOLE.md) and the reusable [`scripts/verify-sitemap.mjs`](scripts/verify-sitemap.mjs) validator. After staging and production deployment, verify `/sitemap.xml`, every referenced child sitemap, and `/robots.txt` over public HTTP.
+
+When approved Google Search Console access exists, list the accessible properties and record the permission level. Ownership verification must be complete before sitemap submission. Then list submitted sitemaps and submit the exact canonical `/sitemap.xml` URL when it is missing and write permission is available. Missing access, an unverified property, or a rejected submission must be recorded as a blocker or manual handoff, not a silent pass.
 
 ## Native iOS Safari Requirement
 
@@ -151,12 +171,13 @@ Production must receive the same candidate. If source, dependencies, generated a
 After deployment:
 
 1. Verify the canonical hostname returns the expected status and candidate.
-2. Verify redirects and representative routes.
-3. Run the complete live Playwright WebKit suite.
-4. Open the canonical hostname in native iOS Safari Simulator.
-5. Repeat mobile-menu, dropdown navigation, form or modal, and scrolling smoke tests.
-6. Confirm no horizontal overflow or blank first paint.
-7. Record production deployment and verification evidence.
+2. Verify the canonical sitemap, all referenced child sitemaps, and the robots declaration.
+3. Verify redirects and representative routes.
+4. Run the complete live Playwright WebKit suite.
+5. Open the canonical hostname in native iOS Safari Simulator.
+6. Repeat mobile-menu, dropdown navigation, form or modal, and scrolling smoke tests.
+7. Confirm no horizontal overflow or blank first paint.
+8. Record production deployment and verification evidence.
 
 Production verification does not replace pre-production testing. It confirms routing, propagation, caching, and hostname behavior after promotion.
 
@@ -166,6 +187,9 @@ Stop the production release when:
 
 - Astro diagnostics fail.
 - The production build fails.
+- The production build does not generate and validate a complete sitemap.
+- The sitemap and indexable built canonicals do not match exactly.
+- `robots.txt` does not advertise the canonical sitemap URL.
 - Required unit, server, form, or build-pipeline tests fail.
 - Chromium or WebKit behavior tests fail.
 - Native iOS Safari testing is unavailable or fails.
@@ -186,6 +210,8 @@ Use [templates/migration-acceptance-record.md](templates/migration-acceptance-re
 - Candidate identifier.
 - Source revision.
 - Build result.
+- Sitemap URL, indexable page count, sitemap URL count, and validation result.
+- Search Console property, permission, verification, and sitemap submission status when access exists.
 - Automated test results.
 - Simulator environment and results.
 - Mobile and desktop PageSpeed scores.
@@ -193,4 +219,3 @@ Use [templates/migration-acceptance-record.md](templates/migration-acceptance-re
 - Production deployment identifier.
 - Canonical-host verification.
 - Remaining risks.
-

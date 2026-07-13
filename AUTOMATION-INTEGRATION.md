@@ -23,6 +23,7 @@ Every run must read these files before deciding whether a site can deploy:
 - `TESTING-AND-RELEASE-CHECKLIST.md`
 - `PRODUCTION-RELEASE-POLICY.md`
 - `AUTOMATION-INTEGRATION.md`
+- `SITEMAPS-AND-SEARCH-CONSOLE.md`
 
 If this repository changes, the automation must treat the current files as authoritative instead of relying on older automation memory.
 
@@ -34,15 +35,17 @@ For each eligible Astro root:
 2. Establish a clean git baseline or a deliberate local snapshot commit before edits.
 3. Install with the site package manager.
 4. Run available diagnostics, type checks, lint, tests, and app-specific smoke checks.
-5. Build the exact production candidate.
-6. Run Playwright WebKit with an iPhone profile when the repo has Playwright coverage or when the automation adds a temporary smoke suite.
-7. Test the built candidate in native iOS Safari using an explicit Simulator UDID.
-8. Deploy the exact candidate to staging when a staging target is documented.
-9. Verify staging serves the expected candidate and canonical metadata.
-10. Run PageSpeed Insights against staging for mobile and desktop.
-11. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
-12. Deploy production only when all required gates pass and the production target is unambiguous.
-13. Verify the canonical production hostname with live HTTP checks, WebKit smoke coverage, and native iOS Safari smoke coverage.
+5. Build the exact production candidate through a command that generates and validates the complete sitemap.
+6. Compare every indexable built canonical with the generated sitemap and verify the exact sitemap URL in `robots.txt`.
+7. Run Playwright WebKit with an iPhone profile when the repo has Playwright coverage or when the automation adds a temporary smoke suite.
+8. Test the built candidate in native iOS Safari using an explicit Simulator UDID.
+9. Deploy the exact candidate to staging when a staging target is documented.
+10. Verify staging serves the expected candidate, canonical metadata, sitemap, child sitemaps, and robots declaration.
+11. Run PageSpeed Insights against staging for mobile and desktop.
+12. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+13. Deploy production only when all required gates pass and the production target is unambiguous.
+14. Verify the canonical production hostname with live HTTP checks, sitemap checks, WebKit smoke coverage, and native iOS Safari smoke coverage.
+15. When approved Search Console access exists, verify property access, list submitted sitemaps, submit the canonical sitemap when missing, and record the resulting status.
 
 If a site has only a production deploy script and no safe staging target, do not deploy production unless the repo documentation explicitly allows the production target to serve as the release gate for that site.
 
@@ -82,11 +85,7 @@ Retrieve secrets only into process-local variables using secret references, and 
 CLOUDFLARE_API_TOKEN="$(op read 'op://VAULT-NAME/ITEM-NAME/credential')"
 ```
 
-Prefer `op run` for commands that need the credential only for their own lifetime, because the secret never lands in shell history or a persistent variable:
-
-```bash
-op run --env-file=./deploy.env -- npx wrangler pages deploy dist --project-name=example-www
-```
+Prefer a secret-manager execution wrapper for commands that need the credential only for their own lifetime, because the secret never lands in shell history or a persistent variable. Follow the installed secret manager's current command syntax rather than copying a site-specific credential reference into this repository.
 
 Rules:
 
@@ -110,6 +109,21 @@ Use Ahrefs during migration and maintenance for:
 Ahrefs API access requires a paid plan and calls consume plan quota. Confirm the key or integration responds before planning work around it, retrieve the key through the secret manager described above, and record which Ahrefs data was captured in the migration acceptance record.
 
 If no Ahrefs access exists, fall back to Google Search Console exports and the source platform's own analytics for the baseline, and record that limitation.
+
+## Sitemap and Search Console Gate
+
+Every build must produce a complete sitemap and fail when the sitemap and indexable built canonicals do not match. Copy [`scripts/verify-sitemap.mjs`](scripts/verify-sitemap.mjs) into the target site and invoke it from the site's normal build command after Astro finishes. The validator also requires `robots.txt` to advertise the exact canonical sitemap URL.
+
+When an approved Google integration or OAuth credential is available:
+
+1. List Search Console properties for the current identity and select the intended Domain or URL-prefix property.
+2. Record the permission level. An absent or unverified property is not a pass.
+3. Complete property verification before attempting sitemap submission. Domain property verification uses a Google-provided DNS token through the authorized DNS provider.
+4. List submitted sitemaps and compare the exact canonical `/sitemap.xml` URL.
+5. Submit the sitemap when missing and write permission is available.
+6. Inspect the sitemap again and record its submission time, warnings, errors, or exact blocker.
+
+Submission does not verify ownership. If verification or write access is missing, stop the Search Console mutation and record a manual handoff. The full workflow and official API endpoints are in [SITEMAPS-AND-SEARCH-CONSOLE.md](SITEMAPS-AND-SEARCH-CONSOLE.md).
 
 ## PageSpeed Gate
 
@@ -136,6 +150,8 @@ For every site touched by automation, report:
 - Dependency versions changed.
 - Commands run and pass or fail result.
 - Build candidate identity when available.
+- Sitemap URL, indexable page count, sitemap URL count, and validation result.
+- Search Console property, permission, ownership status, and sitemap submission status when access exists.
 - Playwright WebKit result.
 - Simulator UDID record or production-blocking Simulator blocker.
 - Staging target and verification result.
@@ -153,6 +169,8 @@ Stop before production deployment when:
 - The toolkit files cannot be read.
 - Git baseline is not clean or deliberately snapshot-committed.
 - Build or required tests fail.
+- The build does not generate a complete sitemap or the sitemap validator fails.
+- The public sitemap or robots declaration is missing or incorrect.
 - Native iOS Safari testing is unavailable or fails.
 - Staging is unavailable without an explicit production-only release policy.
 - PageSpeed is below 100 in any required category.
