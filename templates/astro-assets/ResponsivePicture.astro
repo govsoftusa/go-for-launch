@@ -1,0 +1,37 @@
+---
+import { Picture } from "astro:assets";
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  width: number;
+  height?: number;
+  formats?: Array<"avif" | "webp">;
+  loading?: "eager" | "lazy";
+  fetchpriority?: "high" | "low" | "auto";
+  class?: string;
+}
+
+const {
+  src,
+  alt,
+  width,
+  height,
+  formats = ["avif", "webp"],
+  loading = "lazy",
+  fetchpriority = "auto",
+  class: className
+} = Astro.props;
+---
+
+<Picture
+  {src}
+  {alt}
+  {width}
+  height={height ?? Math.round(width * src.height / src.width)}
+  {formats}
+  layout="constrained"
+  {loading}
+  {fetchpriority}
+  class={className}
+/>

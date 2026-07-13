@@ -1,0 +1,77 @@
+---
+export interface AlternateUrl {
+  hreflang: string;
+  href: URL | string;
+}
+
+export interface OpenGraphImage {
+  src: URL | string;
+  width?: number;
+  height?: number;
+  alt: string;
+  type?: string;
+}
+
+type JsonLd = Record<string, unknown> | Array<Record<string, unknown>>;
+
+interface Props {
+  title: string;
+  description: string;
+  canonical: URL | string;
+  siteName: string;
+  image: OpenGraphImage;
+  alternates?: AlternateUrl[];
+  ogType?: string;
+  ogLocale?: string;
+  robots?: string;
+  structuredData?: JsonLd | JsonLd[];
+}
+
+const {
+  title,
+  description,
+  canonical,
+  siteName,
+  image,
+  alternates = [],
+  ogType = "website",
+  ogLocale,
+  robots,
+  structuredData
+} = Astro.props;
+
+const canonicalUrl = new URL(canonical, Astro.site);
+const imageUrl = new URL(image.src, Astro.site);
+const width = image.width ?? 1200;
+const height = image.height ?? 630;
+const jsonLd = structuredData
+  ? (Array.isArray(structuredData) ? structuredData : [structuredData])
+      .map((entry) => JSON.stringify(entry).replaceAll("<", "\\u003c"))
+  : [];
+---
+
+<meta name="description" content={description} />
+{robots && <meta name="robots" content={robots} />}
+<link rel="canonical" href={canonicalUrl} />
+{alternates.map((alternate) => <link rel="alternate" hreflang={alternate.hreflang} href={new URL(alternate.href, Astro.site)} />)}
+
+<meta property="og:type" content={ogType} />
+<meta property="og:site_name" content={siteName} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalUrl} />
+{ogLocale && <meta property="og:locale" content={ogLocale} />}
+<meta property="og:image" content={imageUrl} />
+<meta property="og:image:width" content={String(width)} />
+<meta property="og:image:height" content={String(height)} />
+<meta property="og:image:alt" content={image.alt} />
+{image.type && <meta property="og:image:type" content={image.type} />}
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageUrl} />
+<meta name="twitter:image:alt" content={image.alt} />
+
+{jsonLd.map((entry) => <script is:inline type="application/ld+json" set:html={entry} />)}
+<title>{title}</title>

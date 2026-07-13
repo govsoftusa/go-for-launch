@@ -2,11 +2,20 @@
   "name": "go-for-launch",
   "version": "0.1.0",
   "private": false,
-  "description": "Go for Launch, a toolbox for Astro sites: convert sites to Astro, keep existing Astro sites on the latest compatible versions and dependencies, automate web and native mobile Safari testing through the macOS iOS Simulator, and enforce a 100/100 PageSpeed release gate in every category.",
+  "description": "Go for Launch, a toolbox for Astro sites: migrate and maintain sites, automate web and native mobile Safari testing, enforce SEO and PageSpeed release gates, and configure optional design-system review.",
   "author": "GovSoft, LLC",
   "type": "module",
   "scripts": {
-    "test": "node scripts/check-docs.mjs && node scripts/test-sitemap-verifier.mjs"
+    "design:gate": "node scripts/run-design-gate.mjs --config=templates/design-gate.config.mjs",
+    "test": "astro check && node scripts/check-docs.mjs && node scripts/test-sitemap-verifier.mjs && node scripts/test-seo-verifier.mjs && node scripts/test-redirect-verifier.mjs && node scripts/test-open-graph-generator.mjs && node scripts/test-design-gate.mjs"
+  },
+  "dependencies": {
+    "sharp": "0.35.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.9",
+    "astro": "7.0.8",
+    "typescript": "6.0.3"
   },
   "license": "MIT"
 }

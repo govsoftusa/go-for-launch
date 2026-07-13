@@ -11,6 +11,17 @@
 - Keep general guidance at the repository root and site-specific evidence under `case-studies/`.
 - Add reusable worksheets under `templates/`.
 
+## Core Interface Gate and Project-Controlled Design Gate
+
+- Treat accessibility, legibility, semantic interaction, responsive reflow, browser behavior, Playwright WebKit, and native iOS Safari as mandatory release requirements for every project.
+- Read `DESIGN-GATE-POLICY.md` before adding or changing a design-system requirement.
+- Design-system conformance is project controlled through `design-gate.config.mjs` with `off`, `advisory`, or `required` modes. The default is `off`.
+- Run the design gate for every release and preserve its machine-readable result, including when project policy disables the review.
+- Read `DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md` and complete `templates/design-optimization-brief.md` when the design mode is `advisory` or `required` and the configured scope applies.
+- Block production on design-system findings only when the configured mode is `required`.
+- Never allow the design mode to disable or weaken SEO, AEO, sitemap, accessibility, mobile, web, performance, browser, forms, staging, or production verification.
+- Do not claim Material Design, Apple design, Liquid Glass, custom-system, or hybrid conformance without a passing applicable design review.
+
 ## Mandatory Production Gate
 
 - Build the production candidate before production deployment.

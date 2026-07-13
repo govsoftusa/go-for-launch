@@ -20,6 +20,10 @@
 - Intended public routes:
 - Passing routes:
 - Redirects verified:
+- Trailing-slash policy:
+- Alternate origins verified:
+- Legacy redirect probes:
+- Redirect path and query preservation:
 - Missing sections:
 - Intentional differences reviewed:
 
@@ -47,8 +51,34 @@
 - PageSpeed desktop Best Practices, required 100:
 - PageSpeed desktop SEO, required 100:
 - Social previews:
+- Deterministic Open Graph generation:
+- Unique 1200 by 630 Open Graph files:
 - Structured data:
+- JSON-LD parser and type validation:
+- Heading hierarchy:
+- Astro image output and intrinsic dimensions:
 - Forms and anti-spam:
+
+## Design-System Gate
+
+- Mode: off, advisory, or required
+- Framework:
+- Scope:
+- Gate result:
+- Review record:
+- Reviewer required:
+- Findings:
+- Conformance claim permitted:
+
+## Internationalization
+
+- Locales:
+- URL prefix or domain model:
+- Localized self-canonicals:
+- Reciprocal hreflang clusters:
+- `x-default` destination:
+- Localized sitemap alternates:
+- Localized navigation and language selector:
 
 ## SEO and Answer Engine Content
 

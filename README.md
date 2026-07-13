@@ -6,7 +6,7 @@ Go for Launch was started and is sponsored by [GovSoft](https://www.govsoft.com)
 
 ## What Go for Launch Covers
 
-The toolbox serves four purposes:
+The toolbox serves eight purposes:
 
 1. **Converting existing sites to Astro.** Complete workflows for rebuilding websites in Astro without losing content, design fidelity, responsive behavior, SEO, accessibility, performance, or browser reliability. The Webflow and WordPress workflows are proven in production, and the platform-neutral framework extends to Squarespace, Wix, Drupal, static HTML, and custom content management systems as alpha guidance.
 2. **Keeping existing Astro sites current.** A maintenance process for updating Astro sites already in production to the latest compatible Astro version and dependency set, with every upgrade passing the same release gates as a new migration. See [AUTOMATION-INTEGRATION.md](AUTOMATION-INTEGRATION.md).
@@ -14,6 +14,8 @@ The toolbox serves four purposes:
 4. **A 100/100 PageSpeed standard.** A mandatory release gate requiring PageSpeed Insights scores of 100 for Performance, Accessibility, Best Practices, and SEO, on both mobile and desktop, before any production deployment. See the [Production Release Policy](PRODUCTION-RELEASE-POLICY.md).
 5. **Complete sitemap and Search Console operations.** Every build must prove that its XML sitemap matches all indexable built pages. When approved Search Console access exists, verify the property, inspect its submitted sitemaps, and submit the canonical sitemap when missing. See [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md).
 6. **SEO and answer-engine content strategy.** Research real questions through Search Console, Ahrefs, support, and sales evidence, then publish focused, answer-first content with accurate optional structured data and measurable maintenance. See [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md).
+7. **Reusable SEO implementation and validation.** Install a typed Astro SEO head, optimized image component, localized route map, deterministic Open Graph generator, and final-output validators for metadata, JSON-LD, headings, images, hreflang, and redirects. See [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md).
+8. **Project-controlled design-system review.** Keep framework-neutral accessibility and usability checks mandatory while allowing each project to set Material Design, Apple Liquid Glass, custom, or hybrid conformance to off, advisory, or required. See [Configurable Design-System Gate](DESIGN-GATE-POLICY.md) and [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md).
 
 ## Why This Exists
 
@@ -42,8 +44,15 @@ This repository documents the process used to close those gaps while replacing l
 8. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
 9. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
 10. [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md)
-11. [Contributing Guide](CONTRIBUTING.md)
-12. [Roadmap](ROADMAP.md)
+11. [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md)
+12. [Astro Assets Implementation and Verification](ASTRO-ASSETS.md)
+13. [Internationalization, Canonicals, and Hreflang](INTERNATIONALIZATION-AND-HREFLANG.md)
+14. [Redirect Verification](REDIRECT-VERIFICATION.md)
+15. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
+16. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
+17. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
+18. [Contributing Guide](CONTRIBUTING.md)
+19. [Roadmap](ROADMAP.md)
 
 ## Repository Structure
 
@@ -60,15 +69,38 @@ This repository documents the process used to close those gaps while replacing l
 ├── CLOUDFLARE-FORMS.md
 ├── SITEMAPS-AND-SEARCH-CONSOLE.md
 ├── ANSWER-ENGINE-OPTIMIZATION.md
+├── SEO-HEAD-AND-VALIDATION.md
+├── ASTRO-ASSETS.md
+├── INTERNATIONALIZATION-AND-HREFLANG.md
+├── REDIRECT-VERIFICATION.md
+├── OPEN-GRAPH-GENERATION.md
+├── DESIGN-GATE-POLICY.md
+├── DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md
 ├── CONTRIBUTING.md
 ├── SECURITY.md
+├── scripts/
+│   ├── verify-sitemap.mjs
+│   ├── verify-seo.mjs
+│   ├── verify-images.mjs
+│   ├── verify-redirects.mjs
+│   ├── generate-open-graph.mjs
+│   └── run-design-gate.mjs
 ├── case-studies/
 │   ├── webflow-astro-ios-safari.md
 │   ├── wordpress-astro-safari-seo-performance.md
-│   └── go4launch-safari-filtered-header-menu.md
+│   ├── go4launch-safari-filtered-header-menu.md
+│   └── ohdt-header-announcement-hierarchy.md
 └── templates/
+    ├── astro-seo/SeoHead.astro
+    ├── astro-assets/ResponsivePicture.astro
+    ├── astro-i18n/localized-seo.ts
+    ├── open-graph.config.mjs
+    ├── redirects.config.mjs
+    ├── design-gate.config.mjs
+    ├── design-review-record.json
     ├── route-and-content-inventory.md
     ├── gap-analysis.md
+    ├── design-optimization-brief.md
     └── migration-acceptance-record.md
 ```
 
@@ -80,12 +112,18 @@ This repository documents the process used to close those gaps while replacing l
 4. Create typed components around real content patterns rather than one universal component.
 5. Generate and validate a complete XML sitemap during every build.
 6. Research real search questions and write focused, answer-first content that remains useful outside its surrounding page.
-7. Preserve native links and controls wherever possible.
-8. Test WebKit and native iOS Safari, not only Chromium at a narrow viewport.
-9. Promote the exact candidate that passed staging checks.
-10. Verify the canonical public hostname after deployment.
-11. Record intentional differences so accessibility and performance improvements are not mistaken for missing parity.
-12. Turn every discovered migration defect into a reusable test or checklist item.
+7. Generate unique social previews and validate metadata, JSON-LD, headings, and responsive image output from final HTML.
+8. Treat each localized URL as a self-canonical page with reciprocal hreflang and complete sitemap coverage.
+9. Verify trailing-slash, alternate-host, and legacy redirects over public HTTP.
+10. Keep framework-neutral interface safety mandatory and let projects choose whether design-system conformance is off, advisory, or required.
+11. Diagnose hierarchy, density, interaction, and responsive anatomy when project policy enables design review.
+12. Preserve recognizable brand anchors unless an authorized stakeholder approves a rebrand.
+13. Preserve native links and controls wherever possible.
+14. Test WebKit and native iOS Safari, not only Chromium at a narrow viewport.
+15. Promote the exact candidate that passed staging checks.
+16. Verify the canonical public hostname after deployment.
+17. Record intentional differences so accessibility and performance improvements are not mistaken for missing parity.
+18. Turn every discovered migration defect into a reusable test or checklist item.
 
 ## Evidence Model
 
@@ -97,6 +135,7 @@ Strong migration evidence combines:
 - Asset manifests with hashes and missing-file reports.
 - Automated route, interaction, accessibility, and metadata checks.
 - Screenshot comparisons at multiple breakpoints.
+- A machine-readable design gate result for every release, plus a completed design optimization brief when project policy enables applicable design review.
 - Playwright WebKit touch tests.
 - Native iPhone Simulator inspection.
 - Staging performance audits.
@@ -111,12 +150,13 @@ Every site using Go for Launch must pass the following gate before production de
 1. Build the production candidate.
 2. Generate the sitemap and verify it matches every indexable built page.
 3. Run the automated browser, WebKit, accessibility, form, and route tests against that candidate.
-4. Test the candidate in native iOS Safari through Xcode Simulator using a pinned device UDID.
-5. Deploy the same candidate to staging.
-6. Run PageSpeed Insights against staging for mobile and desktop.
-7. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
-8. Block production when any required test fails or any PageSpeed category is below 100.
-9. Verify the sitemap and canonical production hostname after deployment.
+4. Run the configured design-system gate and preserve its result. Only `required` design findings block production.
+5. Test the candidate in native iOS Safari through Xcode Simulator using a pinned device UDID.
+6. Deploy the same candidate to staging.
+7. Run PageSpeed Insights against staging for mobile and desktop.
+8. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+9. Block production when any required test fails or any PageSpeed category is below 100.
+10. Verify the sitemap and canonical production hostname after deployment.
 
 The detailed policy is in [PRODUCTION-RELEASE-POLICY.md](PRODUCTION-RELEASE-POLICY.md).
 

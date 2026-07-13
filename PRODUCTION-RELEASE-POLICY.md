@@ -13,7 +13,10 @@ install dependencies from the lockfile
 run Astro diagnostics
 run unit, server, form, and build-pipeline tests
 build the production candidate
+complete design and brand continuity review when visual work is in scope
 verify the generated sitemap covers every indexable built page
+verify metadata, JSON-LD, headings, Open Graph files, and image output
+verify localized canonicals and reciprocal hreflang when the site is multilingual
 run desktop and mobile browser tests
 run Playwright WebKit with an iPhone profile
 test the built candidate in native iOS Safari through Xcode Simulator
@@ -24,6 +27,7 @@ require four scores of 100 in both strategies
 deploy the same candidate to production
 verify the canonical hostname
 verify the public sitemap and robots declaration
+verify trailing-slash, alternate-origin, and legacy redirects
 repeat live WebKit and native iOS Safari smoke tests
 ```
 
@@ -54,6 +58,28 @@ When a release adds or materially changes FAQ, AEO, or other answer-focused cont
 The built candidate must prove that question headings and complete answers are present in the initial HTML. Any FAQ structured data must parse, describe only visible content, and match the visible wording exactly. Unsupported claims, hidden answers, fabricated questions, ineligible `QAPage` markup, or schema that drifts from the page block production.
 
 Do not promise or require a particular ranking, rich result, AI citation, or answer-engine appearance. Those outcomes are not controlled by the site. The release gate evaluates content quality, technical eligibility, and measurement readiness.
+
+## Core Interface Safety and Configurable Design Review
+
+Accessibility, legibility, semantic interaction, responsive reflow, complete navigation, browser behavior, and native Safari reliability are mandatory for every release. Failures in contrast, focus, keyboard operation, text resize, 320 CSS pixel reflow, text spacing, target size, reduced motion, overlap, clipping, overflow, or essential interaction block production in every design mode.
+
+Framework-specific design conformance follows [Configurable Design-System Gate](DESIGN-GATE-POLICY.md). Each project chooses `off`, `advisory`, or `required` and selects Material Design, Apple Liquid Glass guidance, a custom design system, or a documented hybrid. The design configuration cannot disable or weaken any other release gate.
+
+Run the design gate for every release and preserve its machine-readable result. An `off` result records `skipped`. Advisory findings remain visible but do not block production. Missing, invalid, or failed design evidence blocks production only in `required` mode.
+
+When applicable design review is advisory or required, follow [DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md) and complete the [design optimization brief and acceptance record](templates/design-optimization-brief.md). Review the configured route and viewport scope, interaction states, brand continuity, and selected framework. Require human approval when `reviewerRequired` is true.
+
+Do not claim Material Design, Apple design, Liquid Glass, custom-system, or hybrid conformance unless the applicable review passes.
+
+## SEO Metadata and Localization Requirement
+
+Use [SEO-HEAD-AND-VALIDATION.md](SEO-HEAD-AND-VALIDATION.md) for the reusable Astro head component and static-output validator. Every indexable page must have one self-canonical URL, one page-specific title and description, one unique 1200 by 630 Open Graph image, valid JSON-LD when present, one `h1`, and a heading hierarchy without skipped levels.
+
+Use [ASTRO-ASSETS.md](ASTRO-ASSETS.md) for responsive image implementation and final-output tests. Informative images require useful alternative text. Every rendered raster image requires positive intrinsic dimensions. Astro constrained and full-width images require the expected responsive output.
+
+For multilingual sites, follow [INTERNATIONALIZATION-AND-HREFLANG.md](INTERNATIONALIZATION-AND-HREFLANG.md). Each localized page must canonicalize to itself and publish a complete reciprocal hreflang cluster with a matching self language and `x-default`. Every declared alternate must resolve to an indexable built page and appear in the localized sitemap.
+
+Generate social images through [OPEN-GRAPH-GENERATION.md](OPEN-GRAPH-GENERATION.md), or an equivalent deterministic process with the same output checks. Missing, shared, stale, unreadable, or incorrectly sized images block release.
 
 ## Native iOS Safari Requirement
 
@@ -181,11 +207,12 @@ After deployment:
 1. Verify the canonical hostname returns the expected status and candidate.
 2. Verify the canonical sitemap, all referenced child sitemaps, and the robots declaration.
 3. Verify redirects and representative routes.
-4. Run the complete live Playwright WebKit suite.
-5. Open the canonical hostname in native iOS Safari Simulator.
-6. Repeat mobile-menu, dropdown navigation, form or modal, and scrolling smoke tests.
-7. Confirm no horizontal overflow or blank first paint.
-8. Record production deployment and verification evidence.
+4. Run the live verifier from [REDIRECT-VERIFICATION.md](REDIRECT-VERIFICATION.md) against the trailing-slash policy, every alternate origin, and approved legacy probes.
+5. Run the complete live Playwright WebKit suite.
+6. Open the canonical hostname in native iOS Safari Simulator.
+7. Repeat mobile-menu, dropdown navigation, form or modal, and scrolling smoke tests.
+8. Confirm no horizontal overflow or blank first paint.
+9. Record production deployment and verification evidence.
 
 Production verification does not replace pre-production testing. It confirms routing, propagation, caching, and hostname behavior after promotion.
 
@@ -202,6 +229,14 @@ Stop the production release when:
 - Chromium or WebKit behavior tests fail.
 - Native iOS Safari testing is unavailable or fails.
 - Required routes, content, images, or metadata are missing.
+- The configured design mode is `required` and applicable design evidence, brand continuity review, or visual acceptance is missing or fails.
+- The configured design mode is `required` and a visual change erases recognizable brand anchors without explicit rebrand approval.
+- Mandatory interaction states, responsive reflow, resize, text spacing, or preference checks fail in any mode.
+- The configured design mode is `required` and hierarchy, density, responsive anatomy, or applicable visual review fails.
+- The configured design mode is `required` and a global bar is unclassified, misrepresents evergreen copy as an alert, or lacks required ownership and review information.
+- The configured design policy requires a reviewer and a global logo, navigation, alert, announcement, utility-bar, or sticky-header change lacks human approval of the exact rendered candidate.
+- Static-output metadata, JSON-LD, heading, image, or localization validation fails.
+- Trailing-slash, alternate-origin, or legacy redirect verification fails.
 - Horizontal overflow remains.
 - Forms or anti-spam verification fail.
 - Staging does not serve the expected candidate.
@@ -227,3 +262,5 @@ Use [templates/migration-acceptance-record.md](templates/migration-acceptance-re
 - Production deployment identifier.
 - Canonical-host verification.
 - Remaining risks.
+
+Attach the machine-readable design gate result. When design review is applicable, also attach or link the completed [design optimization brief and acceptance record](templates/design-optimization-brief.md).
