@@ -6,7 +6,7 @@ Go for Launch was started and is sponsored by [GovSoft](https://www.govsoft.com)
 
 ## What Go for Launch Covers
 
-The toolbox serves nine purposes:
+The toolbox serves ten purposes:
 
 1. **Converting existing sites to Astro.** Complete workflows for rebuilding websites in Astro without losing content, design fidelity, responsive behavior, SEO, accessibility, performance, or browser reliability. The Webflow and WordPress workflows are proven in production, and the platform-neutral framework extends to Squarespace, Wix, Drupal, static HTML, and custom content management systems as alpha guidance.
 2. **Keeping existing Astro sites current.** A maintenance process for updating Astro sites already in production to the latest compatible Astro version and dependency set, with every upgrade passing the same release gates as a new migration. See [AUTOMATION-INTEGRATION.md](AUTOMATION-INTEGRATION.md).
@@ -17,6 +17,7 @@ The toolbox serves nine purposes:
 7. **Reusable SEO implementation and validation.** Install a typed Astro SEO head, optimized image component, localized route map, deterministic Open Graph generator with hash-bound visual approval, and final-output validators for metadata, JSON-LD, headings, images, hreflang, and redirects. See [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md).
 8. **Project-controlled design-system review.** Keep framework-neutral accessibility and usability checks mandatory while allowing each project to set Material Design, Apple Liquid Glass, custom, or hybrid conformance to off, advisory, or required. See [Configurable Design-System Gate](DESIGN-GATE-POLICY.md) and [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md).
 9. **Mandatory render sharpness validation.** Detect accidental content blur, forced rasterization, persistent fractional transforms, unshipped fonts, and fractionally scaled inline SVGs in the exact production candidate. See [Render Sharpness Gate](RENDER-SHARPNESS.md).
+10. **Side-navigation reliability.** Require native link fallbacks, valid destinations, full-item browser coverage, WebKit coverage, and native iOS Safari evidence for every persistent side rail, table of contents, policy rail, and vertical tab list.
 
 ## Why This Exists
 
@@ -152,17 +153,19 @@ No single screenshot, Lighthouse result, or passing build proves migration compl
 
 Every site using Go for Launch must pass the following gate before production deployment:
 
-1. Build the production candidate.
-2. Generate the sitemap and verify it matches every indexable built page.
-3. Run the mandatory render sharpness gate and preserve its machine-readable result.
-4. Run the automated browser, WebKit, accessibility, form, and route tests against that candidate.
-5. Run the configured design-system gate and preserve its result. Only `required` design findings block production.
-6. Test the candidate in native iOS Safari through Xcode Simulator using a pinned device UDID.
-7. Deploy the same candidate to staging.
-8. Run PageSpeed Insights against staging for mobile and desktop.
-9. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
-10. Block production when any required test fails or any PageSpeed category is below 100.
-11. Verify the sitemap and canonical production hostname after deployment.
+1. Fetch the Go for Launch upstream, confirm the checkout is current, and record its commit.
+2. Build the production candidate.
+3. Generate the sitemap and verify it matches every indexable built page.
+4. Run the mandatory render sharpness gate and preserve its machine-readable result.
+5. Run the side-navigation verifier and activate every marked navigation item in browser tests.
+6. Run the automated browser, WebKit, accessibility, form, and route tests against that candidate.
+7. Run the configured design-system gate and preserve its result. Only `required` design findings block production.
+8. Test the candidate in native iOS Safari through Xcode Simulator using a pinned device UDID.
+9. Deploy the same candidate to staging.
+10. Run PageSpeed Insights against staging for mobile and desktop.
+11. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+12. Block production when any required test fails or any PageSpeed category is below 100.
+13. Verify the sitemap and canonical production hostname after deployment.
 
 The detailed policy is in [PRODUCTION-RELEASE-POLICY.md](PRODUCTION-RELEASE-POLICY.md).
 

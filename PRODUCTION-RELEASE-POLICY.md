@@ -9,6 +9,7 @@ Passing `astro build` alone is not sufficient. Chromium mobile emulation alone i
 ## Required Sequence
 
 ```text
+fetch the Go for Launch upstream and confirm the checked-out revision is current
 install dependencies from the lockfile
 run Astro diagnostics
 run unit, server, form, and build-pipeline tests
@@ -34,6 +35,12 @@ repeat live WebKit and native iOS Safari smoke tests
 ```
 
 Do not rebuild between the successful staging audit and production promotion unless the new output repeats the complete gate.
+
+## Toolkit Version Requirement
+
+Before creating a production candidate, fetch the configured Go for Launch upstream branch and compare it with the checked-out revision. Use the newest compatible upstream revision and record the repository URL, branch, and commit in the release evidence.
+
+A missing upstream, failed fetch or comparison, or checked-out revision behind upstream blocks production. A project may use a reviewed pinned toolkit revision only when the reason, reviewer, and expiration or upgrade condition are documented in the release record. Automation memory and copied checklists do not replace the current upstream files.
 
 ## Sitemap Requirement
 
@@ -72,6 +79,18 @@ Run the design gate for every release and preserve its machine-readable result. 
 When applicable design review is advisory or required, follow [DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md) and complete the [design optimization brief and acceptance record](templates/design-optimization-brief.md). Review the configured route and viewport scope, interaction states, brand continuity, and selected framework. Require human approval when `reviewerRequired` is true.
 
 Do not claim Material Design, Apple design, Liquid Glass, custom-system, or hybrid conformance unless the applicable review passes.
+
+## Side Navigation Requirement
+
+Every persistent side rail, table of contents, policy rail, vertical tab list, and in-page navigation group is release-critical navigation. Mark each region with `data-side-navigation` and each destination with `data-side-navigation-item` so the exact production build can be audited consistently.
+
+Every marked item must be a real anchor with an accessible name and a valid built route or same-page target. JavaScript may enhance scrolling, active states, panels, or transitions, but the destination must still work when client JavaScript is delayed or unavailable.
+
+Run [`scripts/verify-side-navigation.mjs`](scripts/verify-side-navigation.mjs) against the exact built candidate. The verifier must be part of the normal production build or its unskippable release verification command. Preserve its machine-readable report with the release evidence.
+
+Browser coverage must activate every item in every side-navigation region, not one representative item. Verify the destination, selected or active state, target visibility below fixed navigation, keyboard operation, touch operation, and horizontal overflow. Run the checks in desktop Chromium, mobile Chromium, Playwright WebKit, staging, and the canonical production hostname. Repeat representative interaction in native iOS Safari.
+
+A JavaScript-only item, empty destination, missing built route, missing hash target, missing controlled panel, incorrect active state, hidden target, or untested item blocks production.
 
 ## Render Sharpness Requirement
 

@@ -37,32 +37,36 @@ Every run must read these files before deciding whether a site can deploy:
 
 If this repository changes, the automation must treat the current files as authoritative instead of relying on older automation memory.
 
+Before creating any production candidate, fetch the toolkit's configured upstream branch and compare it with the checked-out revision. Continue only when the checkout is current, or when a reviewed pin with a reason and upgrade condition is documented. Record the toolkit commit in the release evidence. A missing upstream, failed comparison, or checkout behind upstream is a production blocker.
+
 ## Per-Site Build Process
 
 For each eligible Astro root:
 
-1. Read the target repository instructions and deployment docs.
-2. Establish a clean git baseline or a deliberate local snapshot commit before edits.
-3. Install with the site package manager.
-4. Run available diagnostics, type checks, lint, tests, and app-specific smoke checks.
-5. Read the project design configuration. Keep core interface safety mandatory in every mode. When `advisory` or `required` design review applies, complete the design optimization brief, inventory brand anchors, diagnose hierarchy and density, define responsive anatomy, and record baseline evidence before changing styles.
-6. Build the exact production candidate through a command that generates and validates the complete sitemap.
-7. Run the mandatory render sharpness gate against the exact build and preserve its JSON report. If explicit source auto-fix changes a file, rebuild before continuing.
-8. Compare every indexable built canonical with the generated sitemap and verify the exact sitemap URL in `robots.txt`.
-9. Validate final HTML metadata, JSON-LD, heading hierarchy, Open Graph files, image dimensions, and responsive image output.
-10. For localized sites, validate self-canonicals, reciprocal hreflang clusters, `x-default`, localized sitemap entries, and localized navigation.
-11. Always run accessibility preferences, text resize, reflow, interaction, and responsive safety checks. When design review applies, also capture and inspect the configured viewports, route families, and design-system criteria.
-12. Run Playwright WebKit with an iPhone profile when the repo has Playwright coverage or when the automation adds a temporary smoke suite.
-13. Test the built candidate in native iOS Safari using an explicit Simulator UDID.
-14. Deploy the exact candidate to staging when a staging target is documented.
-15. Verify staging serves the expected candidate, canonical metadata, sitemap, child sitemaps, and robots declaration.
-16. Run PageSpeed Insights against staging for mobile and desktop.
-17. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
-18. Run the design gate, preserve its result, and deploy production only when all core gates and every configured required gate pass and the production target is unambiguous.
-19. Verify the canonical production hostname with live HTTP checks, sitemap checks, redirect checks, WebKit smoke coverage, and native iOS Safari smoke coverage.
-20. Verify the opposite trailing-slash form, alternate origins, and approved legacy routes redirect in one permanent hop with path and query preservation.
-21. When approved Search Console access exists, verify property access, list submitted sitemaps, submit the canonical sitemap when missing, and record the resulting status.
-22. When SEO or content work is in scope, research query language from approved Search Console, Ahrefs, support, sales, or analytics evidence before adding answer-focused content.
+1. Fetch the Go for Launch upstream, confirm the checkout is current, and record its commit.
+2. Read the target repository instructions and deployment docs.
+3. Establish a clean git baseline or a deliberate local snapshot commit before edits.
+4. Install with the site package manager.
+5. Run available diagnostics, type checks, lint, tests, and app-specific smoke checks.
+6. Read the project design configuration. Keep core interface safety mandatory in every mode. When `advisory` or `required` design review applies, complete the design optimization brief, inventory brand anchors, diagnose hierarchy and density, define responsive anatomy, and record baseline evidence before changing styles.
+7. Build the exact production candidate through a command that generates and validates the complete sitemap.
+8. Run the mandatory render sharpness gate against the exact build and preserve its JSON report. If explicit source auto-fix changes a file, rebuild before continuing.
+9. Discover every persistent side rail, table of contents, policy rail, and vertical tab list. Mark each region and item, run the side-navigation verifier against the exact build, and activate every item in Chromium and WebKit tests.
+10. Compare every indexable built canonical with the generated sitemap and verify the exact sitemap URL in `robots.txt`.
+11. Validate final HTML metadata, JSON-LD, heading hierarchy, Open Graph files, image dimensions, and responsive image output.
+12. For localized sites, validate self-canonicals, reciprocal hreflang clusters, `x-default`, localized sitemap entries, and localized navigation.
+13. Always run accessibility preferences, text resize, reflow, interaction, and responsive safety checks. When design review applies, also capture and inspect the configured viewports, route families, and design-system criteria.
+14. Run Playwright WebKit with an iPhone profile when the repo has Playwright coverage or when the automation adds a temporary smoke suite.
+15. Test the built candidate in native iOS Safari using an explicit Simulator UDID, including representative side-navigation interaction.
+16. Deploy the exact candidate to staging when a staging target is documented.
+17. Verify staging serves the expected candidate, canonical metadata, sitemap, child sitemaps, robots declaration, and every side-navigation destination.
+18. Run PageSpeed Insights against staging for mobile and desktop.
+19. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+20. Run the design gate, preserve its result, and deploy production only when all core gates and every configured required gate pass and the production target is unambiguous.
+21. Verify the canonical production hostname with live HTTP checks, sitemap checks, redirect checks, complete side-navigation coverage, WebKit smoke coverage, and native iOS Safari smoke coverage.
+22. Verify the opposite trailing-slash form, alternate origins, and approved legacy routes redirect in one permanent hop with path and query preservation.
+23. When approved Search Console access exists, verify property access, list submitted sitemaps, submit the canonical sitemap when missing, and record the resulting status.
+24. When SEO or content work is in scope, research query language from approved Search Console, Ahrefs, support, sales, or analytics evidence before adding answer-focused content.
 
 If a site has only a production deploy script and no safe staging target, do not deploy production unless the repo documentation explicitly allows the production target to serve as the release gate for that site.
 

@@ -4,6 +4,8 @@ This checklist is mandatory before production. Any unchecked required item block
 
 ## Baseline
 
+- [ ] Fetch the configured Go for Launch upstream and confirm the checkout is current.
+- [ ] Record the toolkit repository, branch, and commit in release evidence.
 - [ ] Read applicable repository instructions.
 - [ ] Record the existing working tree and preserve unrelated changes.
 - [ ] Confirm the real Astro application root.
@@ -84,12 +86,16 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Closing every modal restores page scrolling.
 - [ ] Smooth scrolling respects reduced motion.
 - [ ] Forms validate and submit on desktop and mobile.
+- [ ] Every persistent side rail, table of contents, policy rail, and vertical tab list is marked with `data-side-navigation`.
+- [ ] Every side-navigation item is a real link with a valid native destination when JavaScript is unavailable.
+- [ ] Every side-navigation item is activated in browser tests, with its destination, active state, target visibility, keyboard behavior, and touch behavior verified.
 
 ## Automated Tests
 
 - [ ] Astro diagnostics pass.
 - [ ] Production build passes.
 - [ ] The mandatory render sharpness gate passes against the exact built candidate and its JSON report is preserved.
+- [ ] The side-navigation verifier passes against the exact built candidate and its JSON report is preserved.
 - [ ] Every named first-choice font is shipped or replaced with an approved system stack.
 - [ ] Inline logos and interface SVGs avoid accidental fractional view-box scaling.
 - [ ] The normal production build generates `/sitemap.xml` and runs the sitemap verifier.
@@ -162,6 +168,7 @@ Complete the remaining items in this section only when design review is applicab
 
 ## Deployment
 
+- [ ] The recorded Go for Launch revision is still current with its configured upstream, or a reviewed pin is documented.
 - [ ] The production candidate was built before staging and Simulator testing.
 - [ ] The exact tested candidate is deployed to staging.
 - [ ] Staging returns the candidate identifier expected by the release gate.

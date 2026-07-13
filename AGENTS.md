@@ -6,6 +6,7 @@
 - Record symptoms, root causes, fixes, failed experiments, tests, and acceptance evidence.
 - Never include credentials, secret values, private environment contents, or token-bearing URLs.
 - Use current compatible framework and testing versions when commands are executed. Treat versions recorded in case studies as historical evidence.
+- Before creating a production candidate, fetch the toolkit's configured upstream branch and compare it with the checked-out revision. Use the newest compatible upstream revision and record its commit in the release evidence. A missing upstream, failed comparison, or checked-out revision behind upstream blocks production unless an explicit reviewed pin is documented.
 - Do not present one PageSpeed run, one screenshot, or Chromium mobile emulation as sufficient Safari evidence.
 - Use Markdown for documentation and keep commands safe to adapt by using placeholders for site-specific identifiers.
 - Keep general guidance at the repository root and site-specific evidence under `case-studies/`.
@@ -15,6 +16,8 @@
 
 - Treat accessibility, legibility, semantic interaction, responsive reflow, browser behavior, Playwright WebKit, and native iOS Safari as mandatory release requirements for every project.
 - Run the mandatory render sharpness gate against every exact production build. Direct blur on content layers, forced font rasterization, accidental fractional transforms, unshipped first-choice fonts, and fractional inline SVG scaling block production.
+- Treat every visible side rail, table of contents, policy rail, vertical tab list, and in-page navigation group as release-critical navigation. Every item must use a real link with a valid destination, retain a native no-JavaScript fallback, and pass click, keyboard, touch, active-state, and target-visibility checks.
+- Run `scripts/verify-side-navigation.mjs` against every exact production build when the site contains side navigation. A missing destination, missing hash target, JavaScript-only item, or unmarked required side-navigation region blocks production.
 - Use `scripts/verify-render-sharpness.mjs` for the read-only build gate. Use its explicit `--fix` mode only on source, then rebuild and repeat every affected check.
 - Read `DESIGN-GATE-POLICY.md` before adding or changing a design-system requirement.
 - Design-system conformance is project controlled through `design-gate.config.mjs` with `off`, `advisory`, or `required` modes. The default is `off`.
@@ -26,6 +29,7 @@
 
 ## Mandatory Production Gate
 
+- Confirm the checked-out Go for Launch revision is current with its configured upstream before building the candidate.
 - Build the production candidate before production deployment.
 - Generate and validate the complete XML sitemap as part of the normal build command. A build without a passing sitemap check is a failed build.
 - Generate a passing machine-readable render sharpness report from the exact production build.
@@ -33,6 +37,7 @@
 - Test the built candidate in Playwright WebKit using an iPhone device profile.
 - Test the built candidate in native iOS Safari using an explicitly selected Xcode Simulator device and UDID.
 - Verify mobile navigation, dropdown destinations, forms, modals, scrolling, first paint, fixed-header spacing, image rendering, and horizontal overflow in the Simulator.
+- Verify every side-navigation item in Playwright and repeat representative side-navigation interaction in native iOS Safari. Testing only the first item is not sufficient.
 - When Open Graph, SEO, or AI discovery work is in scope, verify every indexable public page declares its own unique Open Graph image and that each declared image resolves with the exact declared dimensions.
 - Generate contact sheets for every Open Graph image, inspect them for overlap, clipping, jagged artwork, incorrect content, and unsafe cropping, then record hash-bound approval for the exact reviewed files. Missing or stale visual approval blocks release.
 - Deploy the exact built candidate to staging before production.

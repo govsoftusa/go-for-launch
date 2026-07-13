@@ -9,15 +9,17 @@
     "design:gate": "node scripts/run-design-gate.mjs --config=templates/design-gate.config.mjs",
     "open-graph:review": "node scripts/review-open-graph.mjs --config=templates/open-graph.config.mjs",
     "render:sharpness": "node scripts/verify-render-sharpness.mjs --root=dist --output=artifacts/render-sharpness-report.json",
-    "test": "astro check && node scripts/check-docs.mjs && node scripts/test-sitemap-verifier.mjs && node scripts/test-seo-verifier.mjs && node scripts/test-redirect-verifier.mjs && node scripts/test-open-graph-generator.mjs && node scripts/test-design-gate.mjs && node scripts/test-render-sharpness.mjs"
+    "side-navigation:verify": "node scripts/verify-side-navigation.mjs --root=dist --require=true --output=artifacts/side-navigation-report.json",
+    "test": "astro check && node scripts/check-docs.mjs && node scripts/test-sitemap-verifier.mjs && node scripts/test-seo-verifier.mjs && node scripts/test-redirect-verifier.mjs && node scripts/test-open-graph-generator.mjs && node scripts/test-design-gate.mjs && node scripts/test-render-sharpness.mjs && node scripts/test-side-navigation-verifier.mjs"
   },
   "dependencies": {
+    "cheerio": "^1.2.0",
     "sharp": "0.35.3"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.9",
-    "astro": "7.0.8",
-    "typescript": "6.0.3"
+    "astro": "^7.0.9",
+    "typescript": "^6.0.3"
   },
   "license": "MIT"
 }

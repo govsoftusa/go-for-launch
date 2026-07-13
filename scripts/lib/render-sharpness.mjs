@@ -28,7 +28,12 @@ function lineNumber(source, index) {
 }
 
 function normalizedFont(value) {
-  return value.trim().replace(/^['"]|['"]$/g, "").toLowerCase();
+  return value
+    .trim()
+    .replace(/\s*!important\s*$/i, "")
+    .trim()
+    .replace(/^['"]|['"]$/g, "")
+    .toLowerCase();
 }
 
 function isIntentional(selector, body, intentionalSelectors = new Set()) {
@@ -40,6 +45,10 @@ function isIntentional(selector, body, intentionalSelectors = new Set()) {
 
 function isTransient(selector) {
   return /:(active|hover|focus|focus-visible|focus-within)\b/i.test(selector);
+}
+
+function isDecorativeTransformSelector(selector) {
+  return /(?:\bsvg\b|\bicon\b|bullet|indicator|loader|pagination|progress(?:-bar|-ball)?|spinner|thumbnail|\bthumb\b|\btrack\b)/i.test(selector);
 }
 
 function unsafeTransform(value) {
@@ -108,7 +117,7 @@ export function analyzeCss(source, file = "inline.css", sharedFontFaces = new Se
       }
 
       const textShadow = body.match(/(?:^|;)\s*text-shadow\s*:\s*([^;]+)/i);
-      if (textShadow && textShadow[1].trim().toLowerCase() !== "none") {
+      if (textShadow && !/^(?:none|inherit|initial|revert|revert-layer|unset)$/i.test(textShadow[1].trim())) {
         findings.push({
           file,
           line: ruleLine,
@@ -119,7 +128,7 @@ export function analyzeCss(source, file = "inline.css", sharedFontFaces = new Se
       }
 
       const transform = body.match(/(?:^|;)\s*transform\s*:\s*([^;]+)/i);
-      if (!transient && transform && unsafeTransform(transform[1])) {
+      if (!transient && !isDecorativeTransformSelector(selector) && transform && unsafeTransform(transform[1])) {
         findings.push({
           file,
           line: ruleLine,

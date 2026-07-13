@@ -10,6 +10,8 @@ body { font-family: system-ui, sans-serif; text-rendering: auto; -webkit-font-sm
 .glass::before { backdrop-filter: blur(16px); }
 .art { --render-sharpness-intent: intentional; filter: blur(6px); }
 .button:hover { transform: scale(0.98); }
+.progress-ball { transform: translate(-50%, -50%); }
+.icon svg { transform: scale(0.8); }
 `;
 
 assert.equal(analyzeCss(cleanCss).length, 0);
@@ -45,7 +47,7 @@ writeFileSync(join(root, "index.html"), '<svg width="44" height="44" viewBox="0 
 
 const before = runSharpnessAudit(root);
 assert.equal(before.status, "failed");
-assert.ok(before.findings.length >= 8);
+assert.ok(before.findings.length >= 7);
 
 const after = runSharpnessAudit(root, { fix: true });
 const fixedCss = readFileSync(join(root, "styles", "site.css"), "utf8");
