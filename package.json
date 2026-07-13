@@ -7,6 +7,7 @@
   "type": "module",
   "scripts": {
     "design:gate": "node scripts/run-design-gate.mjs --config=templates/design-gate.config.mjs",
+    "open-graph:review": "node scripts/review-open-graph.mjs --config=templates/open-graph.config.mjs",
     "test": "astro check && node scripts/check-docs.mjs && node scripts/test-sitemap-verifier.mjs && node scripts/test-seo-verifier.mjs && node scripts/test-redirect-verifier.mjs && node scripts/test-open-graph-generator.mjs && node scripts/test-design-gate.mjs"
   },
   "dependencies": {

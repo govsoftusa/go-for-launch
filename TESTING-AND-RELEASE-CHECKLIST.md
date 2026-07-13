@@ -97,6 +97,9 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Playwright WebKit tests pass using `tap()` for touch flows.
 - [ ] Route matrix has no missing pages or required assets.
 - [ ] Static-output SEO validator passes for titles, descriptions, canonicals, Open Graph, JSON-LD, and headings.
+- [ ] Open Graph contact sheets include every indexable page and were reviewed at full size.
+- [ ] Open Graph cards have no overlapping or clipped text, jagged or upscaled artwork, unintended transparency, incorrect page content, or unsafe crop placement.
+- [ ] The hash-bound Open Graph approval manifest matches the exact generated images in the candidate.
 - [ ] Every indexable page has exactly one `h1`, and heading levels do not jump.
 - [ ] Image output validator passes for alternative text, intrinsic dimensions, responsive `srcset`, `sizes`, and picture fallbacks.
 - [ ] Localized sites have complete reciprocal hreflang clusters, localized self-canonicals, and `x-default`.
@@ -136,6 +139,7 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Open Graph previews use the correct per-page content and image.
 - [ ] Every indexable public page declares its own unique Open Graph image. No shared fallback image across pages.
 - [ ] Each declared Open Graph image returns HTTP 200, a raster content type, and the exact declared dimensions.
+- [ ] Representative cards render correctly in a real messaging or social preview, including the application-provided title and description outside the image.
 - [ ] Structured data parses and matches visible content.
 - [ ] Every JSON-LD root has `@context` and `@type`, or a typed `@graph`.
 - [ ] Answer-focused pages use complete natural-language question headings and immediate, self-contained answers.

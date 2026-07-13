@@ -6,7 +6,8 @@ import { spawnSync } from "node:child_process";
 import { log } from "node:console";
 import process from "node:process";
 
-const script = new URL("./generate-open-graph.mjs", import.meta.url);
+const generateScript = new URL("./generate-open-graph.mjs", import.meta.url);
+const reviewScript = new URL("./review-open-graph.mjs", import.meta.url);
 const root = await mkdtemp(join(tmpdir(), "go-for-launch-og-"));
 const config = join(root, "open-graph.config.mjs");
 await writeFile(config, `export default ${JSON.stringify({
@@ -21,7 +22,11 @@ await writeFile(config, `export default ${JSON.stringify({
 })};\n`);
 
 function run(extra = []) {
-  return spawnSync(process.execPath, [script.pathname, `--config=${config}`, ...extra], { encoding: "utf8" });
+  return spawnSync(process.execPath, [generateScript.pathname, `--config=${config}`, ...extra], { encoding: "utf8" });
+}
+
+function review(extra = []) {
+  return spawnSync(process.execPath, [reviewScript.pathname, `--config=${config}`, ...extra], { encoding: "utf8" });
 }
 
 const first = run();
@@ -35,9 +40,36 @@ if (firstHash !== secondHash) throw new Error("Open Graph output was not byte-fo
 
 const check = run(["--check"]);
 if (check.status !== 0) throw new Error(`Open Graph check failed:\n${check.stdout}${check.stderr}`);
+
+const reviewSheets = review();
+if (reviewSheets.status !== 0) throw new Error(`Open Graph review sheet generation failed:\n${reviewSheets.stdout}${reviewSheets.stderr}`);
+const unapproved = review(["--check"]);
+if (unapproved.status === 0 || !unapproved.stderr.includes("missing or stale")) {
+  throw new Error("Unapproved Open Graph images did not fail visual review.");
+}
+const approval = review(["--approve"]);
+if (approval.status !== 0) throw new Error(`Open Graph visual approval failed:\n${approval.stdout}${approval.stderr}`);
+const approved = review(["--check"]);
+if (approved.status !== 0) throw new Error(`Approved Open Graph images did not pass review:\n${approved.stdout}${approved.stderr}`);
+
 await writeFile(output, "stale");
 const stale = run(["--check"]);
 if (stale.status === 0 || !stale.stderr.includes("missing or stale")) throw new Error("Stale Open Graph fixture did not fail correctly.");
 
+await writeFile(config, `export default ${JSON.stringify({
+  outputDirectory: "public",
+  width: 1200,
+  height: 630,
+  eyebrow: "TEST TOOLKIT",
+  tagline: "Build. Test. Release.",
+  domain: "www.example.com",
+  mark: "GFL",
+  cards: [{ name: "unsafe", lineOne: "This title is intentionally much too long for the configured safe text region", lineTwo: "Review required." }]
+})};\n`);
+const unsafe = run();
+if (unsafe.status === 0 || !unsafe.stderr.includes("safe text region")) {
+  throw new Error("Unsafe Open Graph text geometry did not fail generation.");
+}
+
 await rm(root, { recursive: true, force: true });
-log("Deterministic Open Graph generation and stale-file tests passed.");
+log("Deterministic Open Graph generation, safe geometry, and visual approval tests passed.");

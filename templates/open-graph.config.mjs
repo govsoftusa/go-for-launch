@@ -1,5 +1,7 @@
 export default {
   outputDirectory: "public",
+  reviewDirectory: "output/open-graph-review",
+  approvalFile: "open-graph-approvals.json",
   width: 1200,
   height: 630,
   eyebrow: "INDEPENDENT ASTRO WEBSITE TOOLKIT",

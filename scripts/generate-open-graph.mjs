@@ -16,6 +16,17 @@ function escapeXml(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&apos;");
 }
 
+function estimatedWidth(value, fontSize) {
+  return [...String(value)].reduce((width, character) => {
+    if (character === " ") return width + fontSize * 0.3;
+    if (/[MW@%&]/.test(character)) return width + fontSize * 0.88;
+    if (/[A-Z0-9]/.test(character)) return width + fontSize * 0.66;
+    if (/[mw]/.test(character)) return width + fontSize * 0.78;
+    if (/[iltfjr]/.test(character)) return width + fontSize * 0.34;
+    return width + fontSize * 0.55;
+  }, 0);
+}
+
 const configPath = resolve(option("--config", "open-graph.config.mjs"));
 const config = (await import(`${pathToFileURL(configPath).href}?v=${Date.now()}`)).default;
 const root = dirname(configPath);
@@ -42,6 +53,9 @@ for (const card of config.cards || []) {
     continue;
   }
   names.add(name);
+  if (estimatedWidth(card.lineOne, 76) > 620) failures.push(`${name}: lineOne exceeds the safe text region`);
+  if (estimatedWidth(card.lineTwo, 74) > 620) failures.push(`${name}: lineTwo exceeds the safe text region`);
+  if (estimatedWidth(config.tagline, 24) > 620) failures.push(`${name}: tagline exceeds the safe text region`);
 
   const artwork = `
   <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
@@ -54,11 +68,11 @@ for (const card of config.cards || []) {
     <circle cx="960" cy="315" r="205" fill="none" stroke="#ffffff" stroke-opacity=".18"/>
     <ellipse cx="960" cy="315" rx="278" ry="116" fill="none" stroke="${escapeXml(config.colors?.accent || "#d6ff70")}" stroke-opacity=".42" stroke-width="2" transform="rotate(-14 960 315)"/>
     <circle cx="960" cy="315" r="124" fill="url(#planet)"/>
-    <text x="960" y="337" text-anchor="middle" fill="#07110f" font-family="Arial, sans-serif" font-size="62" font-weight="900" letter-spacing="-5">${escapeXml(config.mark || "GFL")}</text>
+    <text x="960" y="337" text-anchor="middle" fill="#07110f" font-family="Arial, sans-serif" font-size="62" font-weight="900">${escapeXml(config.mark || "GFL")}</text>
     <rect x="72" y="70" width="44" height="4" fill="${escapeXml(config.colors?.accent || "#d6ff70")}"/>
     <text x="130" y="82" fill="#dfe8e3" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="2">${escapeXml(config.eyebrow)}</text>
-    <text x="72" y="246" fill="#ffffff" font-family="Arial, sans-serif" font-size="76" font-weight="800" letter-spacing="-5">${escapeXml(card.lineOne)}</text>
-    <text x="72" y="332" fill="${escapeXml(config.colors?.accent || "#d6ff70")}" font-family="Georgia, serif" font-size="74" font-style="italic" letter-spacing="-4">${escapeXml(card.lineTwo)}</text>
+    <text x="72" y="246" fill="#ffffff" font-family="Arial, sans-serif" font-size="76" font-weight="800">${escapeXml(card.lineOne)}</text>
+    <text x="72" y="332" fill="${escapeXml(config.colors?.accent || "#d6ff70")}" font-family="Georgia, serif" font-size="74" font-style="italic">${escapeXml(card.lineTwo)}</text>
     <text x="72" y="420" fill="#aebbb5" font-family="Arial, sans-serif" font-size="24">${escapeXml(config.tagline)}</text>
     <text x="72" y="548" fill="#ffffff" font-family="Arial, sans-serif" font-size="23" font-weight="700">${escapeXml(config.domain)}</text>
   </svg>`;

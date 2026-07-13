@@ -16,6 +16,7 @@ build the production candidate
 complete design and brand continuity review when visual work is in scope
 verify the generated sitemap covers every indexable built page
 verify metadata, JSON-LD, headings, Open Graph files, and image output
+inspect complete Open Graph contact sheets and approve the exact image hashes
 verify localized canonicals and reciprocal hreflang when the site is multilingual
 run desktop and mobile browser tests
 run Playwright WebKit with an iPhone profile
@@ -79,7 +80,7 @@ Use [ASTRO-ASSETS.md](ASTRO-ASSETS.md) for responsive image implementation and f
 
 For multilingual sites, follow [INTERNATIONALIZATION-AND-HREFLANG.md](INTERNATIONALIZATION-AND-HREFLANG.md). Each localized page must canonicalize to itself and publish a complete reciprocal hreflang cluster with a matching self language and `x-default`. Every declared alternate must resolve to an indexable built page and appear in the localized sitemap.
 
-Generate social images through [OPEN-GRAPH-GENERATION.md](OPEN-GRAPH-GENERATION.md), or an equivalent deterministic process with the same output checks. Missing, shared, stale, unreadable, or incorrectly sized images block release.
+Generate social images through [OPEN-GRAPH-GENERATION.md](OPEN-GRAPH-GENERATION.md), or an equivalent deterministic process with the same output checks. Generate complete contact sheets, inspect every image at full size, and record hash-bound approval for the exact files. Missing, shared, stale, unreadable, incorrectly sized, overlapping, clipped, visibly jagged, incorrectly cropped, or unapproved images block release.
 
 ## Native iOS Safari Requirement
 

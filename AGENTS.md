@@ -31,6 +31,7 @@
 - Test the built candidate in native iOS Safari using an explicitly selected Xcode Simulator device and UDID.
 - Verify mobile navigation, dropdown destinations, forms, modals, scrolling, first paint, fixed-header spacing, image rendering, and horizontal overflow in the Simulator.
 - When Open Graph, SEO, or AI discovery work is in scope, verify every indexable public page declares its own unique Open Graph image and that each declared image resolves with the exact declared dimensions.
+- Generate contact sheets for every Open Graph image, inspect them for overlap, clipping, jagged artwork, incorrect content, and unsafe cropping, then record hash-bound approval for the exact reviewed files. Missing or stale visual approval blocks release.
 - Deploy the exact built candidate to staging before production.
 - Run PageSpeed Insights against the staged candidate for both mobile and desktop.
 - Require a score of 100 for Performance, Accessibility, Best Practices, and SEO on both mobile and desktop.
