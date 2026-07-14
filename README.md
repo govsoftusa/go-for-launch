@@ -6,7 +6,7 @@ Go for Launch was started and is sponsored by [GovSoft](https://www.govsoft.com)
 
 ## What Go for Launch Covers
 
-The toolbox serves ten purposes:
+The toolbox serves eleven purposes:
 
 1. **Converting existing sites to Astro.** Complete workflows for rebuilding websites in Astro without losing content, design fidelity, responsive behavior, SEO, accessibility, performance, or browser reliability. The Webflow and WordPress workflows are proven in production, and the platform-neutral framework extends to Squarespace, Wix, Drupal, static HTML, and custom content management systems as alpha guidance.
 2. **Keeping existing Astro sites current.** A maintenance process for updating Astro sites already in production to the latest compatible Astro version and dependency set, with every upgrade passing the same release gates as a new migration. See [AUTOMATION-INTEGRATION.md](AUTOMATION-INTEGRATION.md).
@@ -18,6 +18,7 @@ The toolbox serves ten purposes:
 8. **Project-controlled design-system review.** Keep framework-neutral accessibility and usability checks mandatory while allowing each project to set Material Design, Apple Liquid Glass, custom, or hybrid conformance to off, advisory, or required. See [Configurable Design-System Gate](DESIGN-GATE-POLICY.md) and [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md).
 9. **Mandatory render sharpness validation.** Detect accidental content blur, forced rasterization, persistent fractional transforms, unshipped fonts, and fractionally scaled inline SVGs in the exact production candidate. See [Render Sharpness Gate](RENDER-SHARPNESS.md).
 10. **Side-navigation reliability.** Require native link fallbacks, valid destinations, full-item browser coverage, WebKit coverage, and native iOS Safari evidence for every persistent side rail, table of contents, policy rail, and vertical tab list.
+11. **Ahrefs-style final-output health auditing.** Fail builds on oversized referenced images, weak or duplicate metadata, redirecting internal links, missing targets, orphaned canonical pages, and invalid crawler declarations. See [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md).
 
 ## Why This Exists
 
@@ -54,8 +55,9 @@ This repository documents the process used to close those gaps while replacing l
 16. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
 17. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
 18. [Render Sharpness Gate](RENDER-SHARPNESS.md)
-19. [Contributing Guide](CONTRIBUTING.md)
-20. [Roadmap](ROADMAP.md)
+19. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
+20. [Contributing Guide](CONTRIBUTING.md)
+21. [Roadmap](ROADMAP.md)
 
 ## Repository Structure
 
@@ -80,12 +82,14 @@ This repository documents the process used to close those gaps while replacing l
 ├── DESIGN-GATE-POLICY.md
 ├── DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md
 ├── RENDER-SHARPNESS.md
+├── SITE-HEALTH-AUDIT.md
 ├── CONTRIBUTING.md
 ├── SECURITY.md
 ├── scripts/
 │   ├── verify-sitemap.mjs
 │   ├── verify-seo.mjs
 │   ├── verify-images.mjs
+│   ├── verify-site-health.mjs
 │   ├── verify-redirects.mjs
 │   ├── generate-open-graph.mjs
 │   ├── verify-render-sharpness.mjs
@@ -93,6 +97,7 @@ This repository documents the process used to close those gaps while replacing l
 ├── case-studies/
 │   ├── webflow-astro-ios-safari.md
 │   ├── wordpress-astro-safari-seo-performance.md
+│   ├── ahrefs-astro-site-health.md
 │   ├── go4launch-safari-filtered-header-menu.md
 │   └── ohdt-header-announcement-hierarchy.md
 └── templates/
@@ -101,6 +106,7 @@ This repository documents the process used to close those gaps while replacing l
     ├── astro-i18n/localized-seo.ts
     ├── open-graph.config.mjs
     ├── redirects.config.mjs
+    ├── site-health.config.mjs
     ├── design-gate.config.mjs
     ├── design-review-record.json
     ├── route-and-content-inventory.md
@@ -127,9 +133,10 @@ This repository documents the process used to close those gaps while replacing l
 14. Test WebKit and native iOS Safari, not only Chromium at a narrow viewport.
 15. Require text, logos, and interface icons to pass the render sharpness gate.
 16. Promote the exact candidate that passed staging checks.
-17. Verify the canonical public hostname after deployment.
-18. Record intentional differences so accessibility and performance improvements are not mistaken for missing parity.
-19. Turn every discovered migration defect into a reusable test or checklist item.
+17. Audit final HTML and CSS references for image weight, direct canonical links, internal discoverability, metadata quality, and crawler declarations.
+18. Verify the canonical public hostname after deployment.
+19. Record intentional differences so accessibility and performance improvements are not mistaken for missing parity.
+20. Turn every discovered migration defect into a reusable test or checklist item.
 
 ## Evidence Model
 
@@ -156,16 +163,17 @@ Every site using Go for Launch must pass the following gate before production de
 1. Fetch the Go for Launch upstream, confirm the checkout is current, and record its commit.
 2. Build the production candidate.
 3. Generate the sitemap and verify it matches every indexable built page.
-4. Run the mandatory render sharpness gate and preserve its machine-readable result.
-5. Run the side-navigation verifier and activate every marked navigation item in browser tests.
-6. Run the automated browser, WebKit, accessibility, form, and route tests against that candidate.
-7. Run the configured design-system gate and preserve its result. Only `required` design findings block production.
-8. Test the candidate in native iOS Safari through Xcode Simulator using a pinned device UDID.
-9. Deploy the same candidate to staging.
-10. Run PageSpeed Insights against staging for mobile and desktop.
-11. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
-12. Block production when any required test fails or any PageSpeed category is below 100.
-13. Verify the sitemap and canonical production hostname after deployment.
+4. Run the Ahrefs-style site-health audit against final HTML, CSS, images, links, metadata, redirects, and crawler files.
+5. Run the mandatory render sharpness gate and preserve its machine-readable result.
+6. Run the side-navigation verifier and activate every marked navigation item in browser tests.
+7. Run the automated browser, WebKit, accessibility, form, and route tests against that candidate.
+8. Run the configured design-system gate and preserve its result. Only `required` design findings block production.
+9. Test the candidate in native iOS Safari through Xcode Simulator using a pinned device UDID.
+10. Deploy the same candidate to staging.
+11. Run PageSpeed Insights against staging for mobile and desktop.
+12. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+13. Block production when any required test fails or any PageSpeed category is below 100.
+14. Verify the sitemap, crawler files, and canonical production hostname after deployment.
 
 The detailed policy is in [PRODUCTION-RELEASE-POLICY.md](PRODUCTION-RELEASE-POLICY.md).
 

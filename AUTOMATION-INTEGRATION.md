@@ -54,19 +54,20 @@ For each eligible Astro root:
 9. Discover every persistent side rail, table of contents, policy rail, and vertical tab list. Mark each region and item, run the side-navigation verifier against the exact build, and activate every item in Chromium and WebKit tests.
 10. Compare every indexable built canonical with the generated sitemap and verify the exact sitemap URL in `robots.txt`.
 11. Validate final HTML metadata, JSON-LD, heading hierarchy, Open Graph files, image dimensions, and responsive image output.
-12. For localized sites, validate self-canonicals, reciprocal hreflang clusters, `x-default`, localized sitemap entries, and localized navigation.
-13. Always run accessibility preferences, text resize, reflow, interaction, and responsive safety checks. When design review applies, also capture and inspect the configured viewports, route families, and design-system criteria.
-14. Run Playwright WebKit with an iPhone profile when the repo has Playwright coverage or when the automation adds a temporary smoke suite.
-15. Test the built candidate in native iOS Safari using an explicit Simulator UDID, including representative side-navigation interaction.
-16. Deploy the exact candidate to staging when a staging target is documented.
-17. Verify staging serves the expected candidate, canonical metadata, sitemap, child sitemaps, robots declaration, and every side-navigation destination.
-18. Run PageSpeed Insights against staging for mobile and desktop.
-19. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
-20. Run the design gate, preserve its result, and deploy production only when all core gates and every configured required gate pass and the production target is unambiguous.
-21. Verify the canonical production hostname with live HTTP checks, sitemap checks, redirect checks, complete side-navigation coverage, WebKit smoke coverage, and native iOS Safari smoke coverage.
-22. Verify the opposite trailing-slash form, alternate origins, and approved legacy routes redirect in one permanent hop with path and query preservation.
-23. When approved Search Console access exists, verify property access, list submitted sitemaps, submit the canonical sitemap when missing, and record the resulting status.
-24. When SEO or content work is in scope, research query language from approved Search Console, Ahrefs, support, sales, or analytics evidence before adding answer-focused content.
+12. Run the Ahrefs-style site-health audit against final HTML, CSS, referenced image weight, internal links, redirect targets, orphaned canonical pages, metadata limits, and `robots.txt`. Preserve its JSON report.
+13. For localized sites, validate self-canonicals, reciprocal hreflang clusters, `x-default`, localized sitemap entries, and localized navigation.
+14. Always run accessibility preferences, text resize, reflow, interaction, and responsive safety checks. When design review applies, also capture and inspect the configured viewports, route families, and design-system criteria.
+15. Run Playwright WebKit with an iPhone profile when the repo has Playwright coverage or when the automation adds a temporary smoke suite.
+16. Test the built candidate in native iOS Safari using an explicit Simulator UDID, including representative side-navigation interaction.
+17. Deploy the exact candidate to staging when a staging target is documented.
+18. Verify staging serves the expected candidate, canonical metadata, sitemap, child sitemaps, robots declaration, and every side-navigation destination.
+19. Run PageSpeed Insights against staging for mobile and desktop.
+20. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+21. Run the design gate, preserve its result, and deploy production only when all core gates and every configured required gate pass and the production target is unambiguous.
+22. Verify the canonical production hostname with live HTTP checks, sitemap checks, redirect checks, complete side-navigation coverage, WebKit smoke coverage, and native iOS Safari smoke coverage.
+23. Verify the opposite trailing-slash form, alternate origins, and approved legacy routes redirect in one permanent hop with path and query preservation.
+24. When approved Search Console access exists, verify property access, list submitted sitemaps, submit the canonical sitemap when missing, and record the resulting status.
+25. When SEO or content work is in scope, research query language from approved Search Console, Ahrefs, support, sales, or analytics evidence before adding answer-focused content.
 
 If a site has only a production deploy script and no safe staging target, do not deploy production unless the repo documentation explicitly allows the production target to serve as the release gate for that site.
 

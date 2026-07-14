@@ -59,6 +59,24 @@
 - Astro image output and intrinsic dimensions:
 - Forms and anti-spam:
 
+## Site Health Audit
+
+- Gate result:
+- Machine-readable report:
+- Indexable page count:
+- Referenced local image count:
+- Maximum image byte budget:
+- Title and description limits:
+- Redirecting internal links:
+- Missing internal targets:
+- Orphaned canonical pages:
+- Built robots declaration:
+- Staging robots HTTP result:
+- Production robots HTTP result:
+- External crawl provider and date:
+- External crawl candidate identifier:
+- Approved exceptions:
+
 ## Render Sharpness
 
 - Gate result:
@@ -143,5 +161,6 @@
 - All required iOS Simulator checks passed:
 - All eight PageSpeed category checks equal 100:
 - Sitemap build verification passed:
+- Site health audit passed:
 - Render sharpness gate passed:
 - Search Console status recorded when access exists:

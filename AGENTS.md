@@ -34,6 +34,8 @@
 - Generate and validate the complete XML sitemap as part of the normal build command. A build without a passing sitemap check is a failed build.
 - Generate a passing machine-readable render sharpness report from the exact production build.
 - Compare every indexable built page canonical with the sitemap and verify the exact sitemap URL in `robots.txt`.
+- Run `scripts/verify-site-health.mjs` against the exact production build. Block release on oversized referenced images, missing built image assets, metadata outside configured limits, duplicate metadata, redirecting internal links, links to missing pages, orphaned indexable pages, or invalid crawler declarations.
+- Preserve the machine-readable site-health report with the release evidence. Re-run it after any image optimization, HTML transformation, CSS transformation, redirect change, or metadata change.
 - Test the built candidate in Playwright WebKit using an iPhone device profile.
 - Test the built candidate in native iOS Safari using an explicitly selected Xcode Simulator device and UDID.
 - Verify mobile navigation, dropdown destinations, forms, modals, scrolling, first paint, fixed-header spacing, image rendering, and horizontal overflow in the Simulator.

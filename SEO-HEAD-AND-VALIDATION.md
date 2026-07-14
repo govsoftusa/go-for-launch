@@ -80,12 +80,14 @@ Run it after the Astro build and Open Graph generation:
 ```json
 {
   "scripts": {
-    "build": "node scripts/generate-open-graph.mjs --config=open-graph.config.mjs && astro build && node scripts/prepare-sitemap.mjs && node scripts/verify-sitemap.mjs --dir=dist --site=https://www.example.com --sitemap=sitemap.xml && node scripts/verify-seo.mjs --dir=dist --site=https://www.example.com --trailing-slash=always"
+    "build": "node scripts/generate-open-graph.mjs --config=open-graph.config.mjs && astro build && node scripts/prepare-sitemap.mjs && node scripts/verify-sitemap.mjs --dir=dist --site=https://www.example.com --sitemap=sitemap.xml && node scripts/verify-seo.mjs --dir=dist --site=https://www.example.com --trailing-slash=always && node scripts/verify-site-health.mjs --config=site-health.config.mjs"
   }
 }
 ```
 
 For a fully localized build, add `--require-hreflang=true`. A failure blocks staging and production.
+
+The SEO verifier checks metadata structure and semantic contracts. The separate [site-health audit](SITE-HEALTH-AUDIT.md) checks crawler-facing quality across the whole final build, including length budgets, uniqueness, internal link redirects, missing targets, orphaned pages, referenced image weight, and `robots.txt`.
 
 ## Official References
 

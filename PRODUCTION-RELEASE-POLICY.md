@@ -18,6 +18,7 @@ complete design and brand continuity review when visual work is in scope
 verify rendered text, logos, and interface icons pass the render sharpness gate
 verify the generated sitemap covers every indexable built page
 verify metadata, JSON-LD, headings, Open Graph files, and image output
+run the site-health audit against final HTML, CSS, images, internal links, redirects, metadata, and robots.txt
 inspect complete Open Graph contact sheets and approve the exact image hashes
 verify localized canonicals and reciprocal hreflang when the site is multilingual
 run desktop and mobile browser tests
@@ -59,6 +60,16 @@ The sitemap validator must compare the final built HTML with the generated XML a
 Use [SITEMAPS-AND-SEARCH-CONSOLE.md](SITEMAPS-AND-SEARCH-CONSOLE.md) and the reusable [`scripts/verify-sitemap.mjs`](scripts/verify-sitemap.mjs) validator. After staging and production deployment, verify `/sitemap.xml`, every referenced child sitemap, and `/robots.txt` over public HTTP.
 
 When approved Google Search Console access exists, list the accessible properties and record the permission level. Ownership verification must be complete before sitemap submission. Then list submitted sitemaps and submit the exact canonical `/sitemap.xml` URL when it is missing and write permission is available. Missing access, an unverified property, or a rejected submission must be recorded as a blocker or manual handoff, not a silent pass.
+
+## Site Health Audit Requirement
+
+Run [SITE-HEALTH-AUDIT.md](SITE-HEALTH-AUDIT.md) against the exact final output before staging. The normal production build or an unskippable release command must invoke [`scripts/verify-site-health.mjs`](scripts/verify-site-health.mjs) with the project's reviewed configuration.
+
+The audit must inspect image references in final HTML and CSS, not only files under a source asset directory. It must fail on oversized referenced local images, missing built image assets, metadata outside configured limits, duplicate metadata, internal links that require redirects, links to missing pages, orphaned indexable pages, or an invalid built `robots.txt` declaration. Preserve its JSON report with release evidence.
+
+Keep original migration assets immutable. Optimization must produce derived assets or final build output without changing visible geometry. Rebuild and repeat screenshot, render-sharpness, Open Graph, and site-health checks after any asset transformation.
+
+After staging and production deployment, request `robots.txt`, the canonical sitemap, and representative image assets over public HTTPS. A local artifact cannot prove that routing, Cloudflare configuration, or cache state serves those files correctly. When approved Ahrefs or equivalent crawler access exists, run a fresh crawl and record its date and candidate identifier. Do not treat a stale crawler email as proof of the current deployment.
 
 ## Answer-Focused Content Requirement
 
@@ -266,6 +277,7 @@ Stop the production release when:
 - The configured design mode is `required` and a global bar is unclassified, misrepresents evergreen copy as an alert, or lacks required ownership and review information.
 - The configured design policy requires a reviewer and a global logo, navigation, alert, announcement, utility-bar, or sticky-header change lacks human approval of the exact rendered candidate.
 - Static-output metadata, JSON-LD, heading, image, or localization validation fails.
+- The machine-readable site-health report is missing or reports oversized referenced images, metadata defects, redirecting internal links, missing targets, orphaned canonical pages, or invalid crawler declarations.
 - Trailing-slash, alternate-origin, or legacy redirect verification fails.
 - Horizontal overflow remains.
 - Forms or anti-spam verification fail.
@@ -285,6 +297,7 @@ Use [templates/migration-acceptance-record.md](templates/migration-acceptance-re
 - Build result.
 - Render sharpness status, report path, reviewed viewports, and intentional exceptions.
 - Sitemap URL, indexable page count, sitemap URL count, and validation result.
+- Site-health report path, thresholds, page count, image-reference count, and result.
 - Search Console property, permission, verification, and sitemap submission status when access exists.
 - Automated test results.
 - Simulator environment and results.

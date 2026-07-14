@@ -56,6 +56,10 @@ node scripts/verify-images.mjs --dir=dist
 
 The verifier fails when an image lacks `alt`, positive intrinsic dimensions, or required `srcset` and `sizes` attributes for Astro constrained and full-width responsive layouts. It also requires every `picture` to contain source elements and exactly one fallback image.
 
+Run the [Ahrefs-style site-health audit](SITE-HEALTH-AUDIT.md) after all final HTML and CSS transformations. It discovers referenced local images in markup, `srcset`, inline styles, built stylesheets, and social metadata, then enforces the project's byte budget. Checking only source image folders misses large CSS backgrounds and cannot prove which assets the production candidate actually uses.
+
+Keep original migration assets immutable. Generate optimized derivatives, preserve aspect ratios and SVG view boxes, then repeat screenshot, render-sharpness, and Open Graph review after optimization.
+
 The test inspects final HTML because a correct source component can still produce unexpected output after configuration, content, or dependency changes. Keep browser checks for decoding errors, aspect ratio, first paint, responsive selection, and horizontal overflow.
 
 ## Astro Configuration

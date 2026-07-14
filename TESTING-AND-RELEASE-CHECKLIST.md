@@ -108,6 +108,12 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Playwright WebKit tests pass using `tap()` for touch flows.
 - [ ] Route matrix has no missing pages or required assets.
 - [ ] Static-output SEO validator passes for titles, descriptions, canonicals, Open Graph, JSON-LD, and headings.
+- [ ] Site-health audit passes against final HTML, CSS, images, metadata, internal links, redirects, and `robots.txt`.
+- [ ] Every referenced local image is present and within the reviewed byte budget.
+- [ ] Internal links point directly to built canonical routes without a redirect hop.
+- [ ] Every indexable page has an incoming internal link, or a documented approved exception.
+- [ ] Titles and descriptions are unique and within the configured length limits.
+- [ ] The machine-readable site-health report is preserved with release evidence.
 - [ ] Open Graph contact sheets include every indexable page and were reviewed at full size.
 - [ ] Open Graph cards have no overlapping or clipped text, jagged or upscaled artwork, unintended transparency, incorrect page content, or unsafe crop placement.
 - [ ] The hash-bound Open Graph approval manifest matches the exact generated images in the candidate.
@@ -178,6 +184,8 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Production deployment completes successfully.
 - [ ] The canonical public hostname serves the new candidate.
 - [ ] The production `/sitemap.xml`, child sitemaps, and robots declaration pass public HTTP checks.
+- [ ] Public `robots.txt` returns HTTP 200 and advertises the exact canonical sitemap URL.
+- [ ] A fresh approved external crawl was run after deployment, or the access blocker and required follow-up were recorded.
 - [ ] Apex and alternate-host redirects behave correctly.
 - [ ] Opposite trailing-slash forms return one HTTP 301 or 308 to the exact canonical URL.
 - [ ] Redirect probes preserve paths and query strings unless an approved map intentionally changes the path.
