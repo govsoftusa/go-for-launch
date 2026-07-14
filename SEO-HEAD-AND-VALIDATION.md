@@ -89,6 +89,8 @@ For a fully localized build, add `--require-hreflang=true`. A failure blocks sta
 
 The SEO verifier checks metadata structure and semantic contracts. The separate [site-health audit](SITE-HEALTH-AUDIT.md) checks crawler-facing quality across the whole final build, including length budgets, uniqueness, internal link redirects, missing targets, orphaned pages, referenced image weight, and `robots.txt`.
 
+The [semantic SEO and citation gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md) adds the editorial layer that metadata structure cannot prove. It checks title alignment with visible content, route-specific purpose terms, reviewed content depth, citation URL availability, and citation evidence drift.
+
 ## Official References
 
 - [Astro configuration overview](https://docs.astro.build/en/guides/configuring-astro/)

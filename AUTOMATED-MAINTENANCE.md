@@ -104,9 +104,9 @@ Read every applicable AGENTS.md file and the Go for Launch production policy bef
 
 Check current compatible releases for Astro, its integrations, adapter, build tooling, TypeScript, test tooling, and deployment tooling. Never force an incompatible dependency tree. Make only targeted maintenance changes that are justified by current release information or a failing check.
 
-Run install, Astro diagnostics, project tests, production build, Chromium, and Playwright WebKit with an iPhone profile. The normal build command must generate the XML sitemap, compare every indexable built canonical with the sitemap, and verify the exact sitemap URL in robots.txt. A missing or incomplete sitemap fails the build. Test the built candidate in native iOS Safari with one recorded Simulator UDID when the environment is available. If native Safari is required but unavailable, stop before production.
+Run install, Astro diagnostics, project tests, production build, Chromium, and Playwright WebKit with an iPhone profile. The normal build command must generate the XML sitemap, compare every indexable built canonical with the sitemap, verify the exact sitemap URL in robots.txt, and run the semantic SEO gate with reviewed title, page-intent, content-depth, and citation rules. A missing or incomplete sitemap or semantic SEO report fails the build. Test the built candidate in native iOS Safari with one recorded Simulator UDID when the environment is available. If native Safari is required but unavailable, stop before production.
 
-Deploy the exact built candidate to the documented staging target. Confirm staging serves that candidate. Run PageSpeed Insights for mobile and desktop and require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+Deploy the exact built candidate to the documented staging target. Confirm staging serves that candidate. Validate required citation URLs from the release environment. Run Ahrefs Site Audit when approved API v3 access exists, and record pass, fail, or an allowed skipped state. Run PageSpeed Insights for mobile and desktop and require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
 
 Deploy the same candidate to production only when every required gate passes. Verify the canonical hostname, redirects, representative routes, sitemap, child sitemaps, robots file, Open Graph images, WebKit behavior, and a native Safari smoke test after production. When approved Google Search Console access exists, verify the property and permission, list submitted sitemaps, submit the exact canonical sitemap when missing, and record the status. Sitemap submission must not be treated as property ownership verification.
 
@@ -125,6 +125,8 @@ Stop before production when any of these is true:
 - The compatible dependency set cannot be resolved.
 - Diagnostics, tests, build, WebKit, or native Safari checks fail.
 - The build omits sitemap verification, the sitemap is incomplete, or the robots declaration is wrong.
+- The build omits semantic SEO verification, lacks reviewed page-intent coverage, or reports a citation evidence failure.
+- Ahrefs access is required by project policy but unavailable, or the current audit reports a blocking issue.
 - Staging does not serve the expected candidate.
 - Any required PageSpeed score is below 100.
 - A secret would need to be printed, committed, or copied into the prompt.

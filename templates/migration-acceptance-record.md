@@ -162,5 +162,8 @@
 - All eight PageSpeed category checks equal 100:
 - Sitemap build verification passed:
 - Site health audit passed:
+- Semantic SEO audit passed:
+- Citation URL and evidence review passed:
+- Ahrefs Site Audit status, pass, fail, optional skipped, or required blocked:
 - Render sharpness gate passed:
 - Search Console status recorded when access exists:

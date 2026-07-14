@@ -4,6 +4,8 @@ Search crawlers often report problems that are not visible in a homepage screens
 
 Go for Launch treats these findings as build defects when they can be proven from the final static output. The reusable [`verify-site-health.mjs`](scripts/verify-site-health.mjs) script provides a deterministic local gate. Ahrefs or another approved crawler remains useful after deployment because it observes public HTTP behavior that a local build cannot prove.
 
+Use the separate [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md) for title-to-content alignment, route-specific search intent, content depth, citation availability, and reviewed source support. Site health proves technical quality. Semantic review proves that editorial intent and evidence have been configured and have not drifted.
+
 ## What the Gate Checks
 
 The verifier reads the exact output intended for staging and production. It fails when it finds:
@@ -80,7 +82,7 @@ A crawler email can contain stale findings from a previous deployment. Verify th
 3. Apply any final HTML and CSS transformations.
 4. Generate and approve Open Graph cards.
 5. Generate and verify the sitemap.
-6. Run SEO, image, site-health, side-navigation, and render-sharpness gates.
+6. Run SEO, image, site-health, semantic SEO, side-navigation, and render-sharpness gates.
 7. Run browser, WebKit, native iOS Safari, accessibility, and form tests.
 8. Deploy the exact candidate to staging.
 9. Verify public crawler files and run PageSpeed for mobile and desktop.

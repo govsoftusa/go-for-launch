@@ -55,19 +55,21 @@ For each eligible Astro root:
 10. Compare every indexable built canonical with the generated sitemap and verify the exact sitemap URL in `robots.txt`.
 11. Validate final HTML metadata, JSON-LD, heading hierarchy, Open Graph files, image dimensions, and responsive image output.
 12. Run the Ahrefs-style site-health audit against final HTML, CSS, referenced image weight, internal links, redirect targets, orphaned canonical pages, metadata limits, and `robots.txt`. Preserve its JSON report.
-13. For localized sites, validate self-canonicals, reciprocal hreflang clusters, `x-default`, localized sitemap entries, and localized navigation.
-14. Always run accessibility preferences, text resize, reflow, interaction, and responsive safety checks. When design review applies, also capture and inspect the configured viewports, route families, and design-system criteria.
-15. Run Playwright WebKit with an iPhone profile when the repo has Playwright coverage or when the automation adds a temporary smoke suite.
-16. Test the built candidate in native iOS Safari using an explicit Simulator UDID, including representative side-navigation interaction.
-17. Deploy the exact candidate to staging when a staging target is documented.
-18. Verify staging serves the expected candidate, canonical metadata, sitemap, child sitemaps, robots declaration, and every side-navigation destination.
-19. Run PageSpeed Insights against staging for mobile and desktop.
-20. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
-21. Run the design gate, preserve its result, and deploy production only when all core gates and every configured required gate pass and the production target is unambiguous.
-22. Verify the canonical production hostname with live HTTP checks, sitemap checks, redirect checks, complete side-navigation coverage, WebKit smoke coverage, and native iOS Safari smoke coverage.
-23. Verify the opposite trailing-slash form, alternate origins, and approved legacy routes redirect in one permanent hop with path and query preservation.
-24. When approved Search Console access exists, verify property access, list submitted sitemaps, submit the canonical sitemap when missing, and record the resulting status.
-25. When SEO or content work is in scope, research query language from approved Search Console, Ahrefs, support, sales, or analytics evidence before adding answer-focused content.
+13. Run the semantic SEO audit against canonical origin, title quality, title-to-content alignment, route-specific intent, reviewed content depth, citation URL availability, and citation evidence drift. Preserve its JSON report.
+14. For localized sites, validate self-canonicals, reciprocal hreflang clusters, `x-default`, localized sitemap entries, and localized navigation.
+15. Always run accessibility preferences, text resize, reflow, interaction, and responsive safety checks. When design review applies, also capture and inspect the configured viewports, route families, and design-system criteria.
+16. Run Playwright WebKit with an iPhone profile when the repo has Playwright coverage or when the automation adds a temporary smoke suite.
+17. Test the built candidate in native iOS Safari using an explicit Simulator UDID, including representative side-navigation interaction.
+18. Deploy the exact candidate to staging when a staging target is documented.
+19. Verify staging serves the expected candidate, canonical metadata, sitemap, child sitemaps, robots declaration, citations, and every side-navigation destination.
+20. Run PageSpeed Insights against staging for mobile and desktop.
+21. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+22. Run Ahrefs Site Audit against the current project when approved API v3 or crawler access exists, and preserve pass, fail, or allowed skipped evidence.
+23. Run the design gate, preserve its result, and deploy production only when all core gates and every configured required gate pass and the production target is unambiguous.
+24. Verify the canonical production hostname with live HTTP checks, sitemap checks, citation checks, redirect checks, complete side-navigation coverage, WebKit smoke coverage, and native iOS Safari smoke coverage.
+25. Verify the opposite trailing-slash form, alternate origins, and approved legacy routes redirect in one permanent hop with path and query preservation.
+26. When approved Search Console access exists, verify property access, list submitted sitemaps, submit the canonical sitemap when missing, and record the resulting status.
+27. When SEO or content work is in scope, research query language from approved Search Console, Ahrefs, support, sales, or analytics evidence before adding answer-focused content.
 
 If a site has only a production deploy script and no safe staging target, do not deploy production unless the repo documentation explicitly allows the production target to serve as the release gate for that site.
 
@@ -155,6 +157,8 @@ Google does not require special AI files or special schema for AI Overviews or A
 
 Every build must produce a complete sitemap and fail when the sitemap and indexable built canonicals do not match. Copy [`scripts/verify-sitemap.mjs`](scripts/verify-sitemap.mjs) into the target site and invoke it from the site's normal build command after Astro finishes. The validator also requires `robots.txt` to advertise the exact canonical sitemap URL.
 
+The same unskippable build or release command must run [`scripts/verify-semantic-seo.mjs`](scripts/verify-semantic-seo.mjs) with reviewed project rules. New indexable routes must not bypass page-intent coverage, content-depth review, title alignment, or citation evidence requirements. Read [SEMANTIC-SEO-AND-CITATION-REVIEW.md](SEMANTIC-SEO-AND-CITATION-REVIEW.md) before configuring exceptions.
+
 When an approved Google integration or OAuth credential is available:
 
 1. List Search Console properties for the current identity and select the intended Domain or URL-prefix property.
@@ -224,6 +228,8 @@ Stop before production deployment when:
 - The build does not generate a complete sitemap or the sitemap validator fails.
 - The public sitemap or robots declaration is missing or incorrect.
 - Static-output SEO, JSON-LD, heading, Open Graph, image, or hreflang validation fails.
+- The semantic SEO report is missing or fails canonical, title, page-intent, content-depth, citation URL, or citation evidence checks.
+- Ahrefs is required by project policy but unavailable, or its current Site Audit has configured blocking issues.
 - A canonical route, alternate origin, slash variant, or approved legacy URL returns the wrong redirect status or destination.
 - Answer-focused content contains unsupported claims, hidden answers, invalid structured data, or schema that does not match visible content.
 - Native iOS Safari testing is unavailable or fails.

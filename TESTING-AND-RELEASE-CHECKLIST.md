@@ -109,6 +109,12 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Route matrix has no missing pages or required assets.
 - [ ] Static-output SEO validator passes for titles, descriptions, canonicals, Open Graph, JSON-LD, and headings.
 - [ ] Site-health audit passes against final HTML, CSS, images, metadata, internal links, redirects, and `robots.txt`.
+- [ ] Semantic SEO audit passes against canonicals, titles, page intent, content depth, and citations.
+- [ ] Every indexable route is covered by a reviewed page-intent rule when complete coverage is required.
+- [ ] Titles are descriptive, complete, within the reviewed editorial budget, and aligned with the visible `h1` and primary content.
+- [ ] Citation-bearing content uses descriptive anchors and valid HTTP or HTTPS source URLs.
+- [ ] Required citation evidence records include claim terms, source terms, reviewer, review date, and support limitations.
+- [ ] The machine-readable semantic SEO report is preserved with release evidence.
 - [ ] Every referenced local image is present and within the reviewed byte budget.
 - [ ] Internal links point directly to built canonical routes without a redirect hop.
 - [ ] Every indexable page has an incoming internal link, or a documented approved exception.
@@ -186,6 +192,7 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] The production `/sitemap.xml`, child sitemaps, and robots declaration pass public HTTP checks.
 - [ ] Public `robots.txt` returns HTTP 200 and advertises the exact canonical sitemap URL.
 - [ ] A fresh approved external crawl was run after deployment, or the access blocker and required follow-up were recorded.
+- [ ] Ahrefs API v3 Site Audit was checked when approved access exists, and the report records pass, fail, or an allowed skipped state.
 - [ ] Apex and alternate-host redirects behave correctly.
 - [ ] Opposite trailing-slash forms return one HTTP 301 or 308 to the exact canonical URL.
 - [ ] Redirect probes preserve paths and query strings unless an approved map intentionally changes the path.

@@ -35,6 +35,9 @@
 - Generate a passing machine-readable render sharpness report from the exact production build.
 - Compare every indexable built page canonical with the sitemap and verify the exact sitemap URL in `robots.txt`.
 - Run `scripts/verify-site-health.mjs` against the exact production build. Block release on oversized referenced images, missing built image assets, metadata outside configured limits, duplicate metadata, redirecting internal links, links to missing pages, orphaned indexable pages, or invalid crawler declarations.
+- Run `scripts/verify-semantic-seo.mjs` against the exact production build with reviewed project rules. Block release on canonical-origin drift, incomplete or misaligned titles, missing route intent, unreviewed thin content, invalid citation URLs, missing required citation evidence, or detected claim and source drift.
+- Treat citation topical overlap as a review signal rather than proof that a source supports a claim. High-stakes claims require a named reviewer, review date, expected claim terms, expected source terms, and a short limitation note.
+- Run `scripts/verify-ahrefs-site-audit.mjs` after staging when approved Ahrefs API v3 access exists. Missing optional access must produce a visible skipped report. Missing required access or configured active Ahrefs errors and warnings block production.
 - Preserve the machine-readable site-health report with the release evidence. Re-run it after any image optimization, HTML transformation, CSS transformation, redirect change, or metadata change.
 - Test the built candidate in Playwright WebKit using an iPhone device profile.
 - Test the built candidate in native iOS Safari using an explicitly selected Xcode Simulator device and UDID.

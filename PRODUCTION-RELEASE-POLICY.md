@@ -19,6 +19,7 @@ verify rendered text, logos, and interface icons pass the render sharpness gate
 verify the generated sitemap covers every indexable built page
 verify metadata, JSON-LD, headings, Open Graph files, and image output
 run the site-health audit against final HTML, CSS, images, internal links, redirects, metadata, and robots.txt
+run the semantic SEO audit against canonicals, titles, page intent, content depth, and citations
 inspect complete Open Graph contact sheets and approve the exact image hashes
 verify localized canonicals and reciprocal hreflang when the site is multilingual
 run desktop and mobile browser tests
@@ -26,6 +27,7 @@ run Playwright WebKit with an iPhone profile
 test the built candidate in native iOS Safari through Xcode Simulator
 deploy the exact candidate to staging
 verify staging serves the expected candidate
+run Ahrefs Site Audit when approved API v3 or crawler access exists
 run PageSpeed Insights on staging for mobile and desktop
 require four scores of 100 in both strategies
 deploy the same candidate to production
@@ -70,6 +72,18 @@ The audit must inspect image references in final HTML and CSS, not only files un
 Keep original migration assets immutable. Optimization must produce derived assets or final build output without changing visible geometry. Rebuild and repeat screenshot, render-sharpness, Open Graph, and site-health checks after any asset transformation.
 
 After staging and production deployment, request `robots.txt`, the canonical sitemap, and representative image assets over public HTTPS. A local artifact cannot prove that routing, Cloudflare configuration, or cache state serves those files correctly. When approved Ahrefs or equivalent crawler access exists, run a fresh crawl and record its date and candidate identifier. Do not treat a stale crawler email as proof of the current deployment.
+
+## Semantic SEO and Citation Requirement
+
+Run [SEMANTIC-SEO-AND-CITATION-REVIEW.md](SEMANTIC-SEO-AND-CITATION-REVIEW.md) against the exact final output before staging. The normal production build or an unskippable release command must invoke [`scripts/verify-semantic-seo.mjs`](scripts/verify-semantic-seo.mjs) with reviewed project rules.
+
+Every indexable route must use the configured canonical production origin and match its built route. Titles must be descriptive, concise within the project's reviewed editorial budget, free of mechanical truncation and keyword repetition, and aligned with the visible `h1` and primary content. Each route family must have a reviewed search intent and content-depth rule. A new indexable route without an intent rule blocks production when the project requires complete coverage.
+
+Content types that make technical, regulatory, legal, statistical, medical, financial, or time-sensitive claims must use descriptive citation links and reviewed evidence records. The record must identify the exact route and URL, expected nearby claim terms, expected source terms, reviewer, review date, and support limitation. Invalid URLs, failed required source checks, missing records, stale records, claim drift, or source drift block production.
+
+Lexical overlap is not proof of factual support. Treat low topical overlap as a review signal and require human review for high-stakes claims. Preserve the machine-readable semantic SEO report and citation records with the candidate evidence.
+
+When approved Ahrefs access exists, run [`scripts/verify-ahrefs-site-audit.mjs`](scripts/verify-ahrefs-site-audit.mjs) against the current Site Audit project after staging. Use Ahrefs API v3 or a saved current response, never the retired API v2. A configured active issue at a blocking importance level fails the release. When Ahrefs is optional and unavailable, preserve a visible skipped report and continue with the mandatory local gates. When project policy requires Ahrefs, missing access blocks production.
 
 ## Answer-Focused Content Requirement
 
@@ -278,6 +292,8 @@ Stop the production release when:
 - The configured design policy requires a reviewer and a global logo, navigation, alert, announcement, utility-bar, or sticky-header change lacks human approval of the exact rendered candidate.
 - Static-output metadata, JSON-LD, heading, image, or localization validation fails.
 - The machine-readable site-health report is missing or reports oversized referenced images, metadata defects, redirecting internal links, missing targets, orphaned canonical pages, or invalid crawler declarations.
+- The machine-readable semantic SEO report is missing or reports canonical drift, title-content mismatch, uncovered page intent, unreviewed thin content, invalid citations, or citation evidence drift.
+- Ahrefs access is required but unavailable, or the current Ahrefs Site Audit reports an active issue at a configured blocking importance.
 - Trailing-slash, alternate-origin, or legacy redirect verification fails.
 - Horizontal overflow remains.
 - Forms or anti-spam verification fail.
