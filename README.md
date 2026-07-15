@@ -38,34 +38,36 @@ This repository documents the process used to close those gaps while replacing l
 
 ## Start Here
 
-1. [Webflow to Astro Migration Guide](WEBFLOW-TO-ASTRO-MIGRATION.md)
-2. [Platform-Agnostic Migration Framework](PLATFORM-MIGRATION-FRAMEWORK.md)
-3. [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md)
-4. [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md)
-5. [Production Release Policy](PRODUCTION-RELEASE-POLICY.md)
-6. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
-7. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
-8. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
-9. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
-10. [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md)
-11. [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md)
-12. [Astro Assets Implementation and Verification](ASTRO-ASSETS.md)
-13. [Internationalization, Canonicals, and Hreflang](INTERNATIONALIZATION-AND-HREFLANG.md)
-14. [Redirect Verification](REDIRECT-VERIFICATION.md)
-15. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
-16. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
-17. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
-18. [Render Sharpness Gate](RENDER-SHARPNESS.md)
-19. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
-20. [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md)
-21. [Contributing Guide](CONTRIBUTING.md)
-22. [Roadmap](ROADMAP.md)
+1. [Changelog](CHANGELOG.md)
+2. [Webflow to Astro Migration Guide](WEBFLOW-TO-ASTRO-MIGRATION.md)
+3. [Platform-Agnostic Migration Framework](PLATFORM-MIGRATION-FRAMEWORK.md)
+4. [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md)
+5. [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md)
+6. [Production Release Policy](PRODUCTION-RELEASE-POLICY.md)
+7. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
+8. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
+9. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
+10. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
+11. [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md)
+12. [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md)
+13. [Astro Assets Implementation and Verification](ASTRO-ASSETS.md)
+14. [Internationalization, Canonicals, and Hreflang](INTERNATIONALIZATION-AND-HREFLANG.md)
+15. [Redirect Verification](REDIRECT-VERIFICATION.md)
+16. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
+17. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
+18. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
+19. [Render Sharpness Gate](RENDER-SHARPNESS.md)
+20. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
+21. [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md)
+22. [Contributing Guide](CONTRIBUTING.md)
+23. [Roadmap](ROADMAP.md)
 
 ## Repository Structure
 
 ```text
 .
 ├── README.md
+├── CHANGELOG.md
 ├── WEBFLOW-TO-ASTRO-MIGRATION.md
 ├── PLATFORM-MIGRATION-FRAMEWORK.md
 ├── ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md
