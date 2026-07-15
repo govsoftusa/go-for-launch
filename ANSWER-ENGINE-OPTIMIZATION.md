@@ -14,6 +14,8 @@ Do not invent a large FAQ library from internal terminology. Build a question in
 - Google autocomplete, related searches, and People Also Ask as secondary discovery inputs.
 - Primary sources for formal definitions, technical requirements, regulations, statistics, and time-sensitive claims.
 
+Ahrefs is optional. It is not required to use Go for Launch, perform technical SEO validation, build answer-first content, or pass the production gate. Use it only when the project has approved account access. Otherwise, use the credible first-party and public evidence available to the project and record any research limitation.
+
 Record each candidate question with its source, wording, intent, audience, current destination, proposed destination, supporting source, and measurement plan. Prefer evidence-backed questions with a clear user need over speculative volume.
 
 ## Build One Topic Cluster Per Page

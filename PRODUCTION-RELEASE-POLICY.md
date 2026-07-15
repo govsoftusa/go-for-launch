@@ -1,5 +1,15 @@
 # Production Release Policy
 
+## Project onboarding gate
+
+Before implementation or release work starts, complete [`templates/project-onboarding.md`](templates/project-onboarding.md) as directed by [`PROJECT-ONBOARDING.md`](PROJECT-ONBOARDING.md). Select the workflows in scope, distinguish required inputs from conditional and optional services, record paid-service approvals, validate external sources with masked least-privilege checks, and identify the release operating system.
+
+Ahrefs is optional unless a reviewed project contract makes it required for one specific workflow. Search Console, Cloudflare, GitHub, source-platform APIs, analytics, and form services are conditional on project scope and approved access. Their absence does not disable unrelated build, sitemap, SEO, accessibility, browser, or PageSpeed gates.
+
+Native Safari through the Xcode iOS Simulator requires a qualified macOS environment with full Xcode and an installed iOS runtime. Playwright WebKit on Windows, Linux, or macOS is not equivalent native Safari evidence. When the active operator is not using a qualified Mac, the exact candidate must be handed to a qualified Mac runner. Production remains blocked when that handoff and native Safari evidence are unavailable.
+
+The Stanford Rule content quality gate is mandatory. Every route must name its intended audience and primary task, pass the configured final-output checks, and have a current hash-bound editorial approval using the senior psychology professor perspective. The Stanford Rule is a Go for Launch standard, not a Stanford University policy or an AI-authorship detector.
+
 ## Policy
 
 A migrated Astro site must not be deployed or pushed to production until the exact production candidate passes the required build, browser, native iOS Safari, staging, and PageSpeed gates in this document.

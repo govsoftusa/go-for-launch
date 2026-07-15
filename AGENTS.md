@@ -11,6 +11,12 @@
 - Use Markdown for documentation and keep commands safe to adapt by using placeholders for site-specific identifiers.
 - Keep general guidance at the repository root and site-specific evidence under `case-studies/`.
 - Add reusable worksheets under `templates/`.
+- Before changing a website, read `PROJECT-ONBOARDING.md`, copy `templates/project-onboarding.md` into the target repository, select the workflows in scope, and classify every external service as required, conditional, optional, not used, or blocked.
+- Ask the project owner which third-party paid services are approved. Configure and validate only those external sources needed for the selected workflows, using least-privilege access and masked checks.
+- Treat Ahrefs as optional unless a reviewed project contract explicitly makes it required for a specific workflow. Do not imply that Ahrefs is required for Go for Launch, SEO, AEO, browser testing, or release work.
+- Record the operating system before testing. Windows and Linux can run much of the build and browser suite, but they cannot provide native Safari evidence from Apple's Xcode iOS Simulator. Transfer the exact candidate to a qualified Mac runner or block production under the mandatory policy.
+- Read `STANFORD-RULE-CONTENT-QUALITY.md` before writing or revising public content. Define the audience and primary task for every route, review the built text from a senior psychology professor perspective, and require a current hash-bound content review.
+- Do not claim that the Stanford Rule detects AI authorship or represents Stanford University policy. It checks for approachable, human-sounding, audience-appropriate content and requires editorial judgment.
 
 ## Core Interface Gate and Project-Controlled Design Gate
 
@@ -38,6 +44,7 @@
 - Compare every indexable built page canonical with the sitemap and verify the exact sitemap URL in `robots.txt`.
 - Run `scripts/verify-site-health.mjs` against the exact production build. Block release on oversized referenced images, missing built image assets, metadata outside configured limits, duplicate metadata, redirecting internal links, links to missing pages, orphaned indexable pages, or invalid crawler declarations.
 - Run `scripts/verify-semantic-seo.mjs` against the exact production build with reviewed project rules. Block release on canonical-origin drift, incomplete or misaligned titles, missing route intent, unreviewed thin content, invalid citation URLs, missing required citation evidence, or detected claim and source drift.
+- Run `scripts/verify-content-quality.mjs` against the exact production build. Block release on missing audience definitions, missing or stale editorial reviews, failed approachability or human-tone approval, machine-like filler, inflated language, excessive sentence or paragraph length, or reading accessibility below the reviewed route threshold.
 - Treat citation topical overlap as a review signal rather than proof that a source supports a claim. High-stakes claims require a named reviewer, review date, expected claim terms, expected source terms, and a short limitation note.
 - Run `scripts/verify-ahrefs-site-audit.mjs` after staging when approved Ahrefs API v3 access exists. Missing optional access must produce a visible skipped report. Missing required access or configured active Ahrefs errors and warnings block production.
 - Preserve the machine-readable site-health report with the release evidence. Re-run it after any image optimization, HTML transformation, CSS transformation, redirect change, or metadata change.

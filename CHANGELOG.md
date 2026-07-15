@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### Stanford Rule Content Quality Gate
+
+- Added a required final-output content gate that defines the audience and primary task for every public route.
+- Added deterministic checks for machine-like filler, inflated language, excessive sentence and paragraph length, reading accessibility, and repetitive sentence openings.
+- Added a hash-bound editorial review using a senior psychology professor perspective to assess approachability, human tone, clear purpose, and evidence awareness.
+- Added a reusable configuration, review record, verifier, unit fixtures, production policy, project instructions, and release checklist coverage.
+- Clarified that the Stanford Rule is a Go for Launch editorial standard, not a Stanford University policy or AI-authorship detector.
+
 ### Project Onboarding and Service Classification
 
 - Added a required onboarding guide and reusable project record that separate toolkit capabilities from required, conditional, optional, unused, and blocked services.

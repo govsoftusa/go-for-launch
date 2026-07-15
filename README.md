@@ -6,20 +6,21 @@ Go for Launch was started and is sponsored by [GovSoft](https://www.govsoft.com)
 
 ## What Go for Launch Covers
 
-The toolbox serves twelve purposes:
+The toolbox serves thirteen purposes:
 
 1. **Converting existing sites to Astro.** Complete workflows for rebuilding websites in Astro without losing content, design fidelity, responsive behavior, SEO, accessibility, performance, or browser reliability. The Webflow and WordPress workflows are proven in production, and the platform-neutral framework extends to Squarespace, Wix, Drupal, static HTML, and custom content management systems as alpha guidance.
 2. **Keeping existing Astro sites current.** A maintenance process for updating Astro sites already in production to the latest compatible Astro version and dependency set, with every upgrade passing the same release gates as a new migration. See [AUTOMATION-INTEGRATION.md](AUTOMATION-INTEGRATION.md).
 3. **Automated testing on web and mobile.** Browser test guidance covering Chromium, Playwright WebKit with iPhone device profiles, native mobile Safari through the macOS Xcode iOS Simulator using a pinned device UDID, and mandatory [visual composition testing](VISUAL-COMPOSITION-TESTING.md) for generated and CSS-rendered artwork. See the [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md) and the [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md).
 4. **A 100/100 PageSpeed standard.** A mandatory release gate requiring PageSpeed Insights scores of 100 for Performance, Accessibility, Best Practices, and SEO, on both mobile and desktop, before any production deployment. See the [Production Release Policy](PRODUCTION-RELEASE-POLICY.md).
 5. **Complete sitemap and Search Console operations.** Every build must prove that its XML sitemap matches all indexable built pages. When approved Search Console access exists, verify the property, inspect its submitted sitemaps, and submit the canonical sitemap when missing. See [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md).
-6. **SEO and answer-engine content strategy.** Research real questions through Search Console, Ahrefs, support, and sales evidence, then publish focused, answer-first content with accurate optional structured data and measurable maintenance. See [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md).
+6. **SEO and answer-engine content strategy.** Research real questions through credible sources available to the project, including first-party support, sales, analytics, site-search, and form evidence. Add Search Console when approved property access exists and use Ahrefs only as an optional source when the project approves access. Then publish focused, answer-first content with accurate optional structured data and measurable maintenance. See [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md).
 7. **Reusable SEO implementation and validation.** Install a typed Astro SEO head, optimized image component, localized route map, deterministic Open Graph generator with hash-bound visual approval, and final-output validators for metadata, JSON-LD, headings, images, hreflang, and redirects. See [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md).
 8. **Project-controlled design-system review.** Keep framework-neutral accessibility and usability checks mandatory while allowing each project to set Material Design, Apple Liquid Glass, custom, or hybrid conformance to off, advisory, or required. See [Configurable Design-System Gate](DESIGN-GATE-POLICY.md) and [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md).
 9. **Mandatory render sharpness validation.** Detect accidental content blur, forced rasterization, persistent fractional transforms, unshipped fonts, and fractionally scaled inline SVGs in the exact production candidate. See [Render Sharpness Gate](RENDER-SHARPNESS.md).
 10. **Side-navigation reliability.** Require native link fallbacks, valid destinations, full-item browser coverage, WebKit coverage, and native iOS Safari evidence for every persistent side rail, table of contents, policy rail, and vertical tab list.
 11. **Ahrefs-style final-output health auditing.** Fail builds on oversized referenced images, weak or duplicate metadata, redirecting internal links, missing targets, orphaned canonical pages, and invalid crawler declarations. See [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md).
 12. **Semantic SEO and citation review.** Require canonical consistency, descriptive and content-aligned titles, route-specific search intent, reviewed content depth, valid citation links, and evidence records that detect claim or source drift. Use Ahrefs API v3 as an optional public-crawl input when approved access exists. See [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md).
+13. **Stanford Rule content quality.** Define the audience and task for every page, check final HTML for machine-like filler, inflated language, excessive sentence and paragraph length, repetitive openings, and inaccessible reading density, then require a hash-bound editorial review from a senior psychology professor perspective. See [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md).
 
 ## Why This Exists
 
@@ -38,31 +39,33 @@ This repository documents the process used to close those gaps while replacing l
 
 ## Start Here
 
-1. [Changelog](CHANGELOG.md)
-2. [Webflow to Astro Migration Guide](WEBFLOW-TO-ASTRO-MIGRATION.md)
-3. [Platform-Agnostic Migration Framework](PLATFORM-MIGRATION-FRAMEWORK.md)
-4. [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md)
-5. [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md)
-6. [Production Release Policy](PRODUCTION-RELEASE-POLICY.md)
-7. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
-8. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
-9. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
-10. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
-11. [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md)
-12. [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md)
-13. [Astro Assets Implementation and Verification](ASTRO-ASSETS.md)
-14. [Internationalization, Canonicals, and Hreflang](INTERNATIONALIZATION-AND-HREFLANG.md)
-15. [Redirect Verification](REDIRECT-VERIFICATION.md)
-16. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
-17. [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md)
-18. [Visual Composition Testing](VISUAL-COMPOSITION-TESTING.md)
-19. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
-20. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
-21. [Render Sharpness Gate](RENDER-SHARPNESS.md)
-22. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
-23. [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md)
-24. [Contributing Guide](CONTRIBUTING.md)
-25. [Roadmap](ROADMAP.md)
+1. [Project Onboarding, Requirements, and External Services](PROJECT-ONBOARDING.md)
+2. [Changelog](CHANGELOG.md)
+3. [Webflow to Astro Migration Guide](WEBFLOW-TO-ASTRO-MIGRATION.md)
+4. [Platform-Agnostic Migration Framework](PLATFORM-MIGRATION-FRAMEWORK.md)
+5. [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md)
+6. [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md)
+7. [Production Release Policy](PRODUCTION-RELEASE-POLICY.md)
+8. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
+9. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
+10. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
+11. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
+12. [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md)
+13. [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md)
+14. [Astro Assets Implementation and Verification](ASTRO-ASSETS.md)
+15. [Internationalization, Canonicals, and Hreflang](INTERNATIONALIZATION-AND-HREFLANG.md)
+16. [Redirect Verification](REDIRECT-VERIFICATION.md)
+17. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
+18. [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md)
+19. [Visual Composition Testing](VISUAL-COMPOSITION-TESTING.md)
+20. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
+21. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
+22. [Render Sharpness Gate](RENDER-SHARPNESS.md)
+23. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
+24. [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md)
+25. [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md)
+26. [Contributing Guide](CONTRIBUTING.md)
+27. [Roadmap](ROADMAP.md)
 
 ## Repository Structure
 
@@ -70,6 +73,7 @@ This repository documents the process used to close those gaps while replacing l
 .
 ├── README.md
 ├── CHANGELOG.md
+├── PROJECT-ONBOARDING.md
 ├── WEBFLOW-TO-ASTRO-MIGRATION.md
 ├── PLATFORM-MIGRATION-FRAMEWORK.md
 ├── ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md
@@ -92,6 +96,7 @@ This repository documents the process used to close those gaps while replacing l
 ├── RENDER-SHARPNESS.md
 ├── SITE-HEALTH-AUDIT.md
 ├── SEMANTIC-SEO-AND-CITATION-REVIEW.md
+├── STANFORD-RULE-CONTENT-QUALITY.md
 ├── CONTRIBUTING.md
 ├── SECURITY.md
 ├── scripts/
@@ -100,6 +105,7 @@ This repository documents the process used to close those gaps while replacing l
 │   ├── verify-images.mjs
 │   ├── verify-site-health.mjs
 │   ├── verify-semantic-seo.mjs
+│   ├── verify-content-quality.mjs
 │   ├── verify-ahrefs-site-audit.mjs
 │   ├── verify-redirects.mjs
 │   ├── generate-open-graph.mjs
@@ -123,12 +129,15 @@ This repository documents the process used to close those gaps while replacing l
     ├── redirects.config.mjs
     ├── site-health.config.mjs
     ├── semantic-seo.config.mjs
+    ├── content-quality.config.mjs
+    ├── content-quality.reviews.json
     ├── ahrefs-site-audit.config.mjs
     ├── design-gate.config.mjs
     ├── design-review-record.json
     ├── route-and-content-inventory.md
     ├── gap-analysis.md
     ├── design-optimization-brief.md
+    ├── project-onboarding.md
     └── migration-acceptance-record.md
 ```
 
@@ -153,9 +162,10 @@ This repository documents the process used to close those gaps while replacing l
 17. Audit final HTML and CSS references for image weight, direct canonical links, internal discoverability, metadata quality, and crawler declarations.
 18. Require each indexable route to have a reviewed search intent, content-depth policy, and title that agrees with its visible subject.
 19. Treat citation URL validity and evidence-to-claim review as release data, not informal editorial memory.
-20. Verify the canonical public hostname after deployment.
-21. Record intentional differences so accessibility and performance improvements are not mistaken for missing parity.
-22. Turn every discovered migration defect into a reusable test or checklist item.
+20. Define the intended audience and primary task for every public page, then require a passing Stanford Rule content quality report tied to the exact built text.
+21. Verify the canonical public hostname after deployment.
+22. Record intentional differences so accessibility and performance improvements are not mistaken for missing parity.
+23. Turn every discovered migration defect into a reusable test or checklist item.
 
 ## Evidence Model
 
@@ -185,17 +195,18 @@ Every site using Go for Launch must pass the following gate before production de
 3. Generate the sitemap and verify it matches every indexable built page.
 4. Run the Ahrefs-style site-health audit against final HTML, CSS, images, links, metadata, redirects, and crawler files.
 5. Run the semantic SEO gate against canonicals, titles, page intent, content depth, and citations.
-6. Run the mandatory render sharpness gate and preserve its machine-readable result.
-7. Run the side-navigation verifier and activate every marked navigation item in browser tests.
-8. Run visual composition verification, then run the automated browser, WebKit, accessibility, form, and route tests against that candidate.
-9. Run the configured design-system gate and preserve its result. Only `required` design findings block production.
-10. Test the candidate in native iOS Safari through Xcode Simulator using a pinned device UDID.
-11. Deploy the same candidate to staging.
-12. Run PageSpeed Insights against staging for mobile and desktop.
-13. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
-14. Run Ahrefs Site Audit when approved API or crawler access exists.
-15. Block production when any required test fails or any PageSpeed category is below 100.
-16. Verify the sitemap, crawler files, citations, and canonical production hostname after deployment.
+6. Run the Stanford Rule content quality gate and preserve its hash-bound editorial review.
+7. Run the mandatory render sharpness gate and preserve its machine-readable result.
+8. Run the side-navigation verifier and activate every marked navigation item in browser tests.
+9. Run visual composition verification, then run the automated browser, WebKit, accessibility, form, and route tests against that candidate.
+10. Run the configured design-system gate and preserve its result. Only `required` design findings block production.
+11. Test the candidate in native iOS Safari through Xcode Simulator using a pinned device UDID.
+12. Deploy the same candidate to staging.
+13. Run PageSpeed Insights against staging for mobile and desktop.
+14. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+15. Run Ahrefs Site Audit when approved API or crawler access exists.
+16. Block production when any required test fails or any PageSpeed category is below 100.
+17. Verify the sitemap, crawler files, citations, and canonical production hostname after deployment.
 
 The detailed policy is in [PRODUCTION-RELEASE-POLICY.md](PRODUCTION-RELEASE-POLICY.md).
 

@@ -1,0 +1,17 @@
+{
+  "reviews": [
+    {
+      "route": "/",
+      "contentHash": "replace-with-hash-from-first-report",
+      "audience": "People evaluating the organization and its services",
+      "reviewer": "Named project editorial reviewer",
+      "perspective": "senior-psychology-professor",
+      "reviewedAt": "2026-01-01",
+      "approachable": true,
+      "humanTone": true,
+      "clearPurpose": true,
+      "evidenceAware": true,
+      "notes": "Record why the page is appropriate for its audience and what was revised."
+    }
+  ]
+}

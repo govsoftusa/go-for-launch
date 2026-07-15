@@ -2,6 +2,34 @@
 
 This checklist is mandatory before production. Any unchecked required item blocks release. PageSpeed must report 100 for Performance, Accessibility, Best Practices, and SEO on both mobile and desktop.
 
+## Project onboarding and service decisions
+
+- [ ] `PROJECT-ONBOARDING.md` was read before implementation began.
+- [ ] `templates/project-onboarding.md` was copied into the target repository and completed.
+- [ ] Every selected workflow identifies the inputs and evidence required to perform it.
+- [ ] Every external source is classified as required, conditional, optional, not used, or blocked.
+- [ ] The project owner explicitly decided which third-party paid services may be purchased or connected.
+- [ ] Every approved external account has a named owner, least-privilege scope, masked access check, and fallback or blocker.
+- [ ] Ahrefs is recorded as optional unless a reviewed project contract requires it for one specific workflow.
+- [ ] The active build and test operating system is recorded.
+- [ ] A qualified macOS runner with full Xcode, an iOS runtime, a Simulator device name, and a UDID is assigned for native Safari testing.
+- [ ] If the active operator uses Windows or Linux, the exact candidate handoff to the qualified Mac runner is documented.
+- [ ] Production is blocked when required native iOS Simulator evidence cannot be produced.
+
+## Stanford Rule content quality
+
+- [ ] `STANFORD-RULE-CONTENT-QUALITY.md` was read before public content was written or revised.
+- [ ] Every public route names its intended audience and the task that audience is trying to complete.
+- [ ] The opening addresses the reader's need before internal implementation details.
+- [ ] Requirements, optional tools, examples, and limitations are clearly distinguished.
+- [ ] Unfamiliar technical terms are defined before they carry an argument.
+- [ ] Machine-like filler, inflated marketing language, and repetitive sentence frames were removed.
+- [ ] Sentence length, paragraph length, and reading ease pass the reviewed route thresholds.
+- [ ] A reviewer used the senior psychology professor perspective to assess approachability, human tone, clear purpose, and evidence awareness.
+- [ ] Every editorial review has a specific note, current date, audience match, and exact built-content hash.
+- [ ] The content quality verifier passes against the exact production build.
+- [ ] No result is described as AI detection or as a Stanford University policy.
+
 ## Baseline
 
 - [ ] Fetch the configured Go for Launch upstream and confirm the checkout is current.
@@ -188,7 +216,7 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] FAQ or Q&A structured data is used only for eligible visible content and exactly matches that content.
 - [ ] Technical, regulatory, legal, statistical, and time-sensitive claims cite current primary sources.
 - [ ] A last-reviewed date and responsible reviewer are visible on maintained guidance.
-- [ ] SEO content work records its Search Console, Ahrefs, support, sales, or analytics question evidence.
+- [ ] SEO content work records credible question evidence from sources available to the project, with Search Console or optional Ahrefs evidence only when approved access exists.
 - [ ] Public discovery files include only intended public routes.
 - [ ] The staged `/sitemap.xml` and every referenced child sitemap return HTTP 200 with XML content.
 - [ ] Search Console property access and permission were checked when approved access exists.
