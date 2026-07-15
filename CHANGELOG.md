@@ -70,6 +70,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Approval without explicit readability confirmation fails.
 - The complete toolkit test suite passes with zero Astro diagnostics.
 
+#### First Integration Lessons
+
+- Keep approved cards in a persistent source-controlled location such as `public/generated/social`. A clean Astro build may replace `dist`, so `dist` alone cannot preserve immutable reviewed assets.
+- Split the project pipeline into a render phase and a release-verification phase. The explicit maintenance command may render changed cards, while the ordinary release build only copies and verifies the approved cache.
+- Long titles must fail instead of receiving an ellipsis. Add smaller responsive headline sizes only when they remain above the reviewed minimum and their measured bottom edge stays above supporting content.
+- Record layout measurements such as headline size, line count, bottom edge, and displayed destination in project state so final-output checks can reject overlap and truncation without depending on OCR.
+- Apply a reviewed social-card file budget separately from ordinary content-image budgets. Social previews have fixed large dimensions and should not be forced through an unrelated image threshold after approval.
+- The first 72-card integration proved that a repeated normal verification can preserve every source image hash and modification time while still rewriting page metadata in final build output.
+
 ## 0.2.0, 2026-07-15
 
 ### Added
