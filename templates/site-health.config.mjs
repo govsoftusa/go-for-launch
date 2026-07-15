@@ -5,6 +5,9 @@ export default {
   trailingSlash: "always",
   sitemapUrl: "https://www.example.gov/sitemap.xml",
   maximumImageBytes: 100_000,
+  imageByteLimits: [
+    { pattern: "/generated/social/*", maximumBytes: 180_000 }
+  ],
   maximumTitleLength: 60,
   minimumDescriptionLength: 110,
   maximumDescriptionLength: 155,

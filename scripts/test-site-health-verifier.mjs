@@ -36,6 +36,10 @@ function verify(directory, output) {
   ], { encoding: "utf8" });
 }
 
+function verifyWithConfig(config) {
+  return spawnSync(process.execPath, [verifier.pathname, `--config=${config}`], { encoding: "utf8" });
+}
+
 const valid = await fixture("valid");
 await writeFile(join(valid, "assets", "content.webp"), Buffer.alloc(1_000));
 await writeFile(join(valid, "assets", "background.webp"), Buffer.alloc(1_000));
@@ -57,6 +61,27 @@ const validResult = verify(valid, validOutput);
 if (validResult.status !== 0) throw new Error(`Valid site-health fixture failed:\n${validResult.stdout}${validResult.stderr}`);
 const validReport = JSON.parse(await readFile(validOutput, "utf8"));
 if (validReport.counts.errors !== 0 || validReport.counts.indexablePages !== 2) throw new Error("Valid site-health report has incorrect counts.");
+
+const scoped = await fixture("scoped");
+await mkdir(join(scoped, "generated", "social"), { recursive: true });
+await writeFile(join(scoped, "generated", "social", "home.png"), Buffer.alloc(150_000));
+await writeFile(join(scoped, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${site}/sitemap.xml\n`);
+await page(scoped, "/", html({
+  route: "/",
+  title: "Scoped Image Budget",
+  body: '<h1>Home</h1><meta property="og:image" content="/generated/social/home.png">'
+}));
+const scopedConfig = join(root, "scoped.config.mjs");
+await writeFile(scopedConfig, `export default ${JSON.stringify({
+  outputDirectory: scoped,
+  site,
+  output: join(root, "scoped-report.json"),
+  sitemapUrl: `${site}/sitemap.xml`,
+  maximumImageBytes: 100_000,
+  imageByteLimits: [{ pattern: "/generated/social/*", maximumBytes: 180_000 }]
+})};\n`);
+const scopedResult = verifyWithConfig(scopedConfig);
+if (scopedResult.status !== 0) throw new Error(`Scoped social-card budget failed:\n${scopedResult.stdout}${scopedResult.stderr}`);
 
 const invalid = await fixture("invalid");
 await writeFile(join(invalid, "assets", "large.png"), Buffer.alloc(100_001));

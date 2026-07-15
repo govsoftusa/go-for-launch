@@ -1,6 +1,6 @@
 {
   "name": "go-for-launch",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "private": false,
   "description": "Go for Launch, a toolbox for Astro sites: migrate and maintain sites, automate web and native mobile Safari testing, enforce SEO and PageSpeed release gates, and configure optional design-system review.",
   "author": "GovSoft, LLC",

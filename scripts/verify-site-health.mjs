@@ -73,6 +73,14 @@ function matchesAllowlist(pathname, allowlist) {
   return allowlist.some((entry) => entry === pathname || (entry.endsWith("*") && pathname.startsWith(entry.slice(0, -1))));
 }
 
+function imageByteLimit(pathname, rules, fallback) {
+  const match = rules.find((rule) => matchesAllowlist(pathname, [String(rule.pattern || "")]));
+  if (!match) return fallback;
+  const value = Number(match.maximumBytes);
+  if (!Number.isFinite(value) || value < 0) throw new Error(`Invalid image byte limit for ${match.pattern}`);
+  return value;
+}
+
 const fileConfig = await loadConfig(option("--config", ""));
 const outputDirectory = resolve(option("--dir", fileConfig.outputDirectory || "dist"));
 const site = new URL(option("--site", fileConfig.site || "https://example.com"));
@@ -89,6 +97,7 @@ const requireRobots = booleanOption("--require-robots", fileConfig.requireRobots
 const sitemapUrl = new URL(option("--sitemap-url", fileConfig.sitemapUrl || `${site.origin}/sitemap.xml`));
 const orphanAllowlist = fileConfig.orphanAllowlist || [];
 const largeImageAllowlist = fileConfig.largeImageAllowlist || [];
+const imageByteLimits = fileConfig.imageByteLimits || [];
 const configuredRedirectRoutes = fileConfig.redirectRoutes || [];
 const imageExtensions = new Set((fileConfig.imageExtensions || [".avif", ".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"]).map((value) => value.toLowerCase()));
 const failures = [];
@@ -224,8 +233,9 @@ for (const [pathname, owners] of imageReferences) {
     continue;
   }
   const file = await stat(localPath);
-  if (file.size > maximumImageBytes && !matchesAllowlist(pathname, largeImageAllowlist)) {
-    failures.push(`${[...owners].join(", ")}: image exceeds ${maximumImageBytes} bytes, ${pathname} is ${file.size} bytes`);
+  const applicableMaximum = imageByteLimit(pathname, imageByteLimits, maximumImageBytes);
+  if (file.size > applicableMaximum && !matchesAllowlist(pathname, largeImageAllowlist)) {
+    failures.push(`${[...owners].join(", ")}: image exceeds ${applicableMaximum} bytes, ${pathname} is ${file.size} bytes`);
   }
 }
 
@@ -244,6 +254,7 @@ const report = {
   site: site.origin,
   thresholds: {
     maximumImageBytes,
+    imageByteLimits,
     maximumTitleLength,
     minimumDescriptionLength,
     maximumDescriptionLength

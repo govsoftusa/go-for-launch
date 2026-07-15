@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### Project Onboarding and Service Classification
+
+- Added a required onboarding guide and reusable project record that separate toolkit capabilities from required, conditional, optional, unused, and blocked services.
+- Added an explicit paid-service decision, account ownership, least-privilege setup, masked access verification, and fallback workflow.
+- Clarified that Ahrefs is optional and does not block unrelated SEO, AEO, browser, sitemap, PageSpeed, or release checks.
+- Added an operating-system evidence matrix and a production stop rule when the exact candidate cannot reach a qualified Mac with full Xcode and an installed iOS Simulator runtime.
+- Added the onboarding gate to project instructions, the production policy, the release checklist, the AEO guide, and the main README.
+
 ### Social Card Artwork Suitability
 
 - Added a hard rule that source-image validity is not enough. Flat gray placeholders, empty transparent exports, low-information gradients, and other visually empty assets must not appear in approved cards.
@@ -13,6 +21,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Required projects to bind the artwork threshold and selection result into the immutable rendering-input fingerprint.
 - Added automated evidence that flat placeholder artwork fails while informative artwork passes.
 - Recorded the first integration, where seven low-information page assets were replaced by the approved navy fallback while genuine monochrome photography remained eligible.
+
+### Scoped Image Budgets
+
+- Added path-scoped byte limits to the site-health verifier so reviewed social cards can retain a documented finite budget without weakening the ordinary content-image budget.
+- Added regression coverage proving a 150 KB social card can pass a 180 KB scoped ceiling while the global image ceiling remains 100 KB.
+- Documented that a finite scoped budget is preferred over an unlimited allowlist.
 
 ### Working Practice
 

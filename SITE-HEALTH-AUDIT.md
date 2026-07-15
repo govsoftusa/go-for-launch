@@ -53,7 +53,7 @@ Use modern raster formats, responsive widths, and appropriate quality settings. 
 
 Do not repair file weight by changing visible geometry. SVG conversion must preserve its intrinsic aspect ratio and view box. Raster generation must use the intended pixel dimensions. After optimization, repeat screenshot, render-sharpness, and Open Graph review gates.
 
-The default 100,000-byte budget reflects a strict information-site policy and the crawler finding that prompted this gate. A project may change the threshold with documented performance evidence. Put an asset in `largeImageAllowlist` only when the larger file is intentional, measured, and visually necessary. An allowlist is not a substitute for optimization.
+The default 100,000-byte budget reflects a strict information-site policy and the crawler finding that prompted this gate. A project may change the threshold with documented performance evidence. Use `imageByteLimits` for a narrowly scoped asset family that has a separate reviewed budget, such as 1200 by 630 social cards. Put an asset in `largeImageAllowlist` only when the larger file is intentional, measured, visually necessary, and cannot have a finite path-scoped limit. An allowlist is not a substitute for optimization.
 
 ## Internal Link and Canonical Rules
 
