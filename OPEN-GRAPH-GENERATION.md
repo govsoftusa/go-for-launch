@@ -12,6 +12,7 @@ Every indexable page needs a relevant social preview. Social cards are release a
 6. Explicit regeneration still reuses any card whose rendering fingerprint and output hash remain unchanged.
 7. Every new or changed card requires full-size human review. Approval must record both the rendering input SHA-256 and final image SHA-256. Any later input or pixel change invalidates approval.
 8. A production candidate must use the same approved files inspected in the contact sheets. Do not rebuild or optimize them between approval, staging, and production.
+9. Do not treat a technically valid file as useful artwork. Measure candidate source images after flattening transparency and reject visually flat, empty, placeholder, or low-detail assets. Use an approved designed fallback when a page source does not carry enough information for the card.
 
 ## Configure the Cards
 
@@ -71,6 +72,8 @@ Commit stable social-card files, the state manifest, and the approval manifest. 
 - Use a readable canonical hostname when the full path does not fit. Never show an ellipsis, a clipped path, or a shortened string that cannot identify the destination.
 - Use a minimum practical display size of 20 pixels for destination and supporting text in a 1200 by 630 image.
 - Prefer vector logos and artwork. If a raster source is required, record its SHA-256 and verify that its intrinsic size supports the rendered placement.
+- Evaluate page artwork separately from brand marks. A correct logo cannot rescue a gray placeholder panel, an empty transparent export, or a near-uniform gradient.
+- Use `scripts/lib/artwork-suitability.mjs` in project generators as a baseline low-detail check. Tune the threshold against the project contact sheet, and bind the threshold and selection result into the rendering-input fingerprint.
 - Produce an opaque 1200 by 630 raster image with the declared content type.
 - Set `og:image:alt` to describe the preview information, not decorative geometry.
 
@@ -80,6 +83,7 @@ Inspect every card at full size and in the complete contact sheet. Check:
 
 - No overlapping text, clipped letters, missing descenders, or unsafe edge placement.
 - No jagged, stretched, blurry, or incorrectly cropped artwork.
+- No flat gray placeholder, empty transparent export, low-information gradient, or other source that reads as missing content.
 - No template symbols that could be mistaken for status, validation, warning, or error icons.
 - The page topic, title, and destination match the page metadata and visible content.
 - Destination text is readable and useful, with no truncation.

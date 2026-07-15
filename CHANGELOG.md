@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### Social Card Artwork Suitability
+
+- Added a hard rule that source-image validity is not enough. Flat gray placeholders, empty transparent exports, low-information gradients, and other visually empty assets must not appear in approved cards.
+- Added a reusable pixel-statistics helper that measures average color-channel deviation after flattening transparency.
+- Required projects to bind the artwork threshold and selection result into the immutable rendering-input fingerprint.
+- Added automated evidence that flat placeholder artwork fails while informative artwork passes.
+- Recorded the first integration, where seven low-information page assets were replaced by the approved navy fallback while genuine monochrome photography remained eligible.
+
 ### Working Practice
 
 - Add an entry whenever a production incident, migration gap, visual defect, browser defect, SEO finding, accessibility issue, or release failure produces a reusable rule.

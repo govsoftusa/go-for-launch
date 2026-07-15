@@ -128,6 +128,7 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] The machine-readable site-health report is preserved with release evidence.
 - [ ] Open Graph contact sheets include every indexable page and were reviewed at full size.
 - [ ] Open Graph cards have no overlapping or clipped text, jagged or upscaled artwork, unintended transparency, incorrect page content, or unsafe crop placement.
+- [ ] Every social-card source image is visually informative, with flat placeholders and empty exports replaced by an approved designed fallback.
 - [ ] The normal build reused existing approved Open Graph cards without changing their bytes, names, encoding, or modification times.
 - [ ] Any regenerated card was explicitly requested because a rendering input changed, and unchanged cards were not rewritten.
 - [ ] Card input fingerprints exclude unrelated SEO policy, sitemap, citation, dependency, timestamp, environment, and build values.
