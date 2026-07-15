@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### Native Safari Menu Follow-up
+
+- Updated the Go4Launch case study with the final full-viewport header grid fix.
+- Recorded iOS 26.5 staging and production menu evidence and the expanded Chromium and WebKit regression suite.
+
 ### Stanford Rule Content Quality Gate
 
 - Added a required final-output content gate that defines the audience and primary task for every public route.

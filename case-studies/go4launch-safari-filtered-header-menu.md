@@ -2,6 +2,8 @@
 
 Date: July 12, 2026
 
+Final validation: July 15, 2026
+
 Site: `www.go4launch.org`
 
 ## Symptom
@@ -43,16 +45,21 @@ The defect depended on three conditions:
 
 ## Fix
 
-The implementation was changed so the menu no longer depends on fixed-descendant viewport behavior:
+The first repair absolutely anchored the menu below the fixed header and calculated its height from `100dvh`. That removed the original filtered-descendant failure, but it still left the overlay dependent on positioned geometry that can vary across native Safari releases.
 
-- The menu is absolutely anchored below the fixed header.
-- Its height is explicitly `calc(100dvh - header height)`.
-- The open panel has its own opaque background and vertical overflow.
+The final implementation makes the open header itself the full viewport container:
+
 - The header receives a `menu-active` class while navigation is open.
+- `menu-active` sets the fixed header to `100vh` with a `100dvh` override.
+- The header's inner wrapper becomes a two-row grid, one row for the brand and menu button, one row for navigation.
+- The navigation participates in that grid instead of using a fixed or absolute viewport overlay.
+- The panel has its own opaque background and vertical overflow.
 - `menu-active` removes `backdrop-filter` for the lifetime of the open panel.
 - Close behavior removes body scroll lock and `menu-active` together.
 - Escape closes the panel and restores focus to the menu button.
 - Crossing the desktop breakpoint closes stale mobile menu state.
+
+This structure avoids relying on Safari's containing-block treatment for filtered or positioned descendants.
 
 ## Automated Regression Test
 
@@ -74,13 +81,14 @@ This test would have failed against the original implementation even though a ba
 
 - Astro diagnostics passed.
 - Production build passed.
-- Local Chromium and iPhone WebKit suite passed, 12 tests passed and 2 expected desktop-only skips were recorded.
+- Local Chromium and iPhone WebKit suite passed, 27 tests passed and 3 expected desktop-only skips were recorded.
 - The specific scrolled-header geometry test passed in iPhone WebKit.
-- Stable staging passed the same suite with 12 tests passed and 2 expected desktop-only skips.
-- Native Safari passed after scrolling the support page and opening the menu on both stable staging and canonical production.
+- Stable staging passed the same suite with 27 tests passed and 3 expected desktop-only skips.
+- Native Safari on iOS 26.5 passed after opening the full-height menu and following its Testing destination on stable staging.
+- Native Safari on iOS 26.5 passed after opening the full-height menu on canonical production.
 - PageSpeed returned 100 for Performance, Accessibility, Best Practices, and SEO on both mobile and desktop.
-- Canonical production passed the same browser suite with 12 tests passed and 2 expected desktop-only skips.
+- Canonical production passed the same browser suite with 27 tests passed and 3 expected desktop-only skips.
 
 ## Reusable Lesson
 
-Any scroll-dependent style can create a separate interaction state. Fixed headers, sticky controls, filters, transforms, containment, and compositing properties should be tested both before and after their state transitions. For overlays, assert the bounding box and opaque coverage in addition to visibility.
+Any scroll-dependent style can create a separate interaction state. Fixed headers, sticky controls, filters, transforms, containment, and compositing properties should be tested both before and after their state transitions. For overlays, assert the bounding box and opaque coverage in addition to visibility. A full-viewport grid container is more predictable than nesting a viewport overlay inside a filtered fixed header.
