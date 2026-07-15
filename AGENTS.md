@@ -44,7 +44,13 @@
 - Verify mobile navigation, dropdown destinations, forms, modals, scrolling, first paint, fixed-header spacing, image rendering, and horizontal overflow in the Simulator.
 - Verify every side-navigation item in Playwright and repeat representative side-navigation interaction in native iOS Safari. Testing only the first item is not sufficient.
 - When Open Graph, SEO, or AI discovery work is in scope, verify every indexable public page declares its own unique Open Graph image and that each declared image resolves with the exact declared dimensions.
+- Treat approved Open Graph files as immutable release artifacts. Normal builds must verify and reuse them without rewriting bytes, filenames, encoding, or modification times. Only an explicit reviewed regeneration command may create or replace a card.
+- Fingerprint only card-rendering inputs. Unrelated SEO policy, sitemap, citation, dependency, timestamp, environment, and build changes must not regenerate or invalidate a card.
+- Require a state manifest containing the rendering input hash and output hash. A missing card, changed input, altered file, or stale manifest must fail closed instead of silently generating output.
 - Generate contact sheets for every Open Graph image, inspect them for overlap, clipping, jagged artwork, incorrect content, and unsafe cropping, then record hash-bound approval for the exact reviewed files. Missing or stale visual approval blocks release.
+- Reject clipped glyphs, missing descenders, blurry small text, truncated display URLs, upscaled raster artwork, accidental status symbols, incorrect aspect ratios, and supporting text below the project's readable minimum. Bind approval to both the rendering input hash and final file hash.
+- Require every card to declare its intended sharing purpose and brand contract. The contract must cover approved colors, approved type families, safe padding, minimum supporting-text size, maximum headline size, and whether visible contact information is required.
+- Require automated bounds checks plus named human approval for readability, hierarchy, contact accuracy when applicable, and brand integrity. Text that overlaps, clips, exceeds its region, or is too large or too small blocks release.
 - Deploy the exact built candidate to staging before production.
 - Run PageSpeed Insights against the staged candidate for both mobile and desktop.
 - Require a score of 100 for Performance, Accessibility, Best Practices, and SEO on both mobile and desktop.

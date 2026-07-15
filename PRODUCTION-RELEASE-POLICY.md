@@ -20,7 +20,7 @@ verify the generated sitemap covers every indexable built page
 verify metadata, JSON-LD, headings, Open Graph files, and image output
 run the site-health audit against final HTML, CSS, images, internal links, redirects, metadata, and robots.txt
 run the semantic SEO audit against canonicals, titles, page intent, content depth, and citations
-inspect complete Open Graph contact sheets and approve the exact image hashes
+verify approved Open Graph cards were reused without writes, inspect complete contact sheets for changed cards, and approve exact rendering input and image hashes
 verify localized canonicals and reciprocal hreflang when the site is multilingual
 run desktop and mobile browser tests
 run Playwright WebKit with an iPhone profile
@@ -134,6 +134,12 @@ Use [ASTRO-ASSETS.md](ASTRO-ASSETS.md) for responsive image implementation and f
 For multilingual sites, follow [INTERNATIONALIZATION-AND-HREFLANG.md](INTERNATIONALIZATION-AND-HREFLANG.md). Each localized page must canonicalize to itself and publish a complete reciprocal hreflang cluster with a matching self language and `x-default`. Every declared alternate must resolve to an indexable built page and appear in the localized sitemap.
 
 Generate social images through [OPEN-GRAPH-GENERATION.md](OPEN-GRAPH-GENERATION.md), or an equivalent deterministic process with the same output checks. Generate complete contact sheets, inspect every image at full size, and record hash-bound approval for the exact files. Missing, shared, stale, unreadable, incorrectly sized, overlapping, clipped, visibly jagged, incorrectly cropped, or unapproved images block release.
+
+Normal builds must not generate, rewrite, recompress, rename, or optimize an existing approved social card. They must verify the existing rendering input fingerprint, file hash, and approval record without changing the file or its modification time. New or changed cards require an explicit regeneration command followed by full-size visual review and a new approval bound to both the rendering input hash and final image hash. Unrelated SEO, sitemap, citation, dependency, timestamp, environment, and build changes must not invalidate cards.
+
+A displayed destination that is clipped, ellipsized, too small to read, or too truncated to identify the canonical host blocks production. Clipped glyphs, missing descenders, blurry supporting labels, jagged or stretched artwork, and visual symbols that can be mistaken for status or validation controls also block production.
+
+Each card must declare its intended sharing purpose and a reviewed brand contract. The contract must define approved colors and type families, safe padding, minimum supporting-text size, maximum headline size, and whether visible contact information is required. Automated bounds checks and a named human reviewer must confirm that text is readable, does not overlap, is not clipped, is neither too large nor too small, and preserves brand hierarchy and integrity for the intended purpose.
 
 ## Native iOS Safari Requirement
 

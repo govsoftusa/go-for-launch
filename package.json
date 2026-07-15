@@ -7,6 +7,8 @@
   "type": "module",
   "scripts": {
     "design:gate": "node scripts/run-design-gate.mjs --config=templates/design-gate.config.mjs",
+    "open-graph:regenerate": "node scripts/generate-open-graph.mjs --config=templates/open-graph.config.mjs --regenerate",
+    "open-graph:verify": "node scripts/generate-open-graph.mjs --config=templates/open-graph.config.mjs && node scripts/review-open-graph.mjs --config=templates/open-graph.config.mjs --check",
     "open-graph:review": "node scripts/review-open-graph.mjs --config=templates/open-graph.config.mjs",
     "render:sharpness": "node scripts/verify-render-sharpness.mjs --root=dist --output=artifacts/render-sharpness-report.json",
     "semantic-seo:verify": "node scripts/verify-semantic-seo.mjs --config=templates/semantic-seo.config.mjs",

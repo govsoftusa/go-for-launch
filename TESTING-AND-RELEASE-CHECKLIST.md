@@ -122,7 +122,15 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] The machine-readable site-health report is preserved with release evidence.
 - [ ] Open Graph contact sheets include every indexable page and were reviewed at full size.
 - [ ] Open Graph cards have no overlapping or clipped text, jagged or upscaled artwork, unintended transparency, incorrect page content, or unsafe crop placement.
-- [ ] The hash-bound Open Graph approval manifest matches the exact generated images in the candidate.
+- [ ] The normal build reused existing approved Open Graph cards without changing their bytes, names, encoding, or modification times.
+- [ ] Any regenerated card was explicitly requested because a rendering input changed, and unchanged cards were not rewritten.
+- [ ] Card input fingerprints exclude unrelated SEO policy, sitemap, citation, dependency, timestamp, environment, and build values.
+- [ ] Displayed destinations contain no ellipsis or unusable truncation, supporting text remains readable, and letters with descenders are not clipped.
+- [ ] Every card declares its intended sharing purpose and passes a named human readability assessment for that purpose.
+- [ ] Every color and type family is brand approved, padding meets the brand safe-area minimum, and visual hierarchy preserves brand integrity.
+- [ ] Required contact information is visible, useful, accurate, and readable. Cards that do not require contact information explicitly record that decision.
+- [ ] Font sizes remain within reviewed minimum and maximum limits, text regions do not overlap, and no glyph ink reaches a clipping boundary.
+- [ ] The hash-bound Open Graph approval manifest matches both the rendering input hashes and exact image hashes in the candidate.
 - [ ] Every indexable page has exactly one `h1`, and heading levels do not jump.
 - [ ] Image output validator passes for alternative text, intrinsic dimensions, responsive `srcset`, `sizes`, and picture fallbacks.
 - [ ] Localized sites have complete reciprocal hreflang clusters, localized self-canonicals, and `x-default`.
