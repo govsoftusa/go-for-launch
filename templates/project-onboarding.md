@@ -22,6 +22,7 @@
 - [ ] WebKit and native iOS Safari testing
 - [ ] Cloudflare deployment
 - [ ] Cloudflare forms, Turnstile, and Email Service
+- [ ] Cloudflare production RUM and edge HTTP observability
 - [ ] Scheduled agent maintenance
 - [ ] Optional design-system review
 
@@ -55,6 +56,19 @@ Use `required`, `conditional`, `optional`, `not used`, or `blocked`. Complete on
 - Paid plan approved by:
 - Masked access check:
 - Fallback or blocker:
+
+### Cloudflare Web Analytics and edge HTTP analytics
+
+- Decision:
+- Capability supported: production RUM baseline, LCP element diagnosis, and optional edge HTTP error rates
+- Account and scope owner:
+- Account Analytics Read verified:
+- Zone analytics read verified, if selected:
+- Canonical RUM hostname:
+- Minimum samples and time window:
+- Enforcement mode: advisory, regressions, or thresholds
+- Masked access check:
+- Fallback or blocker: preserve a skipped report and retain PageSpeed, WebKit, and native Safari gates
 
 ### Google PageSpeed Insights and optional API credential
 

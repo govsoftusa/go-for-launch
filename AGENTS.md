@@ -47,6 +47,8 @@
 - Run `scripts/verify-content-quality.mjs` against the exact production build. Block release on missing audience definitions, missing or stale editorial reviews, failed approachability or human-tone approval, machine-like filler, inflated language, excessive sentence or paragraph length, or reading accessibility below the reviewed route threshold.
 - Treat citation topical overlap as a review signal rather than proof that a source supports a claim. High-stakes claims require a named reviewer, review date, expected claim terms, expected source terms, and a short limitation note.
 - Run `scripts/verify-ahrefs-site-audit.mjs` after staging when approved Ahrefs API v3 access exists. Missing optional access must produce a visible skipped report. Missing required access or configured active Ahrefs errors and warnings block production.
+- For Cloudflare-hosted sites, read `CLOUDFLARE-OBSERVABILITY.md`, capture an advisory production RUM baseline when approved account analytics access exists, and preserve the machine-readable report. Run `scripts/verify-cloudflare-observability.mjs` after production traffic reaches the release and enforce reviewed threshold or baseline-regression rules when the project marks them required.
+- Treat viewport-specific resource loading as a mandatory browser test. Desktop must not download mobile-only first-viewport artwork, mobile must not download desktop-only artwork, and the declared preload must match the measured LCP resource.
 - Preserve the machine-readable site-health report with the release evidence. Re-run it after any image optimization, HTML transformation, CSS transformation, redirect change, or metadata change.
 - Test the built candidate in Playwright WebKit using an iPhone device profile.
 - Test the built candidate in native iOS Safari using an explicitly selected Xcode Simulator device and UDID.
@@ -67,3 +69,4 @@
 - Require a score of 100 for Performance, Accessibility, Best Practices, and SEO on both mobile and desktop.
 - Do not deploy or push the candidate to production when any required iOS Simulator check fails or any PageSpeed category is below 100.
 - After production deployment, repeat the live WebKit suite and a native iOS Safari smoke test against the canonical hostname.
+- After production deployment, query approved Cloudflare RUM and edge HTTP analytics immediately, then repeat after sufficient traffic. A required Cloudflare permission error, required missing dataset, enforced RUM regression, or enforced edge error-rate failure blocks release signoff.

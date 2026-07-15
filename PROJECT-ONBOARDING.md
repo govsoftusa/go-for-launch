@@ -15,6 +15,7 @@ Record which Go for Launch workflows are in scope:
 - Performance and accessibility remediation.
 - WebKit and native iOS Safari testing.
 - Cloudflare deployment, forms, Turnstile, or Email Service.
+- Cloudflare production RUM and edge HTTP observability.
 - Scheduled maintenance through a desktop agent, API, CI runner, or operating-system scheduler.
 - Optional design-system review.
 
@@ -33,6 +34,7 @@ Use one of these decisions for every service:
 - **Source CMS, export, API, or database**, provides content, publication state, media, routes, and platform behavior, conditional for migrations when public capture is incomplete.
 - **Git host**, provides remote history, collaboration, CI, and deployment triggers, conditional when the project uses a remote Git service.
 - **Cloudflare**, provides Pages or Workers hosting, DNS, headers, bindings, and deployment, conditional when Cloudflare is the selected provider.
+- **Cloudflare Web Analytics and GraphQL Analytics**, provide production RUM, LCP element evidence, and optional edge HTTP error rates, conditional when Cloudflare hosts the canonical site and approved read access exists.
 - **Cloudflare Turnstile and Email Service**, provide abuse protection and server-side form delivery, conditional when a website has forms and selects this pattern.
 - **Google PageSpeed Insights**, provides required mobile and desktop release scores, required for every production release, public access is sufficient.
 - **PageSpeed API credential**, provides automated requests and additional API quota, conditional when the public interface or anonymous quota is insufficient.
@@ -43,6 +45,8 @@ Use one of these decisions for every service:
 - **Design-system references**, provide Material, Apple, custom, or hybrid conformance evidence, optional according to project policy.
 
 Ahrefs is not required for Go for Launch, technical SEO validation, AEO implementation, sitemap checks, browser tests, PageSpeed, or deployment. When it is unavailable, use approved first-party evidence and record the research limitation.
+
+Cloudflare RUM is not a replacement for PageSpeed or Safari testing. When it is unavailable, preserve a skipped report and continue independent required gates unless the reviewed project contract classifies Cloudflare observability as required. Read [Cloudflare Production Observability](CLOUDFLARE-OBSERVABILITY.md) before selecting thresholds or enforcement.
 
 ## 3. Decide whether to purchase or connect services
 

@@ -82,6 +82,10 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Fonts have stable fallbacks.
 - [ ] Images have intrinsic dimensions.
 - [ ] The first mobile viewport is useful and not blank.
+- [ ] Desktop does not request mobile-only first-viewport artwork.
+- [ ] Mobile does not request desktop-only first-viewport artwork.
+- [ ] Hidden responsive resource variants are not downloaded.
+- [ ] The declared preload and fetch priority match the browser's measured LCP resource.
 
 ## Layout
 
@@ -140,6 +144,8 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Chromium desktop tests pass.
 - [ ] Chromium mobile tests pass.
 - [ ] Playwright WebKit tests pass using `tap()` for touch flows.
+- [ ] Browser request traces cover every breakpoint where the first-viewport resource set changes.
+- [ ] The LCP element, asset URL, request start, preload, and responsive source are asserted in browser tests.
 - [ ] Route matrix has no missing pages or required assets.
 - [ ] Static-output SEO validator passes for titles, descriptions, canonicals, Open Graph, JSON-LD, and headings.
 - [ ] Site-health audit passes against final HTML, CSS, images, metadata, internal links, redirects, and `robots.txt`.
@@ -190,6 +196,10 @@ Complete the remaining items in this section only when design review is applicab
 
 ## Performance, SEO, and Accessibility
 
+- [ ] `CLOUDFLARE-OBSERVABILITY.md` was read for a Cloudflare-hosted project.
+- [ ] Approved Cloudflare account analytics access was checked with a masked least-privilege request, or its unavailable state was recorded.
+- [ ] An advisory production RUM baseline records the exact hostname, time window, sample minimum, thresholds, route and device groups, and LCP debug elements when access exists.
+- [ ] Cloudflare RUM evidence is not substituted for PageSpeed, WebKit, or native Safari evidence.
 - [ ] PageSpeed mobile Performance equals 100.
 - [ ] PageSpeed mobile Accessibility equals 100.
 - [ ] PageSpeed mobile Best Practices equals 100.
@@ -245,6 +255,9 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Localized canonical, hreflang, language selector, and sitemap behavior passes on public hosts.
 - [ ] Live WebKit tests pass after propagation.
 - [ ] Native iOS Safari navigation works on production.
+- [ ] Cloudflare edge HTTP errors were queried immediately after production when approved zone analytics access exists.
+- [ ] Cloudflare RUM was compared after sufficient production traffic, with the report distinguishing available, no-data, skipped, permission-error, and failed states.
+- [ ] Any required Cloudflare threshold or baseline regression passes under the reviewed enforcement mode.
 - [ ] Generated build output is cleaned without reverting source changes.
 - [ ] Final evidence records versions, test counts, scores, and remaining risks.
 - [ ] Final evidence records the render sharpness result, report path, native-resolution review, and intentional exceptions.

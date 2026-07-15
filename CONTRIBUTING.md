@@ -33,6 +33,8 @@ Any contributed production workflow must preserve the repository's mandatory rel
 - Test it with Playwright WebKit and native iOS Safari through Xcode Simulator.
 - Audit the same staged candidate with PageSpeed Insights.
 - Require 100 for Performance, Accessibility, Best Practices, and SEO on both mobile and desktop.
+- Assert viewport-specific resource loading and require preloads to match measured LCP resources.
+- Preserve an advisory Cloudflare RUM baseline and post-release comparison when approved analytics access exists.
 - Block production when any required test or score fails.
 
 Contributions must not describe Chromium mobile emulation or a passing build as a replacement for native iOS Simulator testing.

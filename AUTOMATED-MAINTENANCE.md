@@ -89,7 +89,7 @@ For a stable informational site, start monthly. Move to weekly only when depende
 Separate checks by risk:
 
 - Weekly or monthly: version discovery, dependency audit, Astro diagnostics, sitemap-verified build, and browser tests.
-- After a validated change: staged deployment and PageSpeed gate.
+- After a validated change: viewport resource audit, advisory Cloudflare baseline when approved, staged deployment, and PageSpeed gate.
 - Production: only when the exact staged candidate passes every gate.
 - Daily monitoring: public uptime, certificate, sitemap, robots file, and critical-link checks without source changes.
 
@@ -104,11 +104,11 @@ Read every applicable AGENTS.md file and the Go for Launch production policy bef
 
 Check current compatible releases for Astro, its integrations, adapter, build tooling, TypeScript, test tooling, and deployment tooling. Never force an incompatible dependency tree. Make only targeted maintenance changes that are justified by current release information or a failing check.
 
-Run install, Astro diagnostics, project tests, production build, Chromium, and Playwright WebKit with an iPhone profile. The normal build command must generate the XML sitemap, compare every indexable built canonical with the sitemap, verify the exact sitemap URL in robots.txt, and run the semantic SEO gate with reviewed title, page-intent, content-depth, and citation rules. A missing or incomplete sitemap or semantic SEO report fails the build. Test the built candidate in native iOS Safari with one recorded Simulator UDID when the environment is available. If native Safari is required but unavailable, stop before production.
+Run install, Astro diagnostics, project tests, production build, Chromium, and Playwright WebKit with an iPhone profile. The normal build command must generate the XML sitemap, compare every indexable built canonical with the sitemap, verify the exact sitemap URL in robots.txt, and run the semantic SEO gate with reviewed title, page-intent, content-depth, and citation rules. A missing or incomplete sitemap or semantic SEO report fails the build. Record desktop and mobile first-viewport requests, fail hidden responsive resource downloads, and confirm preloads match measured LCP resources. Test the built candidate in native iOS Safari with one recorded Simulator UDID when the environment is available. If native Safari is required but unavailable, stop before production.
 
-Deploy the exact built candidate to the documented staging target. Confirm staging serves that candidate. Validate required citation URLs from the release environment. Run Ahrefs Site Audit when approved API v3 access exists, and record pass, fail, or an allowed skipped state. Run PageSpeed Insights for mobile and desktop and require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+For a Cloudflare-hosted canonical site, capture an advisory production RUM baseline when approved Account Analytics Read access exists. Deploy the exact built candidate to the documented staging target. Confirm staging serves that candidate. Validate required citation URLs from the release environment. Run Ahrefs Site Audit when approved API v3 access exists, and record pass, fail, or an allowed skipped state. Run PageSpeed Insights for mobile and desktop and require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
 
-Deploy the same candidate to production only when every required gate passes. Verify the canonical hostname, redirects, representative routes, sitemap, child sitemaps, robots file, Open Graph images, WebKit behavior, and a native Safari smoke test after production. When approved Google Search Console access exists, verify the property and permission, list submitted sitemaps, submit the exact canonical sitemap when missing, and record the status. Sitemap submission must not be treated as property ownership verification.
+Deploy the same candidate to production only when every required gate passes. Verify the canonical hostname, redirects, representative routes, sitemap, child sitemaps, robots file, Open Graph images, WebKit behavior, and a native Safari smoke test after production. Query approved Cloudflare edge HTTP analytics immediately and compare RUM after sufficient traffic, preserving pass, fail, permission-error, no-data, or skipped evidence. When approved Google Search Console access exists, verify the property and permission, list submitted sitemaps, submit the exact canonical sitemap when missing, and record the status. Sitemap submission must not be treated as property ownership verification.
 
 Never print secrets. Never invent a deployment target or hostname. Never deploy when the repository remains dirty from unrelated work, the build changes after staging, a required test fails, or any PageSpeed score is below 100.
 
@@ -129,6 +129,8 @@ Stop before production when any of these is true:
 - Ahrefs access is required by project policy but unavailable, or the current audit reports a blocking issue.
 - Staging does not serve the expected candidate.
 - Any required PageSpeed score is below 100.
+- A viewport downloads an unneeded hidden resource variant or its preload does not match the measured LCP resource.
+- Required Cloudflare observability data is unavailable or an enforced RUM, regression, or edge HTTP rule fails.
 - A secret would need to be printed, committed, or copied into the prompt.
 - Production would require a database, payment, authentication, or destructive content change.
 

@@ -39,6 +39,9 @@
 - Simulator routes and interactions tested:
 - Horizontal overflow:
 - JavaScript page errors:
+- Desktop first-viewport resources:
+- Mobile first-viewport resources:
+- Measured LCP elements and preload matches:
 
 ## Quality
 
@@ -58,6 +61,23 @@
 - Heading hierarchy:
 - Astro image output and intrinsic dimensions:
 - Forms and anti-spam:
+
+## Cloudflare Observability
+
+- Decision: required, conditional, optional, not used, or blocked
+- Canonical RUM hostname:
+- Account Analytics Read masked check:
+- Zone analytics read masked check, if selected:
+- Baseline report and window:
+- Baseline route and device sample counts:
+- Post-release report and window:
+- Enforcement mode: advisory, regressions, or thresholds
+- LCP P75 and P99 findings:
+- LCP selectors and asset paths:
+- INP and CLS findings:
+- Edge `4xx` and `5xx` rates:
+- Permission, no-data, or skipped state:
+- Final decision:
 
 ## Site Health Audit
 
@@ -167,3 +187,5 @@
 - Ahrefs Site Audit status, pass, fail, optional skipped, or required blocked:
 - Render sharpness gate passed:
 - Search Console status recorded when access exists:
+- Viewport-specific resource audit passed:
+- Cloudflare observability status recorded when applicable:

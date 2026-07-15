@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### Cloudflare Production Observability
+
+- Added a reusable Cloudflare GraphQL Analytics verifier for route and device Core Web Vitals, LCP selectors and asset paths, INP and CLS debug elements, and optional edge HTTP status rates.
+- Added advisory, threshold, and baseline-regression modes with minimum sample requirements and separate handling for account RUM and zone HTTP permissions.
+- Added secure Global API Key authentication as a fallback to the preferred scoped API token, using Cloudflare's documented email and key headers.
+- Changed raw edge `4xx` rate to report-only by default after live zone evidence showed automated WordPress and PHP probes dominating otherwise healthy traffic. Edge `5xx` enforcement remains enabled by default.
+- Added a reviewed configuration template, saved-response fixtures, masked credential guidance, machine-readable reports, and regression tests.
+- Required viewport-specific browser request assertions so hidden mobile artwork cannot load on desktop, hidden desktop artwork cannot load on mobile, and preloads must match the measured LCP resource.
+- Added a production workflow that captures a historical RUM baseline, keeps PageSpeed and Safari as independent gates, then checks Cloudflare immediately and after sufficient post-release traffic.
+- Documented that Cloudflare RUM currently covers Chromium rather than native Safari, that rolling windows can include previous-release traffic, and that missing data must never be reported as a pass.
+
 ### Native Safari Menu Follow-up
 
 - Updated the Go4Launch case study with the final full-viewport header grid fix.

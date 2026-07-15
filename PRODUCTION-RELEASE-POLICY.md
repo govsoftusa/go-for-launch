@@ -33,9 +33,11 @@ run the site-health audit against final HTML, CSS, images, internal links, redir
 run the semantic SEO audit against canonicals, titles, page intent, content depth, and citations
 verify approved Open Graph cards were reused without writes, inspect complete contact sheets for changed cards, and approve exact rendering input and image hashes
 verify localized canonicals and reciprocal hreflang when the site is multilingual
+verify viewport-specific network resources and confirm preloads match measured LCP resources
 run desktop and mobile browser tests
 run Playwright WebKit with an iPhone profile
 test the built candidate in native iOS Safari through Xcode Simulator
+capture an advisory Cloudflare production RUM baseline when approved access exists
 deploy the exact candidate to staging
 verify staging serves the expected candidate
 run Ahrefs Site Audit when approved API v3 or crawler access exists
@@ -46,6 +48,7 @@ verify the canonical hostname
 verify the public sitemap and robots declaration
 verify trailing-slash, alternate-origin, and legacy redirects
 repeat live WebKit and native iOS Safari smoke tests
+query Cloudflare edge errors immediately and compare RUM after sufficient production traffic when approved access exists
 ```
 
 Do not rebuild between the successful staging audit and production promotion unless the new output repeats the complete gate.
@@ -239,6 +242,20 @@ The WebKit suite must cover:
 
 All required WebKit tests must pass before production.
 
+## Viewport Resource and Cloudflare Observability Requirement
+
+Read [Cloudflare Production Observability](CLOUDFLARE-OBSERVABILITY.md) for every Cloudflare-hosted project. Synthetic performance and production RUM are separate evidence surfaces, and neither replaces the other.
+
+Before staging, browser tests must record first-viewport requests at every breakpoint where responsive artwork changes. Desktop must not download mobile-only hero artwork, mobile must not download desktop-only hero artwork, and hidden resource variants must not be requested. The declared preload, responsive source, fetch priority, and downloaded asset must agree with the browser's measured LCP element. A hidden-viewport download or preload mismatch blocks the candidate even when PageSpeed reports 100.
+
+When approved Cloudflare account analytics access exists, run [`scripts/verify-cloudflare-observability.mjs`](scripts/verify-cloudflare-observability.mjs) in advisory mode before production to preserve a historical RUM baseline. The report must identify the hostname, window, sample minimum, route and device groups, LCP P75 and P99, LCP selectors and asset paths, INP, CLS, API availability, and any permission or no-data state.
+
+After production promotion, query Cloudflare immediately for edge HTTP errors and confirm the RUM integration remains available. Repeat the RUM comparison after sufficient traffic, normally after 15 minutes, one hour, and 24 hours when those windows meet the reviewed sample minimum.
+
+Historical threshold findings describe the previous production state and must not be presented as proof that the staged candidate fails. Use advisory mode for the baseline, `regressions` mode for a reviewed post-release comparison, and `thresholds` mode only when the project intentionally makes current limits blocking. A required permission error, required missing dataset, enforced threshold breach, or enforced baseline regression blocks release signoff.
+
+Cloudflare RUM currently covers Chromium Core Web Vitals. Playwright WebKit and native iOS Safari remain mandatory independent evidence.
+
 ## PageSpeed Requirement
 
 Run PageSpeed Insights against the staged production candidate with both strategies:
@@ -297,7 +314,9 @@ After deployment:
 6. Open the canonical hostname in native iOS Safari Simulator.
 7. Repeat mobile-menu, dropdown navigation, form or modal, and scrolling smoke tests.
 8. Confirm no horizontal overflow or blank first paint.
-9. Record production deployment and verification evidence.
+9. Query Cloudflare edge HTTP analytics immediately when approved access exists.
+10. Repeat the Cloudflare RUM comparison after sufficient traffic and record any rolling-window limitation.
+11. Record production deployment and verification evidence.
 
 Production verification does not replace pre-production testing. It confirms routing, propagation, caching, and hostname behavior after promotion.
 
@@ -312,6 +331,7 @@ Stop the production release when:
 - `robots.txt` does not advertise the canonical sitemap URL.
 - Required unit, server, form, or build-pipeline tests fail.
 - Chromium or WebKit behavior tests fail.
+- A viewport downloads an unneeded hidden resource variant or the preload does not match the measured LCP resource.
 - Native iOS Safari testing is unavailable or fails.
 - Required routes, content, images, or metadata are missing.
 - The configured design mode is `required` and applicable design evidence, brand continuity review, or visual acceptance is missing or fails.
@@ -325,6 +345,8 @@ Stop the production release when:
 - The machine-readable site-health report is missing or reports oversized referenced images, metadata defects, redirecting internal links, missing targets, orphaned canonical pages, or invalid crawler declarations.
 - The machine-readable semantic SEO report is missing or reports canonical drift, title-content mismatch, uncovered page intent, unreviewed thin content, invalid citations, or citation evidence drift.
 - Ahrefs access is required but unavailable, or the current Ahrefs Site Audit reports an active issue at a configured blocking importance.
+- Cloudflare observability is required but its approved credential, RUM dataset, or configured edge dataset is unavailable.
+- A configured Cloudflare RUM threshold, baseline-regression rule, or edge error-rate rule fails in its reviewed enforcement mode.
 - Trailing-slash, alternate-origin, or legacy redirect verification fails.
 - Horizontal overflow remains.
 - Forms or anti-spam verification fail.
@@ -349,6 +371,7 @@ Use [templates/migration-acceptance-record.md](templates/migration-acceptance-re
 - Automated test results.
 - Simulator environment and results.
 - Mobile and desktop PageSpeed scores.
+- Cloudflare baseline and post-release report paths, windows, sample counts, permissions, findings, and enforcement mode when approved access exists.
 - Staging verification.
 - Production deployment identifier.
 - Canonical-host verification.

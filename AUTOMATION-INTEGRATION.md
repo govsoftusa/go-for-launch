@@ -34,6 +34,7 @@ Every run must read these files before deciding whether a site can deploy:
 - `DESIGN-GATE-POLICY.md`
 - `DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md`
 - `RENDER-SHARPNESS.md`
+- `CLOUDFLARE-OBSERVABILITY.md`
 
 If this repository changes, the automation must treat the current files as authoritative instead of relying on older automation memory.
 
@@ -59,17 +60,20 @@ For each eligible Astro root:
 14. For localized sites, validate self-canonicals, reciprocal hreflang clusters, `x-default`, localized sitemap entries, and localized navigation.
 15. Always run accessibility preferences, text resize, reflow, interaction, and responsive safety checks. When design review applies, also capture and inspect the configured viewports, route families, and design-system criteria.
 16. Run Playwright WebKit with an iPhone profile when the repo has Playwright coverage or when the automation adds a temporary smoke suite.
-17. Test the built candidate in native iOS Safari using an explicit Simulator UDID, including representative side-navigation interaction.
-18. Deploy the exact candidate to staging when a staging target is documented.
-19. Verify staging serves the expected candidate, canonical metadata, sitemap, child sitemaps, robots declaration, citations, and every side-navigation destination.
-20. Run PageSpeed Insights against staging for mobile and desktop.
-21. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
-22. Run Ahrefs Site Audit against the current project when approved API v3 or crawler access exists, and preserve pass, fail, or allowed skipped evidence.
-23. Run the design gate, preserve its result, and deploy production only when all core gates and every configured required gate pass and the production target is unambiguous.
-24. Verify the canonical production hostname with live HTTP checks, sitemap checks, citation checks, redirect checks, complete side-navigation coverage, WebKit smoke coverage, and native iOS Safari smoke coverage.
-25. Verify the opposite trailing-slash form, alternate origins, and approved legacy routes redirect in one permanent hop with path and query preservation.
-26. When approved Search Console access exists, verify property access, list submitted sitemaps, submit the canonical sitemap when missing, and record the resulting status.
-27. When SEO or content work is in scope, research query language from approved Search Console, Ahrefs, support, sales, or analytics evidence before adding answer-focused content.
+17. Record desktop and mobile first-viewport requests, reject hidden-viewport downloads, and confirm every preload matches the measured LCP resource.
+18. Test the built candidate in native iOS Safari using an explicit Simulator UDID, including representative side-navigation interaction.
+19. Capture an advisory Cloudflare production RUM baseline when the canonical site is Cloudflare-hosted and approved Account Analytics Read access exists.
+20. Deploy the exact candidate to staging when a staging target is documented.
+21. Verify staging serves the expected candidate, canonical metadata, sitemap, child sitemaps, robots declaration, citations, and every side-navigation destination.
+22. Run PageSpeed Insights against staging for mobile and desktop.
+23. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+24. Run Ahrefs Site Audit against the current project when approved API v3 or crawler access exists, and preserve pass, fail, or allowed skipped evidence.
+25. Run the design gate, preserve its result, and deploy production only when all core gates and every configured required gate pass and the production target is unambiguous.
+26. Verify the canonical production hostname with live HTTP checks, sitemap checks, citation checks, redirect checks, complete side-navigation coverage, WebKit smoke coverage, and native iOS Safari smoke coverage.
+27. Query approved Cloudflare edge HTTP analytics immediately, then compare production RUM after sufficient traffic and preserve every report or explicit skipped state.
+28. Verify the opposite trailing-slash form, alternate origins, and approved legacy routes redirect in one permanent hop with path and query preservation.
+29. When approved Search Console access exists, verify property access, list submitted sitemaps, submit the canonical sitemap when missing, and record the resulting status.
+30. When SEO or content work is in scope, research query language from approved Search Console, Ahrefs, support, sales, or analytics evidence before adding answer-focused content.
 
 If a site has only a production deploy script and no safe staging target, do not deploy production unless the repo documentation explicitly allows the production target to serve as the release gate for that site.
 
@@ -95,7 +99,7 @@ If full Xcode, an iOS runtime, or an available iPhone Simulator is missing, prod
 
 ## Credential Access Through 1Password
 
-When the machine has 1Password and the 1Password CLI (`op`) available, use it as the secret manager for every API credential this toolkit touches, including PageSpeed API keys, Ahrefs API keys, and Cloudflare API tokens used to publish sites.
+When the machine has 1Password and the 1Password CLI (`op`) available, use it as the secret manager for every API credential this toolkit touches, including PageSpeed API keys, Ahrefs API keys, Cloudflare Analytics tokens, and Cloudflare deploy tokens.
 
 Check availability before assuming access:
 
@@ -184,6 +188,21 @@ PageSpeed evidence must be tied to the staged candidate:
 
 If PageSpeed audits a stale page, redirect placeholder, access-denied page, Cloudflare error, or unrelated preview, the result is invalid.
 
+## Cloudflare Production Observability
+
+For a Cloudflare-hosted canonical site, read [Cloudflare Production Observability](CLOUDFLARE-OBSERVABILITY.md) and copy [`templates/cloudflare-observability.config.mjs`](templates/cloudflare-observability.config.mjs) into the target project.
+
+When approved access exists:
+
+1. Verify a least-privilege API token with a masked check.
+2. Run the verifier in advisory mode before release and preserve the production RUM baseline.
+3. Keep PageSpeed, Playwright WebKit, and native Safari as independent gates.
+4. Query edge HTTP errors immediately after deployment when zone analytics access exists.
+5. Repeat RUM after 15 minutes, one hour, and 24 hours when the selected windows have enough samples.
+6. Use `regressions` or `thresholds` mode only after the project reviews its sample minimums, limits, and blocking policy.
+
+An old production RUM finding does not prove the staged candidate fails. A missing dataset is not a pass. Record available, no-data, skipped, permission-error, and failed states distinctly.
+
 ## Evidence Record
 
 For every site touched by automation, report:
@@ -204,6 +223,7 @@ For every site touched by automation, report:
 - Simulator UDID record or production-blocking Simulator blocker.
 - Staging target and verification result.
 - PageSpeed mobile and desktop scores.
+- Cloudflare RUM and edge report paths, windows, sample counts, permission state, enforcement mode, findings, and comparison result when access exists.
 - Production deploy target and identifier, when deployed.
 - Canonical hostname verification result.
 - Skipped gates and exact reason.
@@ -236,6 +256,9 @@ Stop before production deployment when:
 - Staging is unavailable without an explicit production-only release policy.
 - PageSpeed is below 100 in any required category.
 - PageSpeed audited the wrong document.
+- Viewport-specific request tests show hidden resource variants loading or a preload does not match the measured LCP resource.
+- Cloudflare observability is required but approved access or required data is unavailable.
+- An enforced Cloudflare RUM regression, threshold, or edge HTTP error-rate rule fails.
 - The production target is ambiguous.
 - Credentials are missing.
 - The candidate changed after staging, Simulator, or PageSpeed checks.
