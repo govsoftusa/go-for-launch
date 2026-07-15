@@ -12,6 +12,54 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Record the symptom, root cause, hard rule, implementation, migration impact, and test evidence.
 - Keep site-specific evidence in `case-studies/`. Keep this changelog focused on reusable toolkit behavior.
 
+## 0.3.1, 2026-07-15
+
+### Visual Composition Gate
+
+- Added browser-measured geometry checks for CSS illustrations, diagrams, generated page graphics, charts, hero artwork, and website email graphics.
+- Added `data-visual-artboard`, `data-visual-label`, and `data-visual-decoration` contracts for label bounds, overlap, decorative crossings, safe inset, and reviewed fill thresholds.
+- Added Chromium and WebKit captures across configured desktop, mobile, and minimum-width viewports.
+- Added `VISUAL-COMPOSITION-TESTING.md`, a reusable verifier, configuration template, unit geometry helpers, browser fixtures, machine-readable reports, and human review requirements.
+- Removed an unused geometry helper so the toolkit returns zero Astro diagnostics.
+
+### Brand Asset Provenance Gate
+
+#### Symptom
+
+- A social-card fallback used a full-color logomark on a dark navy panel even though the authoritative brand guide required a white or reversed variant.
+- The image passed dimensions, file-hash, readability, and general visual checks because the process verified output quality without proving that the selected source asset was the correct brand-kit variant.
+
+#### Root Cause
+
+- A convenient website logo export was treated as interchangeable with the current brand kit.
+- The approval record identified palette and general brand integrity but did not identify the source guide, exact asset, allowed background surface, or clear-space rule.
+
+#### Hard Rules Added
+
+- Review the authoritative current brand guide and brand kit before using any logo, logomark, wordmark, icon, seal, mascot, illustration, or branded template.
+- Record exact SHA-256 values for the guide and every approved asset.
+- Record each asset's named variant, allowed surfaces, minimum rendered size, and minimum clear-space ratio.
+- Never crop a standalone mark from another lockup when an approved standalone asset exists.
+- Never recolor, distort, rotate, skew, or add effects unless the guide explicitly allows it.
+- Treat light, dark, colored, patterned, and photographic surfaces as separate contexts.
+- A wrong light or dark variant invalidates approval for every affected output.
+
+#### Implementation
+
+- Added `BRAND-ASSET-PROVENANCE.md`.
+- Added `scripts/verify-brand-assets.mjs` and `templates/brand-assets.config.mjs`.
+- Added verification for source existence, guide and asset hashes, allowed surfaces, intrinsic and rendered aspect ratios, minimum width, and clear space on all sides.
+- Added brand provenance requirements to project instructions, production policy, social-card guidance, and the release checklist.
+
+#### Test Evidence
+
+- Valid guide, asset, surface, ratio, size, and clear-space records pass.
+- Changed brand-guide hashes fail.
+- A light-background asset used on a dark surface fails.
+- Distorted rendering fails.
+- Insufficient clear space fails.
+- The first integration replaced a dark-panel full-color mark with the exact approved white logomark and replaced the light-panel logo with the official primary full-color lockup.
+
 ## 0.3.0, 2026-07-15
 
 ### Social Card Release Safety

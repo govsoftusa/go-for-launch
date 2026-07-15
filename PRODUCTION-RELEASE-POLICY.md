@@ -16,6 +16,7 @@ run unit, server, form, and build-pipeline tests
 build the production candidate
 complete design and brand continuity review when visual work is in scope
 verify rendered text, logos, and interface icons pass the render sharpness gate
+verify marked visual artboards pass composition geometry checks in Chromium and WebKit
 verify the generated sitemap covers every indexable built page
 verify metadata, JSON-LD, headings, Open Graph files, and image output
 run the site-health audit against final HTML, CSS, images, internal links, redirects, metadata, and robots.txt
@@ -105,6 +106,16 @@ When applicable design review is advisory or required, follow [DESIGN-OPTIMIZATI
 
 Do not claim Material Design, Apple design, Liquid Glass, custom-system, or hybrid conformance unless the applicable review passes.
 
+## Visual Composition Requirement
+
+Follow [Visual Composition Testing](VISUAL-COMPOSITION-TESTING.md) for CSS illustrations, diagrams, generated page graphics, charts, hero artwork, and website email graphics. Structural composition safety is mandatory in every design mode because it protects legibility and responsive integrity rather than enforcing a particular design language.
+
+Mark each applicable composition with `data-visual-artboard`, mark separate text and symbol regions with `data-visual-label`, and mark rules, connectors, and ornaments with `data-visual-decoration`. Run [`scripts/verify-visual-composition.mjs`](scripts/verify-visual-composition.mjs) against the exact static output in Chromium and WebKit at the reviewed desktop, mobile, and minimum-width viewports.
+
+A label leaving the safe area, text regions overlapping, decorative geometry crossing a label, a missing configured artboard, or failure to meet the reviewed fill threshold blocks production. Preserve the machine-readable report and all generated artboard captures.
+
+Automated geometry does not replace visual judgment. Inspect every capture at native size for reading order, balance, useful empty space, connector clarity, and professional craft. Record the reviewer and decision against the exact candidate. Accidental dead zones and confusing composition block release even when the optional design-system mode is `off`.
+
 ## Side Navigation Requirement
 
 Every persistent side rail, table of contents, policy rail, vertical tab list, and in-page navigation group is release-critical navigation. Mark each region with `data-side-navigation` and each destination with `data-side-navigation-item` so the exact production build can be audited consistently.
@@ -140,6 +151,8 @@ Normal builds must not generate, rewrite, recompress, rename, or optimize an exi
 A displayed destination that is clipped, ellipsized, too small to read, or too truncated to identify the canonical host blocks production. Clipped glyphs, missing descenders, blurry supporting labels, jagged or stretched artwork, and visual symbols that can be mistaken for status or validation controls also block production.
 
 Each card must declare its intended sharing purpose and a reviewed brand contract. The contract must define approved colors and type families, safe padding, minimum supporting-text size, maximum headline size, and whether visible contact information is required. Automated bounds checks and a named human reviewer must confirm that text is readable, does not overlap, is not clipped, is neither too large nor too small, and preserves brand hierarchy and integrity for the intended purpose.
+
+Every brand asset must come from the authoritative current brand kit and be checked against the reviewed brand guide. Follow [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md) and run [`scripts/verify-brand-assets.mjs`](scripts/verify-brand-assets.mjs). Record the guide hash, asset hash, named variant, allowed background surfaces, intrinsic and rendered aspect ratios, minimum size, and clear space. Using a full-color logo on a dark surface when the guide requires white or reversed artwork, cropping a standalone mark from another lockup, altering colors, distorting geometry, or failing required clear space invalidates visual approval and blocks production.
 
 ## Native iOS Safari Requirement
 

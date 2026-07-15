@@ -10,7 +10,7 @@ The toolbox serves twelve purposes:
 
 1. **Converting existing sites to Astro.** Complete workflows for rebuilding websites in Astro without losing content, design fidelity, responsive behavior, SEO, accessibility, performance, or browser reliability. The Webflow and WordPress workflows are proven in production, and the platform-neutral framework extends to Squarespace, Wix, Drupal, static HTML, and custom content management systems as alpha guidance.
 2. **Keeping existing Astro sites current.** A maintenance process for updating Astro sites already in production to the latest compatible Astro version and dependency set, with every upgrade passing the same release gates as a new migration. See [AUTOMATION-INTEGRATION.md](AUTOMATION-INTEGRATION.md).
-3. **Automated testing on web and mobile.** Browser test guidance covering Chromium, Playwright WebKit with iPhone device profiles, and native mobile Safari through the macOS Xcode iOS Simulator using a pinned device UDID. See the [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md) and the [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md).
+3. **Automated testing on web and mobile.** Browser test guidance covering Chromium, Playwright WebKit with iPhone device profiles, native mobile Safari through the macOS Xcode iOS Simulator using a pinned device UDID, and mandatory [visual composition testing](VISUAL-COMPOSITION-TESTING.md) for generated and CSS-rendered artwork. See the [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md) and the [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md).
 4. **A 100/100 PageSpeed standard.** A mandatory release gate requiring PageSpeed Insights scores of 100 for Performance, Accessibility, Best Practices, and SEO, on both mobile and desktop, before any production deployment. See the [Production Release Policy](PRODUCTION-RELEASE-POLICY.md).
 5. **Complete sitemap and Search Console operations.** Every build must prove that its XML sitemap matches all indexable built pages. When approved Search Console access exists, verify the property, inspect its submitted sitemaps, and submit the canonical sitemap when missing. See [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md).
 6. **SEO and answer-engine content strategy.** Research real questions through Search Console, Ahrefs, support, and sales evidence, then publish focused, answer-first content with accurate optional structured data and measurable maintenance. See [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md).
@@ -54,13 +54,15 @@ This repository documents the process used to close those gaps while replacing l
 14. [Internationalization, Canonicals, and Hreflang](INTERNATIONALIZATION-AND-HREFLANG.md)
 15. [Redirect Verification](REDIRECT-VERIFICATION.md)
 16. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
-17. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
-18. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
-19. [Render Sharpness Gate](RENDER-SHARPNESS.md)
-20. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
-21. [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md)
-22. [Contributing Guide](CONTRIBUTING.md)
-23. [Roadmap](ROADMAP.md)
+17. [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md)
+18. [Visual Composition Testing](VISUAL-COMPOSITION-TESTING.md)
+19. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
+20. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
+21. [Render Sharpness Gate](RENDER-SHARPNESS.md)
+22. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
+23. [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md)
+24. [Contributing Guide](CONTRIBUTING.md)
+25. [Roadmap](ROADMAP.md)
 
 ## Repository Structure
 
@@ -83,6 +85,8 @@ This repository documents the process used to close those gaps while replacing l
 ├── INTERNATIONALIZATION-AND-HREFLANG.md
 ├── REDIRECT-VERIFICATION.md
 ├── OPEN-GRAPH-GENERATION.md
+├── BRAND-ASSET-PROVENANCE.md
+├── VISUAL-COMPOSITION-TESTING.md
 ├── DESIGN-GATE-POLICY.md
 ├── DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md
 ├── RENDER-SHARPNESS.md
@@ -99,6 +103,8 @@ This repository documents the process used to close those gaps while replacing l
 │   ├── verify-ahrefs-site-audit.mjs
 │   ├── verify-redirects.mjs
 │   ├── generate-open-graph.mjs
+│   ├── verify-brand-assets.mjs
+│   ├── verify-visual-composition.mjs
 │   ├── verify-render-sharpness.mjs
 │   └── run-design-gate.mjs
 ├── case-studies/
@@ -112,6 +118,8 @@ This repository documents the process used to close those gaps while replacing l
     ├── astro-assets/ResponsivePicture.astro
     ├── astro-i18n/localized-seo.ts
     ├── open-graph.config.mjs
+    ├── brand-assets.config.mjs
+    ├── visual-composition.config.mjs
     ├── redirects.config.mjs
     ├── site-health.config.mjs
     ├── semantic-seo.config.mjs
@@ -179,7 +187,7 @@ Every site using Go for Launch must pass the following gate before production de
 5. Run the semantic SEO gate against canonicals, titles, page intent, content depth, and citations.
 6. Run the mandatory render sharpness gate and preserve its machine-readable result.
 7. Run the side-navigation verifier and activate every marked navigation item in browser tests.
-8. Run the automated browser, WebKit, accessibility, form, and route tests against that candidate.
+8. Run visual composition verification, then run the automated browser, WebKit, accessibility, form, and route tests against that candidate.
 9. Run the configured design-system gate and preserve its result. Only `required` design findings block production.
 10. Test the candidate in native iOS Safari through Xcode Simulator using a pinned device UDID.
 11. Deploy the same candidate to staging.

@@ -96,6 +96,12 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Production build passes.
 - [ ] The mandatory render sharpness gate passes against the exact built candidate and its JSON report is preserved.
 - [ ] The side-navigation verifier passes against the exact built candidate and its JSON report is preserved.
+- [ ] Every CSS illustration, diagram, generated page graphic, chart, hero artwork, and website email graphic in scope is marked for visual composition verification.
+- [ ] The visual composition verifier passes in Chromium and WebKit at desktop, mobile, and 320 CSS pixel viewports.
+- [ ] Marked labels remain inside their artboards, do not overlap each other, and are not crossed by decorative geometry.
+- [ ] Reviewed horizontal and vertical fill thresholds reject accidental dead zones without forcing decorative density.
+- [ ] Every generated artboard capture is reviewed at native size for reading order, balance, useful empty space, connector clarity, and professional craft.
+- [ ] The visual composition JSON report, screenshots, reviewer, and decision are preserved with the exact candidate evidence.
 - [ ] Every named first-choice font is shipped or replaced with an approved system stack.
 - [ ] Inline logos and interface SVGs avoid accidental fractional view-box scaling.
 - [ ] The normal production build generates `/sitemap.xml` and runs the sitemap verifier.
@@ -128,6 +134,9 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Displayed destinations contain no ellipsis or unusable truncation, supporting text remains readable, and letters with descenders are not clipped.
 - [ ] Every card declares its intended sharing purpose and passes a named human readability assessment for that purpose.
 - [ ] Every color and type family is brand approved, padding meets the brand safe-area minimum, and visual hierarchy preserves brand integrity.
+- [ ] The authoritative brand guide and current brand kit were reviewed before selecting each logo, mark, wordmark, icon, seal, or branded illustration.
+- [ ] Every brand asset matches its recorded SHA-256, named variant, allowed surface, intrinsic aspect ratio, minimum size, and clear-space requirement.
+- [ ] Light, dark, colored, patterned, and photographic surfaces use the exact variants approved for those contexts. No mark was cropped from another lockup or recolored for convenience.
 - [ ] Required contact information is visible, useful, accurate, and readable. Cards that do not require contact information explicitly record that decision.
 - [ ] Font sizes remain within reviewed minimum and maximum limits, text regions do not overlap, and no glyph ink reaches a clipping boundary.
 - [ ] The hash-bound Open Graph approval manifest matches both the rendering input hashes and exact image hashes in the candidate.

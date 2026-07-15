@@ -31,6 +31,8 @@ Required controls:
 - Every card includes `purpose`, a plain-language statement of what the preview must communicate when that page is shared.
 - `reviewContract` records the reviewer, review date, brand reference, readability approval, brand-integrity approval, and contact-information approval.
 
+Before selecting any logo or mark, follow [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md). Record the authoritative brand-guide hash and exact asset hashes. A full-color asset approved for a light panel cannot be reused on a dark panel unless the guide explicitly allows it. Run the brand asset verifier before regenerating or approving cards.
+
 Card names become `public/og-NAME.png`. Names are limited to lowercase letters, digits, and hyphens so output paths cannot escape the configured directory.
 
 ## Generate, Review, and Verify
