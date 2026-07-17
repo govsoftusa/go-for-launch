@@ -9,6 +9,9 @@
 - Technical owner:
 - Date reviewed:
 - Go for Launch revision:
+- Local instruction file:
+- Project extension record:
+- Required build or test command that invokes project extensions:
 
 ## Selected workflows
 

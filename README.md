@@ -41,33 +41,34 @@ This repository documents the process used to close those gaps while replacing l
 ## Start Here
 
 1. [Project Onboarding, Requirements, and External Services](PROJECT-ONBOARDING.md)
-2. [Changelog](CHANGELOG.md)
-3. [Webflow to Astro Migration Guide](WEBFLOW-TO-ASTRO-MIGRATION.md)
-4. [Platform-Agnostic Migration Framework](PLATFORM-MIGRATION-FRAMEWORK.md)
-5. [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md)
-6. [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md)
-7. [Production Release Policy](PRODUCTION-RELEASE-POLICY.md)
-8. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
-9. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
-10. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
-11. [Cloudflare Production Observability](CLOUDFLARE-OBSERVABILITY.md)
-12. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
-13. [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md)
-14. [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md)
-15. [Astro Assets Implementation and Verification](ASTRO-ASSETS.md)
-16. [Internationalization, Canonicals, and Hreflang](INTERNATIONALIZATION-AND-HREFLANG.md)
-17. [Redirect Verification](REDIRECT-VERIFICATION.md)
-18. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
-19. [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md)
-20. [Visual Composition Testing](VISUAL-COMPOSITION-TESTING.md)
-21. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
-22. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
-23. [Render Sharpness Gate](RENDER-SHARPNESS.md)
-24. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
-25. [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md)
-26. [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md)
-27. [Contributing Guide](CONTRIBUTING.md)
-28. [Roadmap](ROADMAP.md)
+2. [Project-Specific Extensions](PROJECT-EXTENSIONS.md)
+3. [Changelog](CHANGELOG.md)
+4. [Webflow to Astro Migration Guide](WEBFLOW-TO-ASTRO-MIGRATION.md)
+5. [Platform-Agnostic Migration Framework](PLATFORM-MIGRATION-FRAMEWORK.md)
+6. [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md)
+7. [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md)
+8. [Production Release Policy](PRODUCTION-RELEASE-POLICY.md)
+9. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
+10. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
+11. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
+12. [Cloudflare Production Observability](CLOUDFLARE-OBSERVABILITY.md)
+13. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
+14. [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md)
+15. [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md)
+16. [Astro Assets Implementation and Verification](ASTRO-ASSETS.md)
+17. [Internationalization, Canonicals, and Hreflang](INTERNATIONALIZATION-AND-HREFLANG.md)
+18. [Redirect Verification](REDIRECT-VERIFICATION.md)
+19. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
+20. [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md)
+21. [Visual Composition Testing](VISUAL-COMPOSITION-TESTING.md)
+22. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
+23. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
+24. [Render Sharpness Gate](RENDER-SHARPNESS.md)
+25. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
+26. [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md)
+27. [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md)
+28. [Contributing Guide](CONTRIBUTING.md)
+29. [Roadmap](ROADMAP.md)
 
 ## Repository Structure
 
@@ -76,6 +77,7 @@ This repository documents the process used to close those gaps while replacing l
 ├── README.md
 ├── CHANGELOG.md
 ├── PROJECT-ONBOARDING.md
+├── PROJECT-EXTENSIONS.md
 ├── WEBFLOW-TO-ASTRO-MIGRATION.md
 ├── PLATFORM-MIGRATION-FRAMEWORK.md
 ├── ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md

@@ -4,6 +4,10 @@ Complete this onboarding before Go for Launch changes a website. The purpose is 
 
 Copy [`templates/project-onboarding.md`](templates/project-onboarding.md) into the website repository and complete it with the project owner. Do not infer approval for a paid service or connect a broad external account because the toolkit can use it.
 
+## Project-specific requirements and extensions
+
+Read [Project-Specific Extensions](PROJECT-EXTENSIONS.md) during onboarding. Record the target project's local instruction file, extension record, configuration, custom scripts, approval artifacts, and the required build or test command that invokes them. Project-specific behavior must live in the target project and must be part of its normal Go for Launch verification path.
+
 ## 1. Select the workflows
 
 Record which Go for Launch workflows are in scope:

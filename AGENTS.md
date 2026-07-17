@@ -12,6 +12,7 @@
 - Keep general guidance at the repository root and site-specific evidence under `case-studies/`.
 - Add reusable worksheets under `templates/`.
 - Before changing a website, read `PROJECT-ONBOARDING.md`, copy `templates/project-onboarding.md` into the target repository, select the workflows in scope, and classify every external service as required, conditional, optional, not used, or blocked.
+- Read `PROJECT-EXTENSIONS.md` before adding project-specific requirements or implementation. Put project rules, identities, domains, claims, content, visual treatments, thresholds, scripts, configuration, approval records, and build notes in the target project. Wire them into that project's required build and test commands. Do not place them in shared toolkit scripts, defaults, or root guidance.
 - Ask the project owner which third-party paid services are approved. Configure and validate only those external sources needed for the selected workflows, using least-privilege access and masked checks.
 - Treat Ahrefs as optional unless a reviewed project contract explicitly makes it required for a specific workflow. Do not imply that Ahrefs is required for Go for Launch, SEO, AEO, browser testing, or release work.
 - Record the operating system before testing. Windows and Linux can run much of the build and browser suite, but they cannot provide native Safari evidence from Apple's Xcode iOS Simulator. Transfer the exact candidate to a qualified Mac runner or block production under the mandatory policy.

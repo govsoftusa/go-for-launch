@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### Project-Specific Extension Boundary
+
+- Added a reusable extension guide that keeps project identities, claims, visual treatments, thresholds, scripts, configuration, approval records, and build notes in the target project.
+- Added onboarding fields for the local instruction file, project extension record, and required command that invokes project-owned behavior.
+- Required project extensions to participate in the normal build or test chain instead of relying on an optional standalone command.
+- Documented generator and approval-contract ownership, toolkit upgrade handling, and the standard for promoting a local need into a generic shared capability.
+
 ### Cloudflare Production Observability
 
 - Added a reusable Cloudflare GraphQL Analytics verifier for route and device Core Web Vitals, LCP selectors and asset paths, INP and CLS debug elements, and optional edge HTTP status rates.
