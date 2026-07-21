@@ -28,7 +28,7 @@
   "devDependencies": {
     "@astrojs/check": "0.9.9",
     "@playwright/test": "1.61.1",
-    "astro": "^7.0.9",
+    "astro": "^7.1.0",
     "typescript": "^6.0.3"
   },
   "license": "MIT"
