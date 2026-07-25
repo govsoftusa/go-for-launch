@@ -48,32 +48,34 @@ This repository documents the process used to close those gaps while replacing l
 3. [Changelog](CHANGELOG.md)
 4. [Webflow to Astro Migration Guide](WEBFLOW-TO-ASTRO-MIGRATION.md)
 5. [Platform-Agnostic Migration Framework](PLATFORM-MIGRATION-FRAMEWORK.md)
-6. [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md)
-7. [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md)
-8. [Production Release Policy](PRODUCTION-RELEASE-POLICY.md)
-9. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
-10. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
-11. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
-12. [Cloudflare Production Observability](CLOUDFLARE-OBSERVABILITY.md)
-13. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
-14. [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md)
-15. [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md)
-16. [Astro Assets Implementation and Verification](ASTRO-ASSETS.md)
-17. [Internationalization, Canonicals, and Hreflang](INTERNATIONALIZATION-AND-HREFLANG.md)
-18. [Redirect Verification](REDIRECT-VERIFICATION.md)
-19. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
-20. [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md)
-21. [Visual Composition Testing](VISUAL-COMPOSITION-TESTING.md)
-22. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
-23. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
-24. [Interface Quality and Page Differentiation Gate](INTERFACE-QUALITY-AND-PAGE-DIFFERENTIATION.md)
-25. [Case Study Normalization Policy](CASE-STUDY-NORMALIZATION.md)
-26. [Render Sharpness Gate](RENDER-SHARPNESS.md)
-27. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
-28. [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md)
-29. [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md)
-30. [Contributing Guide](CONTRIBUTING.md)
-31. [Roadmap](ROADMAP.md)
+6. [WordPress to EmDash on Astro Migration Guide](WORDPRESS-TO-EMDASH-MIGRATION.md)
+7. [Pre-Migration Source Compromise Audit](SOURCE-COMPROMISE-AUDIT.md)
+8. [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md)
+9. [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md)
+10. [Production Release Policy](PRODUCTION-RELEASE-POLICY.md)
+11. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
+12. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
+13. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
+14. [Cloudflare Production Observability](CLOUDFLARE-OBSERVABILITY.md)
+15. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
+16. [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md)
+17. [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md)
+18. [Astro Assets Implementation and Verification](ASTRO-ASSETS.md)
+19. [Internationalization, Canonicals, and Hreflang](INTERNATIONALIZATION-AND-HREFLANG.md)
+20. [Redirect Verification](REDIRECT-VERIFICATION.md)
+21. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
+22. [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md)
+23. [Visual Composition Testing](VISUAL-COMPOSITION-TESTING.md)
+24. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
+25. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
+26. [Interface Quality and Page Differentiation Gate](INTERFACE-QUALITY-AND-PAGE-DIFFERENTIATION.md)
+27. [Case Study Normalization Policy](CASE-STUDY-NORMALIZATION.md)
+28. [Render Sharpness Gate](RENDER-SHARPNESS.md)
+29. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
+30. [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md)
+31. [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md)
+32. [Contributing Guide](CONTRIBUTING.md)
+33. [Roadmap](ROADMAP.md)
 
 ## Repository Structure
 
@@ -86,6 +88,8 @@ This repository documents the process used to close those gaps while replacing l
 ├── CASE-STUDY-NORMALIZATION.md
 ├── WEBFLOW-TO-ASTRO-MIGRATION.md
 ├── PLATFORM-MIGRATION-FRAMEWORK.md
+├── WORDPRESS-TO-EMDASH-MIGRATION.md
+├── SOURCE-COMPROMISE-AUDIT.md
 ├── ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md
 ├── TESTING-AND-RELEASE-CHECKLIST.md
 ├── PRODUCTION-RELEASE-POLICY.md
@@ -121,6 +125,11 @@ This repository documents the process used to close those gaps while replacing l
 │   ├── verify-ahrefs-site-audit.mjs
 │   ├── verify-cloudflare-observability.mjs
 │   ├── verify-redirects.mjs
+│   ├── verify-route-parity.mjs
+│   ├── wp-extract.mjs
+│   ├── emdash-seed.mjs
+│   ├── emdash-import.mjs
+│   ├── generate-redirects.mjs
 │   ├── generate-open-graph.mjs
 │   ├── verify-brand-assets.mjs
 │   ├── verify-visual-composition.mjs
@@ -130,6 +139,7 @@ This repository documents the process used to close those gaps while replacing l
 │   └── run-design-gate.mjs
 ├── case-studies/
 │   ├── webflow-astro-ios-safari.md
+│   ├── wordpress-emdash-news-archive-migration.md
 │   ├── wordpress-astro-safari-seo-performance.md
 │   ├── ahrefs-astro-site-health.md
 │   ├── cloudflare-rum-hidden-viewport-lcp.md
@@ -146,6 +156,8 @@ This repository documents the process used to close those gaps while replacing l
     ├── visual-composition.config.mjs
     ├── interface-quality.config.mjs
     ├── redirects.config.mjs
+    ├── wp-extract.config.json
+    ├── emdash-migration.config.mjs
     ├── site-health.config.mjs
     ├── semantic-seo.config.mjs
     ├── content-quality.config.mjs

@@ -1,0 +1,49 @@
+{
+  "$comment": [
+    "Configuration template for scripts/wp-extract.mjs.",
+    "Copy into the project, fill in, and keep out of version control if it carries credentials.",
+    "Point the database connection at a restored copy of a backup, not at production."
+  ],
+
+  "database": {
+    "$comment": "Use socketPath for a local restore, or host/port for a remote read replica.",
+    "socketPath": "/tmp/mysql.sock",
+    "host": null,
+    "port": 3306,
+    "user": "readonly",
+    "password": "",
+    "name": "wordpress_restore"
+  },
+
+  "tablePrefix": "wp_",
+
+  "site": {
+    "homeUrl": "https://www.example.com",
+    "hosts": ["www.example.com", "example.com"]
+  },
+
+  "contentTypes": ["post", "page"],
+  "statuses": ["publish"],
+
+  "media": {
+    "$comment": [
+      "cdnBase is the delivery origin for offloaded media.",
+      "offloadTable is REQUIRED whenever a media offload plugin is installed.",
+      "Without it, references resolve to paths that do not exist in object storage.",
+      "See WORDPRESS-TO-EMDASH-MIGRATION.md, Track 2."
+    ],
+    "uploadsBase": "/wp-content/uploads",
+    "cdnBase": "https://media.example.com",
+    "offloadTable": "wp_as3cf_items"
+  },
+
+  "seo": {
+    "$comment": "Set to null if the source has no SEO plugin, or name the plugin's table.",
+    "yoastIndexableTable": "wp_yoast_indexable"
+  },
+
+  "redirects": {
+    "$comment": "Legacy 404-redirect plugin table, if one exists. Set to null otherwise.",
+    "table": "wp_wbz404_redirects"
+  }
+}

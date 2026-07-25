@@ -6,6 +6,35 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### WordPress to EmDash on Astro Migration Path
+
+- Added a WordPress to EmDash adapter covering the three assumptions an EmDash target breaks: database-resident content, per-request route resolution, and Portable Text rich text.
+- Added a two-stage extraction model that emits the framework's neutral intermediate dataset before any target-specific conversion, so extraction is re-runnable, diffable, and able to feed the parity verifier independently of the running site.
+- Added `scripts/wp-extract.mjs`, which reads a WordPress database directly rather than a platform XML export, because the export omits the media offload mapping and the legacy redirect tables that a large migration depends on.
+- Added media resolution through the offload plugin's own table. Offloaded objects carry a version segment that the path stored in article bodies does not, so a hostname-prefix rewrite produces well-formed URLs that fail for every image. Every object in the reference migration was affected.
+- Added delivery-variant selection restricted to the platform's core image sizes, because sites that have changed themes retain hard-cropped variants that silently recompose photographs while passing every automated check.
+- Added `scripts/emdash-seed.mjs`, which splits schema, taxonomies, menus and bylines into the seed file and emits bulk content separately, because the seed file is inlined into every build.
+- Added deterministic Portable Text key rewriting, so two generator runs over identical input produce byte-identical output and migration runs can be diffed.
+- Added migration identity fields for source record ID, source permalink, and publish date, none of which the seed schema carries and all of which dated permalinks and idempotent import require.
+- Added `scripts/emdash-import.mjs`, an idempotent bulk importer over the REST API with bounded concurrency, dry-run and limit flags, and failure capture, closing the absence of a headless bulk-import path.
+- Added an index-and-slice archive resolver for numbered pagination, because cursor-only pagination cannot serve a deep archive page requested directly from a search result.
+- Added `scripts/verify-route-parity.mjs`, which builds the expected route inventory from the extracted dataset, fails on duplicate content slugs and reserved-slug collisions, and probes a deterministic article sample against a candidate.
+- Added `scripts/generate-redirects.mjs` with rule prioritisation, middleware overflow beyond the edge platform's static redirect limit, and recorded removal of vulnerability-probe rules that legacy 404-redirect plugins accumulate.
+- Added a taxonomy-archive indexation policy that requires traffic data before any archive is suppressed, defaulting to suppressing only empty archives. The common thin-content heuristic was measured on the reference migration and found backwards: roughly ninety percent of tag-archive traffic came from archives a three-post threshold would have deindexed, because those archives rank for proper nouns where post count does not predict search demand.
+- Added `templates/wp-extract.config.json` and `templates/emdash-migration.config.mjs`.
+
+### Pre-Migration Source Compromise Audit
+
+- Added a source compromise audit as a migration gate, run against the backup before extraction, after a production migration found an active compromise with a must-use-plugin dropper, a database-resident payload backup, and an external script injected into pages served to visitors.
+- Documented the checks: active plugin list, must-use plugins, encoded and self-writing PHP, executables under uploads, suspicious options, injected content in the database, accounts, and scheduled tasks.
+- Documented the remediation order, since removing a payload before its persistence mechanism restores it on the next request.
+- Documented the three outcomes and what each means for the migration, including the case where the platform is compromised but the content is clean.
+
+### Case Studies
+
+- Added a normalized WordPress to EmDash news archive migration case study recording the offloaded-media key mismatch, non-reproducible Portable Text conversion, cursor pagination limitation, prose-corrupting shortcode stripper, unsafe theme-generated image variants, adversarial legacy redirect table, inverted thin-archive heuristic, and source compromise findings.
+
+
 ## 0.4.0, 2026-07-22
 
 ### Case Study Normalization Gate
