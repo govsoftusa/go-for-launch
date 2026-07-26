@@ -18,6 +18,20 @@ Every indexable page needs a relevant social preview. Social cards are release a
 
 Copy [`open-graph.config.mjs`](templates/open-graph.config.mjs) into the target site. Keep page-specific rendering content in `cards` and shared brand choices at the top level.
 
+The bundled renderer is a reference implementation, not a universal visual
+identity. If its composition, typography, symbols, or tone do not match the
+project, set `renderCard` to a project-owned asynchronous renderer. The hook
+receives the card, complete config, output dimensions, config root, Sharp, and
+the XML escape helper. It may return SVG text, a Buffer, or a Uint8Array. The
+shared pipeline still enforces dimensions, opacity, deterministic hashing,
+explicit regeneration, and hash-bound review.
+
+When a custom renderer needs additional route-specific values, place them in
+`card.renderingFingerprint`. Place the reviewed logo or wordmark hash in
+`brandAssetSha256`. The input fingerprint then changes when real visual inputs
+change, without treating the renderer function's source text or an unrelated
+project setting as card content.
+
 Required controls:
 
 - `stateFile` records rendering input and output hashes.
@@ -26,6 +40,8 @@ Required controls:
 - `seoContractVersion` identifies the SEO content rules that affect text inside cards.
 - `maximumBytes` blocks unnecessarily heavy files.
 - `sourceAssetSha256` must be set for any external image or illustration used by a card.
+- `brandAssetSha256` records the exact reviewed logo or wordmark used by a custom renderer.
+- `renderingFingerprint` records custom template inputs that visibly affect the card.
 - `brandRules` defines the approved palette, approved type families, minimum safe padding, minimum supporting-text size, and maximum headline size.
 - `typography` defines the actual type families and sizes used by the renderer.
 - `contactInformation` declares whether a visible canonical destination or other contact detail is required.
@@ -59,6 +75,12 @@ The first command in the normal workflow verifies the state manifest, rendering 
 
 Automated checks must reject non-brand colors, unapproved type families, insufficient padding, supporting text below the configured minimum, headlines above the configured maximum, horizontal text overflow, vertical text-region overlap, truncated destination text, missing required contact information, and missing purpose statements. Human review remains mandatory because automation cannot fully judge hierarchy, clarity, tone, visual balance, or whether the card succeeds for its intended sharing context.
 
+A prior approval is invalid as soon as a stakeholder rejects the template,
+even when every file still matches its approved hash. Remove or supersede the
+approval, increment the template version, regenerate explicitly, and review
+the replacement contact sheets. Hash integrity proves which artwork was
+reviewed. It does not prove that the artwork was good.
+
 Commit stable social-card files, the state manifest, and the approval manifest. Review sheets may remain release evidence instead of source-controlled files.
 
 ## Rendering Best Practices
@@ -73,6 +95,12 @@ Commit stable social-card files, the state manifest, and the approval manifest. 
 - Use a minimum practical display size of 20 pixels for destination and supporting text in a 1200 by 630 image.
 - Prefer vector logos and artwork. If a raster source is required, record its SHA-256 and verify that its intrinsic size supports the rendered placement.
 - Evaluate page artwork separately from brand marks. A correct logo cannot rescue a gray placeholder panel, an empty transparent export, or a near-uniform gradient.
+- Prefer real page photography or illustration when the project owns it and
+  the file is large enough for the intended crop. A designed typographic
+  fallback is safer than enlarging a small source or inventing unrelated art.
+- Do not reuse decorative geometry, synthetic marks, or a toolkit's house
+  style merely because the renderer can produce it. The card must look like
+  the publication or product that owns the destination.
 - Use `scripts/lib/artwork-suitability.mjs` in project generators as a baseline low-detail check. Tune the threshold against the project contact sheet, and bind the threshold and selection result into the rendering-input fingerprint.
 - Produce an opaque 1200 by 630 raster image with the declared content type.
 - Set `og:image:alt` to describe the preview information, not decorative geometry.

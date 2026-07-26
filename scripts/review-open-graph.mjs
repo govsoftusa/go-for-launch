@@ -32,7 +32,7 @@ function typographyRules(config) {
 
 function stableCardInput(config, card, name) {
   return {
-    contractVersion: 1,
+    contractVersion: 2,
     templateVersion: String(config.templateVersion || "1"),
     seoContractVersion: String(config.seoContractVersion || "1"),
     width: config.width || 1200,
@@ -50,7 +50,9 @@ function stableCardInput(config, card, name) {
       secondary: String(config.colors?.secondary || "#83f3c8")
     },
     typography: typographyRules(config),
-    sourceAssetSha256: String(card.sourceAssetSha256 || "")
+    sourceAssetSha256: String(card.sourceAssetSha256 || ""),
+    brandAssetSha256: String(card.brandAssetSha256 || config.brandAssetSha256 || ""),
+    renderingFingerprint: card.renderingFingerprint ?? null
   };
 }
 

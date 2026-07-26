@@ -39,8 +39,12 @@ await page(validDirectory, "/", `<!doctype html><html><head><link rel="canonical
 await page(validDirectory, "/about/", `<!doctype html><html><head><link rel="canonical" href="https://example.com/about/">${sharedValidStyle}</head><body>
   <header class="site-header"><a href="/">Home</a></header>
   <main class="about-layout" data-page-archetype="narrative-record">
-    <article><h1>How the review works</h1><p>Two source links can wrap beside each other without creating a collision: <a class="citation" href="https://example.com/source-one">Source one with a descriptive title</a> and <a class="citation" href="https://example.com/source-two">Source two with another descriptive title</a>.</p></article>
+    <article style="content-visibility:auto;contain-intrinsic-size:auto 700px"><h1>How the review works</h1><p>Two source links can wrap beside each other without creating a collision: <a class="citation" href="https://example.com/source-one">Source one with a descriptive title</a> and <a class="citation" href="https://example.com/source-two">Source two with another descriptive title</a>.</p></article>
   </main></body></html>`);
+await page(validDirectory, "/encoded/%d1%8f/", `<!doctype html><html><head><link rel="canonical" href="https://example.com/encoded/%d1%8f/">${sharedValidStyle}</head><body>
+  <header class="site-header"><a href="/">Home</a></header>
+  <main class="about-layout" data-page-archetype="narrative-record"><article><h1>Encoded route</h1><p>Percent-encoded snapshot paths remain reachable.</p></article></main>
+</body></html>`);
 const validReport = join(root, "valid", "report.json");
 const validConfig = join(root, "valid", "config.mjs");
 await writeFile(validConfig, `export default ${JSON.stringify({
@@ -53,10 +57,14 @@ await writeFile(validConfig, `export default ${JSON.stringify({
   differentiationViewports: ["mobile"],
   minimumDistinctiveDimensions: 2,
   routeConcurrency: 2,
+  progressEvery: 1,
   differentiationScope: "every-route-to-family-representative",
   screenshots: "none",
   header: { selector: ".site-header", maximumViewportHeightRatio: 0.2 },
-  controls: { targetSize: { enabled: true, severity: "error", ignoreSelectors: [".citation"] } },
+  controls: {
+    overlap: { ignoreSelectors: [".citation"] },
+    targetSize: { enabled: true, severity: "error", ignoreSelectors: [".citation"] }
+  },
   routes: [
     {
       path: "/",
@@ -79,13 +87,26 @@ await writeFile(validConfig, `export default ${JSON.stringify({
       visualIdentity: "Light reading surface",
       requiredSelectors: ["article"],
       distinctiveSelectors: [".about-layout"]
+    },
+    {
+      path: "/encoded/%d1%8f/",
+      family: "about",
+      archetype: "narrative-record",
+      purpose: "Verify encoded snapshot routing",
+      contentRhythm: "Single long-form narrative",
+      visualIdentity: "Light reading surface",
+      requiredSelectors: ["article"],
+      distinctiveSelectors: [".about-layout"]
     }
   ]
 })};\n`);
 const validResult = run(validConfig);
 if (validResult.status !== 0) throw new Error(`Valid interface fixture failed:\n${validResult.stdout}${validResult.stderr}`);
+if (!validResult.stdout.includes("Interface quality progress: 3/3 checks (100.0%).")) {
+  throw new Error("Valid interface fixture did not report final progress.");
+}
 const validData = JSON.parse(await readFile(validReport, "utf8"));
-if (validData.counts.errors !== 0 || validData.counts.checks !== 2) throw new Error("Valid interface report has incorrect counts.");
+if (validData.counts.errors !== 0 || validData.counts.checks !== 3) throw new Error("Valid interface report has incorrect counts.");
 
 const invalidDirectory = join(root, "invalid", "dist");
 const invalidStyle = `<style>

@@ -92,20 +92,42 @@ against the uncached origin.
 - Enabled query coalescing so concurrent identical reads share work.
 - Removed repeated archive queries and reused ordered index results.
 - Added a KV-backed distributed object cache for query snapshots.
+- Added a KV-backed anonymous HTML cache for public document responses.
 - Added Cloudflare response caching with content tags and invalidation.
 - Used a reviewed freshness period plus a stale-while-refresh window.
 - Reworked sitemap generation to select only routing and indexation fields.
+- Resolved independent media-derivative listings in parallel before rendering
+  a feed instead of awaiting one object-storage listing per card.
 - Cached other expensive shared-output routes when their responses were safe to
   reuse.
 - Added bounded retry, backoff, and request timeouts to import and verification
   tooling.
 - Separated cold-path, warm-path, smoke, and concurrency tests.
 
+The HTML cache key included the opaque release candidate, the route, and an
+indexability mode. Protected staging HTML could not satisfy a production
+request, and a new deployment could not read a prior candidate's document.
+Only query-free GET and HEAD documents were eligible. Administration, forms,
+search, feeds, assets, authenticated requests, cookie-bearing requests, and
+responses that set cookies bypassed the cache.
+
+The complete route snapshot used an explicit verification query parameter, so
+it also bypassed HTML storage. This prevented a release crawl from filling KV
+with the entire archive while still allowing popular visitor routes to gain a
+globally replicated first-document path.
+
 ### Outcome
 
 Cold archive requests fell from multi-second responses to a much smaller
 bounded range. Warm edge responses fell to tens of milliseconds. The candidate
 then tolerated the reviewed verification burst without server errors.
+
+One late smoke run still found a large tag archive taking more than ten seconds
+on its first request. The database page query was already bounded. The remaining
+delay came from responsive-image components awaiting several independent object
+storage listings in series. Resolving those listings with one `Promise.all`
+reduced the rotating cold archive suite to a bounded range and kept the
+concurrent burst below its reviewed limit.
 
 ### Reusable rule
 
@@ -137,6 +159,7 @@ binding also risked exhausting the transformation allowance.
 - Restricted automatic selection to safe image families rather than historical
   theme crops.
 - Added long-lived immutable caching for derivative files.
+- Resolved a feed's independent derivative inventories concurrently.
 - Removed unused connection hints.
 - Verified real image bytes, content type, dimensions, and cache headers.
 
@@ -189,8 +212,15 @@ intended.
 Native Safari exposed an older navigation response after a new Worker version
 had deployed. Deployment success did not invalidate every host-scoped response.
 
-The fix was a targeted purge for the candidate hostname followed by a new
-identity check and native Safari retest.
+A hostname purge did not remove HTML stored through the Worker Cache API. The
+reliable replacement sequence was:
+
+1. Update the route to the new Worker.
+2. Poll an uncached query until the exact candidate identity appears.
+3. Purge the application cache tag used by HTML responses.
+4. Poll clean URLs until the same candidate appears.
+5. Repeat the tag purge if route propagation raced the first purge.
+6. Retest in native Safari.
 
 ### Unsafe method caching
 
@@ -272,6 +302,35 @@ Comment forms used a separate deferred adapter so loading an article did not
 download the challenge. The script began loading only after a reader
 interacted with the comment form. A form-scoped reset event ensured that a
 comment retry reset the comment widget rather than the header search widget.
+
+An inline module version of the shared client appeared in HTML but did not
+attach its handlers in a real browser. Moving the client to one small,
+same-origin classic script made its boot state observable and ensured all
+forms shared one listener set. The release test asserted that the client
+reached its ready state before exercising a real challenge.
+
+Each isolated Worker name was a distinct secret target. Creating a new
+candidate Worker did not copy the prior candidate's Turnstile secret. The
+deployment sequence therefore attached the existing secret to each candidate
+before any positive form test, without printing it.
+
+### Closed-program interest forms
+
+One public program was not accepting new business. Its prior page implied an
+active offer, so it was replaced with a direct closed-status notice and an
+optional one-update form.
+
+The form:
+
+- Made no promise that the program would reopen.
+- Collected only name, email, optional organization, and optional context.
+- Required explicit consent for the one availability update.
+- Used a unique email key so repeat submissions updated one record.
+- Stored the record only after Turnstile passed.
+- Returned to a styled same-origin success or error state.
+
+A positive edge test used a clearly synthetic address, verified the database
+write, deleted that exact record, and proved the test count returned to zero.
 
 ### Repository gate
 
@@ -383,15 +442,29 @@ subdomains.
 
 The corrected policy kept only the canonical hostname and redirecting apex in
 the allowlist. Every validation host emitted `noindex` in both HTML and the
-response header. The resulting staging SEO score was recorded as an expected
-policy conflict rather than bypassed by making the archive crawlable.
+response header.
+
+That protection exposed a gate-integrity trap. Both the page-only content
+snapshot and the complete release snapshot copied the staging robots meta
+tag. Shared analyzers then treated every page as nonindexable and could report
+a misleading zero-page pass. Each snapshot now removes only the staging
+robots marker from its local analysis copy while leaving the live candidate
+protected. Every release report must also assert the expected page count, not
+accept an empty pass.
+
+The protected staging PageSpeed gate then required the exact candidate header,
+production canonical, both robots controls, three category scores of 100, and
+every weighted SEO audit except intentional crawlability. Promotion remained
+provisional until the unchanged candidate scored 100 in all four categories
+on the canonical production hostname. A production failure required immediate
+rollback.
 
 ### Reusable rule
 
 Do not weaken staging index protection to manufacture a synthetic SEO score.
-Validate canonical, sitemap, metadata, and structured data separately, then
-run the public crawlability audit only on the canonical production host when
-the release contract permits promotion.
+Prove that crawlability is the only protected-staging SEO failure, then require
+the complete crawlable score on the canonical production host during
+provisional promotion.
 
 ## Cold Dynamic HTML Versus Browser Weight
 
@@ -421,6 +494,49 @@ Snapshot sanitization must be exact and documented. It may remove only known
 infrastructure-generated nondeterminism. It must not remove application output,
 security controls, layout content, or failed requests that the application
 owns.
+
+## Social Cards Must Carry the Publication Identity
+
+### Symptom
+
+The first complete Open Graph set passed dimensions, file hashes, route
+coverage, and a recorded visual approval. A real messaging preview still
+looked unrelated to the publication. It used a generic technology template,
+synthetic geometry, a random route-code mark, generic type, and colors that
+only loosely borrowed from the site.
+
+### Root cause
+
+The project changed values in a reusable renderer without evaluating whether
+the renderer itself matched the publication. The approval proved that the
+reviewed files were stable, but it did not prove that the design was
+appropriate. The page templates already carried real archive photography and
+an authoritative wordmark, but the social-card pipeline ignored both.
+
+### Fixes
+
+- Invalidated the rejected approval immediately.
+- Incremented the visual template and social-card content contract versions.
+- Added a project-owned renderer hook to the deterministic shared pipeline.
+- Used the authoritative wordmark, publication palette, and exact editorial
+  font outlines.
+- Selected real page or archive photography from the migrated media records.
+- Deduplicated source downloads, recorded exact source hashes, and cached the
+  reviewed bytes for deterministic regeneration.
+- Rejected visually flat and undersized sources before rendering.
+- Used a route-specific typographic fallback instead of enlarging small files
+  or inventing replacement imagery.
+- Bound custom layout decisions, source-selection results, font hash, and
+  wordmark hash into each card's rendering fingerprint.
+- Regenerated contact sheets for the complete route inventory and required a
+  new approval.
+
+### Reusable rule
+
+Technical approval cannot rescue an off-brand template. Preview representative
+cards in a real messaging client early, before producing the full inventory.
+If a stakeholder rejects the visual system, treat that as approval
+invalidation, not a request to relabel the existing output.
 
 ## Gate Findings That Correctly Blocked Production
 
@@ -479,7 +595,15 @@ candidate, and leave production unchanged.
 - Keeping search as token-bearing GET exposed a single-use token in the URL.
   Use POST validation followed by a clean 303 GET.
 - Trusting deployment completion to clear cache allowed stale candidate HTML.
-  Purge the host and retest candidate identity.
+  Wait for route convergence, purge the HTML cache tag, and retest clean URLs.
+- Treating a hostname purge as equivalent to a Worker Cache API tag purge left
+  old HTML in place.
+- Awaiting media derivative discovery inside each card serialized independent
+  object-storage requests and made a cold archive look like a database problem.
+- Accepting zero-page analysis reports let staging `noindex` hide the exact
+  pages the release gates were meant to inspect.
+- Assuming a new Worker inherited the prior Worker's secrets made positive
+  Turnstile tests fail even though the browser received a valid token.
 - Using one successful PageSpeed run did not describe the final candidate.
   The latest exact-candidate run controls.
 - Treating representative routes as full coverage left route families
@@ -492,8 +616,9 @@ candidate, and leave production unchanged.
 1. Fetch the toolkit upstream and verify the selected revision.
 2. Preserve the project state and record the source revision.
 3. Build the exact production candidate.
-4. Deploy it only to an isolated candidate hostname.
-5. Assert candidate identity, canonical output, robots behavior, and HTTPS.
+4. Deploy it only to an isolated candidate hostname and attach required secrets.
+5. Wait for route convergence, purge the HTML cache tag, then assert candidate
+   identity on clean URLs, canonical output, robots behavior, and HTTPS.
 6. Establish cold, warm, and concurrent server-performance evidence.
 7. Verify media bytes, responsive selection, compression, and cache headers.
 8. Run route parity, redirects, sitemap, site health, semantic SEO, content
@@ -503,12 +628,15 @@ candidate, and leave production unchanged.
    behavior through the real edge.
 10. Verify method-aware cache rules, purge behavior, and content invalidation.
 11. Run Chromium, Playwright WebKit, and native iOS Safari checks.
-12. Run PageSpeed mobile and desktop against the exact candidate.
+12. Run protected-staging PageSpeed mobile and desktop against the exact
+    candidate.
 13. Confirm all required human approvals are current and hash-bound.
 14. Stop if any hard gate fails.
-15. Only after a complete pass, promote the exact candidate and configure the
-    apex-to-canonical redirect.
-16. Repeat live browser, form, cache, crawler, and observability checks on the
+15. After a complete staging pass, provisionally promote the exact candidate
+    and configure the apex-to-canonical redirect.
+16. Require four PageSpeed scores of 100 on the canonical production host or
+    roll back immediately.
+17. Repeat live browser, form, cache, crawler, and observability checks on the
     production host.
 
 ## Evidence to Preserve
@@ -521,6 +649,7 @@ candidate, and leave production unchanged.
 - Interface, render-sharpness, side-navigation, design, and visual-composition
   reports.
 - Turnstile form inventory and positive plus negative submission evidence.
+- Synthetic form-record cleanup evidence when a positive test writes data.
 - Cache-rule expression and edge response evidence for each HTTP method.
 - Playwright WebKit and native Safari results.
 - Open Graph manifests and hash-bound visual approval.

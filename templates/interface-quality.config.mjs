@@ -1,6 +1,7 @@
 export default {
   outputDirectory: "dist",
   report: "artifacts/interface-quality-report.json",
+  progressEvery: 1_000,
   screenshotDirectory: "artifacts/interface-quality",
   screenshots: "failures",
   routeConcurrency: 1,
@@ -27,6 +28,9 @@ export default {
   },
   controls: {
     selector: 'a[href], button, summary, input:not([type="hidden"]), textarea, select',
+    overlap: {
+      ignoreSelectors: []
+    },
     targetSize: {
       enabled: true,
       minimumWidth: 24,

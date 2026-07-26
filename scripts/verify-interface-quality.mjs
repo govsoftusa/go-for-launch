@@ -33,6 +33,9 @@ const viewports = config.viewports || [
   { name: "minimum", width: 320, height: 720 }
 ];
 const engines = config.browsers || ["chromium", "webkit"];
+const progressEvery = Math.max(1, Number(config.progressEvery || 1_000));
+const totalChecks = routeRules.length * viewports.length * engines.length;
+let completedChecks = 0;
 const browserTypes = { chromium, webkit };
 const differentiationBrowsers = new Set(config.differentiationBrowsers || ["chromium"]);
 const differentiationViewports = new Set(config.differentiationViewports || ["expanded", "mobile"]);
@@ -51,6 +54,7 @@ const targetSize = {
   severity: config.controls?.targetSize?.severity || "warning",
   ignoreSelectors: config.controls?.targetSize?.ignoreSelectors || []
 };
+const overlapIgnoreSelectors = config.controls?.overlap?.ignoreSelectors || [];
 
 const findings = [];
 const records = [];
@@ -138,18 +142,25 @@ if (config.requireIndexableCoverage ?? true) {
 }
 
 async function fileForRequest(requestPath) {
-  let pathname = decodeURIComponent(new URL(requestPath, "http://localhost").pathname);
-  if (pathname.endsWith("/")) pathname += "index.html";
-  let path = resolve(root, `.${pathname}`);
-  if (!path.startsWith(`${root}${sep}`) && path !== root) return null;
+  const encodedPathname = new URL(requestPath, "http://localhost").pathname;
+  let decodedPathname = encodedPathname;
   try {
-    if ((await stat(path)).isFile()) return path;
+    decodedPathname = decodeURIComponent(encodedPathname);
   } catch {}
-  if (!extname(pathname)) {
-    path = resolve(root, `.${pathname}/index.html`);
+
+  for (let pathname of new Set([encodedPathname, decodedPathname])) {
+    if (pathname.endsWith("/")) pathname += "index.html";
+    let path = resolve(root, `.${pathname}`);
+    if (!path.startsWith(`${root}${sep}`) && path !== root) continue;
     try {
       if ((await stat(path)).isFile()) return path;
     } catch {}
+    if (!extname(pathname)) {
+      path = resolve(root, `.${pathname}/index.html`);
+      try {
+        if ((await stat(path)).isFile()) return path;
+      } catch {}
+    }
   }
   return null;
 }
@@ -194,13 +205,24 @@ try {
                   continue;
                 }
                 await page.evaluate(async () => {
+                  /*
+                   * `content-visibility: auto` intentionally skips layout for
+                   * offscreen content. Measuring every control before it has
+                   * entered the viewport otherwise reports placeholder boxes
+                   * as overlaps. Force eager layout for the audit only. This
+                   * does not change geometry once the content is visible.
+                   */
+                  const auditStyle = document.createElement("style");
+                  auditStyle.dataset.interfaceAudit = "eager-layout";
+                  auditStyle.textContent = "* { content-visibility: visible !important; }";
+                  document.head.append(auditStyle);
                   await document.fonts.ready;
                   await new Promise((resolveFrame) => {
                     requestAnimationFrame(() => requestAnimationFrame(resolveFrame));
                   });
                 });
 
-                const measurement = await page.evaluate(({ rule, controlSelector, targetSize, overlapTolerance, overflowTolerance, headerContract }) => {
+                const measurement = await page.evaluate(({ rule, controlSelector, targetSize, overlapIgnoreSelectors, overlapTolerance, overflowTolerance, headerContract }) => {
                   const viewportWidth = document.documentElement.clientWidth;
                   const viewportHeight = window.innerHeight;
                   const rectValue = (rect) => ({ left: rect.left, top: rect.top, width: rect.width, height: rect.height, right: rect.right, bottom: rect.bottom });
@@ -228,7 +250,8 @@ try {
                       overflowY: style.overflowY,
                       clippedX: element.scrollWidth > element.clientWidth + overflowTolerance,
                       clippedY: element.scrollHeight > element.clientHeight + overflowTolerance,
-                      ignoredTargetSize: targetSize.ignoreSelectors.some((selector) => element.matches(selector))
+                      ignoredTargetSize: targetSize.ignoreSelectors.some((selector) => element.matches(selector)),
+                      ignoredOverlap: overlapIgnoreSelectors.some((selector) => element.matches(selector))
                     };
                   });
                   const issues = [];
@@ -257,8 +280,10 @@ try {
 
               for (let firstIndex = 0; firstIndex < controls.length; firstIndex += 1) {
                 const first = controls[firstIndex];
+                if (first.ignoredOverlap) continue;
                 for (let secondIndex = firstIndex + 1; secondIndex < controls.length; secondIndex += 1) {
                   const second = controls[secondIndex];
+                  if (second.ignoredOverlap) continue;
                   if (first.element.contains(second.element) || second.element.contains(first.element)) continue;
                   if (overlaps(first, second)) issues.push({ code: "controls-overlap", message: `${first.label} overlaps ${second.label}.` });
                 }
@@ -361,6 +386,7 @@ try {
                   rule,
                   controlSelector,
                   targetSize,
+                  overlapIgnoreSelectors,
                   overlapTolerance,
                   overflowTolerance,
                   headerContract: config.header || null
@@ -368,6 +394,11 @@ try {
 
                 const record = { engine, viewport, route, family: rule.family, archetype: rule.archetype, ...measurement };
                 records.push(record);
+                completedChecks += 1;
+                if (completedChecks % progressEvery === 0 || completedChecks === totalChecks) {
+                  const percent = totalChecks === 0 ? 100 : (completedChecks / totalChecks) * 100;
+                  console.log(`Interface quality progress: ${completedChecks}/${totalChecks} checks (${percent.toFixed(1)}%).`);
+                }
                 for (const issue of measurement.issues) addFinding("error", issue.code, `${engine}/${viewport.name}${route}: ${issue.message}`, { engine, viewport: viewport.name, route });
                 for (const warning of measurement.warnings) addFinding("warning", warning.code, `${engine}/${viewport.name}${route}: ${warning.message}`, { engine, viewport: viewport.name, route });
 

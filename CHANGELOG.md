@@ -33,8 +33,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Case Studies
 
 - Added a normalized WordPress to EmDash news archive migration case study recording the offloaded-media key mismatch, non-reproducible Portable Text conversion, cursor pagination limitation, prose-corrupting shortcode stripper, unsafe theme-generated image variants, adversarial legacy redirect table, inverted thin-archive heuristic, and source compromise findings.
-- Added a normalized WordPress to EmDash Cloudflare release-hardening case study covering isolated candidate identity, D1 and edge-cache performance, responsive media, compression, method-safe caching, server-enforced Turnstile, mobile navigation, CDN-injected test nondeterminism, exact-candidate evidence, and the hard gates that correctly stopped production.
+- Added a normalized WordPress to EmDash Cloudflare release-hardening case study covering isolated candidate identity, D1 and edge-cache performance, responsive media, compression, method-safe caching, server-enforced Turnstile, mobile navigation, CDN-injected test nondeterminism, exact-candidate evidence, social-card brand rejection, and the hard gates that correctly stopped production.
 
+### Project-Owned Open Graph Rendering
+
+- Added an asynchronous `renderCard` extension hook so a project can keep the
+  shared immutable-generation and approval contract without inheriting the
+  toolkit reference template as its visual identity.
+- Added `brandAssetSha256` and `renderingFingerprint` inputs for exact wordmark,
+  font, source-selection, and custom-layout provenance.
+- Added bounded concurrent card rendering for large route inventories.
+- Required stakeholder rejection to invalidate a prior hash-valid visual
+  approval, because byte integrity does not prove brand suitability.
+- Documented real editorial imagery as the preferred source when it supports
+  the crop without enlargement, with a designed typographic fallback for
+  missing, flat, unreadable, or undersized assets.
+- Added regression coverage for a project-owned renderer and immutable reuse
+  of its output.
 
 ## 0.4.0, 2026-07-22
 

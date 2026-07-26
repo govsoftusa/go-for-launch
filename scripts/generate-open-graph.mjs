@@ -35,7 +35,7 @@ function sha256(value) {
 function stableCardInput(config, card, name) {
   const typography = typographyRules(config);
   return {
-    contractVersion: 1,
+    contractVersion: 2,
     templateVersion: String(config.templateVersion || "1"),
     seoContractVersion: String(config.seoContractVersion || "1"),
     width: config.width || 1200,
@@ -53,7 +53,9 @@ function stableCardInput(config, card, name) {
       secondary: String(config.colors?.secondary || "#83f3c8")
     },
     typography,
-    sourceAssetSha256: String(card.sourceAssetSha256 || "")
+    sourceAssetSha256: String(card.sourceAssetSha256 || ""),
+    brandAssetSha256: String(card.brandAssetSha256 || config.brandAssetSha256 || ""),
+    renderingFingerprint: card.renderingFingerprint ?? null
   };
 }
 
@@ -167,6 +169,8 @@ const names = new Set();
 const previousState = await readFile(stateFile, "utf8").then(JSON.parse).catch(() => null);
 const previousCards = new Map((previousState?.cards || []).map((card) => [card.name, card]));
 const nextRecords = [];
+const recordsByIndex = new Array((config.cards || []).length);
+const renderConcurrency = Math.max(1, Math.min(16, Number(config.renderConcurrency || 1)));
 let generated = 0;
 let reused = 0;
 
@@ -193,6 +197,9 @@ for (const card of config.cards || []) {
   const displayUrl = card.displayUrl || config.domain;
   const typography = typographyRules(config);
   if (!card.purpose) failures.push(`${name}: intended purpose is required for readability review`);
+  if (card.sourceAssetUrl && !card.sourceAssetSha256) {
+    failures.push(`${name}: an external source asset requires sourceAssetSha256`);
+  }
   if (estimatedWidth(card.lineOne, typography.headlineOneSize) > 620) failures.push(`${name}: lineOne exceeds the safe text region`);
   if (estimatedWidth(card.lineTwo, typography.headlineTwoSize) > 620) failures.push(`${name}: lineTwo exceeds the safe text region`);
   if (estimatedWidth(eyebrow, typography.eyebrowSize) > 500) failures.push(`${name}: eyebrow exceeds the safe text region`);
@@ -213,7 +220,7 @@ if (failures.length > 0) {
 
 if (regenerate) await mkdir(outputDirectory, { recursive: true });
 
-for (const card of config.cards || []) {
+async function processCard(card, index) {
   const name = card.name || card.slug;
 
   const inputSha256 = sha256(JSON.stringify(stableCardInput(config, card, name)));
@@ -224,27 +231,61 @@ for (const card of config.cards || []) {
   const unchanged = Boolean(existing && previous && previous.inputSha256 === inputSha256 && previous.outputSha256 === existingSha256);
 
   if (unchanged) {
-    nextRecords.push(previous);
+    recordsByIndex[index] = previous;
     reused += 1;
-    continue;
+    return;
   }
 
   if (!regenerate) {
     if (!existing || !previous) failures.push(`${name}: approved card state is missing, run the explicit regeneration command`);
     else if (previous.inputSha256 !== inputSha256) failures.push(`${name}: card rendering inputs changed, run the explicit regeneration command and repeat visual approval`);
     else failures.push(`${name}: card bytes do not match recorded state, restore the approved file or run the explicit regeneration command and repeat visual approval`);
-    continue;
+    return;
   }
 
-  const artwork = renderArtwork(config, card, width, height);
-  const png = await sharp(Buffer.from(artwork), { density: 192 })
+  const artwork = config.renderCard
+    ? await config.renderCard({
+        card,
+        config,
+        width,
+        height,
+        root,
+        sharp,
+        escapeXml
+      })
+    : renderArtwork(config, card, width, height);
+  const input = Buffer.isBuffer(artwork) || artwork instanceof Uint8Array
+    ? artwork
+    : Buffer.from(String(artwork));
+  const png = await sharp(input, { density: 192 })
     .resize(width, height, { fit: "fill", kernel: sharp.kernel.lanczos3 })
-    .png({ compressionLevel: 9, palette: true, quality: 92, dither: 0 })
+    .removeAlpha()
+    .png({
+      compressionLevel: 9,
+      palette: true,
+      quality: 92,
+      dither: 0,
+      ...(config.pngOptions || {})
+    })
     .toBuffer();
   await writeFile(output, png);
-  nextRecords.push({ name, file: `og-${name}.png`, inputSha256, outputSha256: sha256(png) });
+  recordsByIndex[index] = { name, file: `og-${name}.png`, inputSha256, outputSha256: sha256(png) };
   generated += 1;
 }
+
+let cardCursor = 0;
+async function cardWorker() {
+  while (cardCursor < (config.cards || []).length) {
+    const index = cardCursor;
+    cardCursor += 1;
+    await processCard(config.cards[index], index);
+  }
+}
+
+await Promise.all(
+  Array.from({ length: renderConcurrency }, () => cardWorker())
+);
+nextRecords.push(...recordsByIndex.filter(Boolean));
 
 if (previousCards.size !== names.size && !regenerate && previousState) {
   for (const previousName of previousCards.keys()) {

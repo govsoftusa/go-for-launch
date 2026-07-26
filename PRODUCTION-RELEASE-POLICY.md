@@ -43,8 +43,9 @@ deploy the exact candidate to staging
 verify staging serves the expected candidate
 run Ahrefs Site Audit when approved API v3 or crawler access exists
 run PageSpeed Insights on staging for mobile and desktop
-require four scores of 100 in both strategies
-deploy the same candidate to production
+require four scores of 100 in both strategies, subject only to the protected staging rule below
+provisionally deploy the same candidate to production
+require four PageSpeed scores of 100 on the canonical production hostname
 verify the canonical hostname
 verify the public sitemap and robots declaration
 verify trailing-slash, alternate-origin, and legacy redirects
@@ -53,6 +54,48 @@ query Cloudflare edge errors immediately and compare RUM after sufficient produc
 ```
 
 Do not rebuild between the successful staging audit and production promotion unless the new output repeats the complete gate.
+
+### Candidate route and cache replacement
+
+A Worker deployment completing does not prove that a custom hostname serves
+the new candidate, and a hostname purge does not necessarily clear HTML stored
+through the Worker Cache API.
+
+For every candidate replacement:
+
+1. Deploy the uniquely named Worker and attach every required secret.
+2. Update the candidate route.
+3. Poll an uncached request until the exact candidate identifier is served.
+4. Purge the reviewed application cache tag for HTML.
+5. Poll clean representative URLs until they serve the same candidate.
+6. Repeat the tag purge if route propagation raced the first purge.
+7. Run positive and negative form checks only after the secret and clean route
+   are verified.
+
+Never accept a gate result from a stale clean URL merely because a cache-busted
+request reached the new Worker.
+
+### Protected staging PageSpeed rule
+
+A staging archive must not be made indexable merely to satisfy Lighthouse
+`is-crawlable`. When production already serves the same content, staging must
+remain protected from indexing.
+
+For a protected staging hostname, the PageSpeed gate may accept an SEO score
+below 100 only when all of the following are proven for every configured URL
+and both strategies:
+
+- The response carries the exact expected release-candidate identifier.
+- The canonical URL uses the intended production origin and exact route.
+- The response header and HTML robots meta both contain `noindex`.
+- `is-crawlable` is the only failed weighted SEO audit.
+- Performance, Accessibility, and Best Practices each score 100.
+
+Production promotion is provisional until the unchanged candidate receives
+four PageSpeed scores of 100 for every configured URL and both strategies on
+the canonical hostname. Any production failure requires immediate rollback.
+The release record must preserve both the protected staging report and the
+production report.
 
 ## Toolkit Version Requirement
 

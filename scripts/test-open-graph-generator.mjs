@@ -61,8 +61,8 @@ async function writeConfig(value = baseConfig) {
   await writeFile(config, `export default ${JSON.stringify(value)};\n`);
 }
 
-function run(extra = []) {
-  return spawnSync(process.execPath, [generateScript.pathname, `--config=${config}`, ...extra], { encoding: "utf8" });
+function run(extra = [], selectedConfig = config) {
+  return spawnSync(process.execPath, [generateScript.pathname, `--config=${selectedConfig}`, ...extra], { encoding: "utf8" });
 }
 
 function review(extra = []) {
@@ -187,5 +187,34 @@ if (unreadableApproval.status === 0 || !unreadableApproval.stderr.includes("read
   throw new Error("Visual approval was allowed without explicit readability approval.");
 }
 
+const customConfig = join(root, "custom-open-graph.config.mjs");
+const customBase = {
+  ...baseConfig,
+  outputDirectory: "custom-public",
+  stateFile: "custom-state.json",
+  cards: [
+    {
+      ...baseConfig.cards[0],
+      brandAssetSha256: "brand-hash",
+      renderingFingerprint: { layout: "custom-editorial", revision: 1 }
+    }
+  ]
+};
+await writeFile(
+  customConfig,
+  `const config = ${JSON.stringify(customBase)};
+config.renderCard = async ({ width, height }) => \`<svg xmlns="http://www.w3.org/2000/svg" width="\${width}" height="\${height}"><rect width="100%" height="100%" fill="#d6ff70"/></svg>\`;
+export default config;
+`
+);
+const customRendered = run(["--regenerate"], customConfig);
+if (customRendered.status !== 0) {
+  throw new Error(`Project-owned Open Graph renderer failed:\n${customRendered.stdout}${customRendered.stderr}`);
+}
+const customVerified = run([], customConfig);
+if (customVerified.status !== 0 || !customVerified.stdout.includes("without rewriting")) {
+  throw new Error(`Project-owned Open Graph output was not reusable:\n${customVerified.stdout}${customVerified.stderr}`);
+}
+
 await rm(root, { recursive: true, force: true });
-log("Open Graph reuse, explicit regeneration, input fingerprint, safe geometry, and hash-bound approval tests passed.");
+log("Open Graph reuse, custom rendering, explicit regeneration, input fingerprint, safe geometry, and hash-bound approval tests passed.");
