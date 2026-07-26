@@ -68,6 +68,8 @@ Different route families must differ in at least the configured number of dimens
 
 Do not chase the score by adding arbitrary colors, images, or markup. The project must first define a useful route archetype, then implement the differences that support the page's purpose.
 
+The default `differentiationScope` is `all-pairs`. Large editorial archives may use `every-route-to-family-representative` to compare every route with the representative of every other family without creating a quadratic report. The reduced scope still checks each indexable route and every cross-family relationship. `routeConcurrency` may increase browser throughput, but the project should keep it low enough for the release host and local machine.
+
 ## Header and hero contracts
 
 There is no universal correct hero height. A campaign page, reading page, application screen, and legal record have different needs. Each project sets reviewed limits where a hero exists.

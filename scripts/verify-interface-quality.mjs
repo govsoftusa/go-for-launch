@@ -41,6 +41,8 @@ const overlapTolerance = config.overlapTolerance ?? 1;
 const overflowTolerance = config.overflowTolerance ?? 1;
 const screenshotMode = config.screenshots || "failures";
 const failOnWarnings = config.failOnWarnings ?? false;
+const routeConcurrency = Math.max(1, Number.parseInt(config.routeConcurrency || "1", 10));
+const differentiationScope = config.differentiationScope || "all-pairs";
 const controlSelector = config.controls?.selector || 'a[href], button, summary, input:not([type="hidden"]), textarea, select';
 const targetSize = {
   enabled: config.controls?.targetSize?.enabled ?? true,
@@ -94,6 +96,9 @@ if (!["error", "warning"].includes(targetSize.severity)) {
 if (!["all", "failures", "none"].includes(screenshotMode)) {
   throw new Error("screenshots must be all, failures, or none.");
 }
+if (!["all-pairs", "every-route-to-family-representative"].includes(differentiationScope)) {
+  throw new Error("differentiationScope must be all-pairs or every-route-to-family-representative.");
+}
 
 const configuredPaths = new Set();
 for (const rule of routeRules) {
@@ -109,17 +114,17 @@ for (const rule of routeRules) {
   }
 }
 
-for (let firstIndex = 0; firstIndex < routeRules.length; firstIndex += 1) {
-  const first = routeRules[firstIndex];
-  for (let secondIndex = firstIndex + 1; secondIndex < routeRules.length; secondIndex += 1) {
-    const second = routeRules[secondIndex];
-    if (first.family !== second.family && first.archetype === second.archetype) {
-      addFinding("error", "archetype-reused-across-families", `${routePath(first)} and ${routePath(second)} use the same archetype across different route families.`, {
-        route: routePath(first),
-        relatedRoute: routePath(second),
-        archetype: first.archetype
-      });
-    }
+const archetypeOwners = new Map();
+for (const rule of routeRules) {
+  const owner = archetypeOwners.get(rule.archetype);
+  if (owner && owner.family !== rule.family) {
+    addFinding("error", "archetype-reused-across-families", `${routePath(owner)} and ${routePath(rule)} use the same archetype across different route families.`, {
+      route: routePath(owner),
+      relatedRoute: routePath(rule),
+      archetype: rule.archetype
+    });
+  } else if (!owner) {
+    archetypeOwners.set(rule.archetype, rule);
   }
 }
 
@@ -172,54 +177,67 @@ try {
     const browser = await browserType.launch();
     try {
       for (const viewport of viewports) {
-        const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
-        try {
-          for (const rule of routeRules) {
-            const route = routePath(rule);
-            const response = await page.goto(new URL(route, baseUrl).href, { waitUntil: "networkidle" });
-            if (!response || response.status() !== 200) {
-              addFinding("error", "route-render-failed", `${engine}/${viewport.name}${route} did not return HTTP 200.`, { engine, viewport: viewport.name, route });
-              continue;
-            }
-
-            const measurement = await page.evaluate(({ rule, controlSelector, targetSize, overlapTolerance, overflowTolerance, headerContract }) => {
-              const viewportWidth = document.documentElement.clientWidth;
-              const viewportHeight = window.innerHeight;
-              const rectValue = (rect) => ({ left: rect.left, top: rect.top, width: rect.width, height: rect.height, right: rect.right, bottom: rect.bottom });
-              const label = (element) => element.getAttribute("aria-label") || element.textContent?.trim().replace(/\s+/g, " ").slice(0, 80) || element.tagName.toLowerCase();
-              const visible = (element) => {
-                const closedDetails = element.closest("details:not([open])");
-                if (closedDetails) {
-                  const summary = closedDetails.querySelector(":scope > summary");
-                  if (!summary || (element !== summary && !summary.contains(element))) return false;
+        let nextRouteIndex = 0;
+        const workers = Array.from(
+          { length: Math.min(routeConcurrency, routeRules.length) },
+          async () => {
+            const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
+            try {
+              while (nextRouteIndex < routeRules.length) {
+                const ruleIndex = nextRouteIndex;
+                nextRouteIndex += 1;
+                const rule = routeRules[ruleIndex];
+                const route = routePath(rule);
+                const response = await page.goto(new URL(route, baseUrl).href, { waitUntil: "domcontentloaded" });
+                if (!response || response.status() !== 200) {
+                  addFinding("error", "route-render-failed", `${engine}/${viewport.name}${route} did not return HTTP 200.`, { engine, viewport: viewport.name, route });
+                  continue;
                 }
-                const style = getComputedStyle(element);
-                const rect = element.getBoundingClientRect();
-                const nativeVisible = typeof element.checkVisibility !== "function" || element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
-                return nativeVisible && rect.width > 0 && rect.height > 0 && style.display !== "none" && style.visibility !== "hidden" && Number(style.opacity) !== 0;
-              };
-              const controls = [...document.querySelectorAll(controlSelector)].filter(visible).map((element) => {
-                const style = getComputedStyle(element);
-                return {
-                  element,
-                  label: label(element),
-                  rect: rectValue(element.getBoundingClientRect()),
-                  fragments: [...element.getClientRects()].map(rectValue),
-                  display: style.display,
-                  overflowX: style.overflowX,
-                  overflowY: style.overflowY,
-                  clippedX: element.scrollWidth > element.clientWidth + overflowTolerance,
-                  clippedY: element.scrollHeight > element.clientHeight + overflowTolerance,
-                  ignoredTargetSize: targetSize.ignoreSelectors.some((selector) => element.matches(selector))
-                };
-              });
-              const issues = [];
-              const warn = [];
-              const overlaps = (first, second) => first.fragments.some((firstFragment) => second.fragments.some((secondFragment) => {
-                const overlapX = Math.min(firstFragment.right, secondFragment.right) - Math.max(firstFragment.left, secondFragment.left);
-                const overlapY = Math.min(firstFragment.bottom, secondFragment.bottom) - Math.max(firstFragment.top, secondFragment.top);
-                return overlapX > overlapTolerance && overlapY > overlapTolerance;
-              }));
+                await page.evaluate(async () => {
+                  await document.fonts.ready;
+                  await new Promise((resolveFrame) => {
+                    requestAnimationFrame(() => requestAnimationFrame(resolveFrame));
+                  });
+                });
+
+                const measurement = await page.evaluate(({ rule, controlSelector, targetSize, overlapTolerance, overflowTolerance, headerContract }) => {
+                  const viewportWidth = document.documentElement.clientWidth;
+                  const viewportHeight = window.innerHeight;
+                  const rectValue = (rect) => ({ left: rect.left, top: rect.top, width: rect.width, height: rect.height, right: rect.right, bottom: rect.bottom });
+                  const label = (element) => element.getAttribute("aria-label") || element.textContent?.trim().replace(/\s+/g, " ").slice(0, 80) || element.tagName.toLowerCase();
+                  const visible = (element) => {
+                    const closedDetails = element.closest("details:not([open])");
+                    if (closedDetails) {
+                      const summary = closedDetails.querySelector(":scope > summary");
+                      if (!summary || (element !== summary && !summary.contains(element))) return false;
+                    }
+                    const style = getComputedStyle(element);
+                    const rect = element.getBoundingClientRect();
+                    const nativeVisible = typeof element.checkVisibility !== "function" || element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
+                    return nativeVisible && rect.width > 0 && rect.height > 0 && style.display !== "none" && style.visibility !== "hidden" && Number(style.opacity) !== 0;
+                  };
+                  const controls = [...document.querySelectorAll(controlSelector)].filter(visible).map((element) => {
+                    const style = getComputedStyle(element);
+                    return {
+                      element,
+                      label: label(element),
+                      rect: rectValue(element.getBoundingClientRect()),
+                      fragments: [...element.getClientRects()].map(rectValue),
+                      display: style.display,
+                      overflowX: style.overflowX,
+                      overflowY: style.overflowY,
+                      clippedX: element.scrollWidth > element.clientWidth + overflowTolerance,
+                      clippedY: element.scrollHeight > element.clientHeight + overflowTolerance,
+                      ignoredTargetSize: targetSize.ignoreSelectors.some((selector) => element.matches(selector))
+                    };
+                  });
+                  const issues = [];
+                  const warn = [];
+                  const overlaps = (first, second) => first.fragments.some((firstFragment) => second.fragments.some((secondFragment) => {
+                    const overlapX = Math.min(firstFragment.right, secondFragment.right) - Math.max(firstFragment.left, secondFragment.left);
+                    const overlapY = Math.min(firstFragment.bottom, secondFragment.bottom) - Math.max(firstFragment.top, secondFragment.top);
+                    return overlapX > overlapTolerance && overlapY > overlapTolerance;
+                  }));
 
               const horizontalOverflow = Math.max(document.documentElement.scrollWidth, document.body?.scrollWidth || 0) - viewportWidth;
               if (horizontalOverflow > overflowTolerance) issues.push({ code: "horizontal-overflow", message: `Document exceeds the viewport by ${Math.round(horizontalOverflow)} pixels.` });
@@ -338,29 +356,32 @@ try {
                 }
               };
 
-              return { issues, warnings: warn, horizontalOverflow, controlCount: controls.length, fingerprint };
-            }, {
-              rule,
-              controlSelector,
-              targetSize,
-              overlapTolerance,
-              overflowTolerance,
-              headerContract: config.header || null
-            });
+                  return { issues, warnings: warn, horizontalOverflow, controlCount: controls.length, fingerprint };
+                }, {
+                  rule,
+                  controlSelector,
+                  targetSize,
+                  overlapTolerance,
+                  overflowTolerance,
+                  headerContract: config.header || null
+                });
 
-            const record = { engine, viewport, route, family: rule.family, archetype: rule.archetype, ...measurement };
-            records.push(record);
-            for (const issue of measurement.issues) addFinding("error", issue.code, `${engine}/${viewport.name}${route}: ${issue.message}`, { engine, viewport: viewport.name, route });
-            for (const warning of measurement.warnings) addFinding("warning", warning.code, `${engine}/${viewport.name}${route}: ${warning.message}`, { engine, viewport: viewport.name, route });
+                const record = { engine, viewport, route, family: rule.family, archetype: rule.archetype, ...measurement };
+                records.push(record);
+                for (const issue of measurement.issues) addFinding("error", issue.code, `${engine}/${viewport.name}${route}: ${issue.message}`, { engine, viewport: viewport.name, route });
+                for (const warning of measurement.warnings) addFinding("warning", warning.code, `${engine}/${viewport.name}${route}: ${warning.message}`, { engine, viewport: viewport.name, route });
 
-            const shouldCapture = screenshotMode === "all" || (screenshotMode === "failures" && (measurement.issues.length > 0 || measurement.warnings.length > 0));
-            if (shouldCapture) {
-              await page.screenshot({ path: resolve(screenshotDirectory, `${cleanArtifactName(route)}-${engine}-${cleanArtifactName(viewport.name)}.png`), fullPage: true });
+                const shouldCapture = screenshotMode === "all" || (screenshotMode === "failures" && (measurement.issues.length > 0 || measurement.warnings.length > 0));
+                if (shouldCapture) {
+                  await page.screenshot({ path: resolve(screenshotDirectory, `${cleanArtifactName(route)}-${engine}-${cleanArtifactName(viewport.name)}.png`), fullPage: true });
+                }
+              }
+            } finally {
+              await page.close();
             }
-          }
-        } finally {
-          await page.close();
-        }
+          },
+        );
+        await Promise.all(workers);
       }
     } finally {
       await browser.close();
@@ -374,10 +395,18 @@ const differentiation = [];
 for (const engine of differentiationBrowsers) {
   for (const viewport of differentiationViewports) {
     const candidates = records.filter((record) => record.engine === engine && record.viewport.name === viewport);
-    for (let firstIndex = 0; firstIndex < candidates.length; firstIndex += 1) {
-      const first = candidates[firstIndex];
-      for (let secondIndex = firstIndex + 1; secondIndex < candidates.length; secondIndex += 1) {
-        const second = candidates[secondIndex];
+    const representatives = [...new Map(candidates.map((record) => [record.family, record])).values()];
+    const firstCandidates =
+      differentiationScope === "every-route-to-family-representative"
+        ? candidates
+        : candidates;
+    for (let firstIndex = 0; firstIndex < firstCandidates.length; firstIndex += 1) {
+      const first = firstCandidates[firstIndex];
+      const secondCandidates =
+        differentiationScope === "every-route-to-family-representative"
+          ? representatives
+          : candidates.slice(firstIndex + 1);
+      for (const second of secondCandidates) {
         if (first.family === second.family) continue;
         const differences = fingerprintDifferences(first.fingerprint, second.fingerprint);
         const item = { engine, viewport, firstRoute: first.route, secondRoute: second.route, firstFamily: first.family, secondFamily: second.family, differences };

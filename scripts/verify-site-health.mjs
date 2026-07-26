@@ -119,7 +119,7 @@ function recordImage(candidate, baseUrl, owner) {
 }
 
 for (const file of await collectHtmlFiles(outputDirectory)) {
-  const route = routeFromHtmlFile(outputDirectory, file);
+  const route = normalizeRoute(routeFromHtmlFile(outputDirectory, file), trailingSlash);
   const html = await readFile(file, "utf8");
   const document = load(html);
   const isRedirect = document('meta[http-equiv="refresh" i]').length > 0;
@@ -202,7 +202,17 @@ for (const page of indexablePages) {
   } catch {
     failures.push(`${page.route}: canonical is missing or invalid`);
   }
-  if (canonical && canonical.href !== new URL(page.route, site).href) failures.push(`${page.route}: canonical does not match the built route`);
+  if (
+    canonical &&
+    (
+      canonical.origin !== site.origin ||
+      normalizeRoute(canonical.pathname, trailingSlash) !== page.route ||
+      canonical.search ||
+      canonical.hash
+    )
+  ) {
+    failures.push(`${page.route}: canonical does not match the built route`);
+  }
 
   for (const { href, url } of page.links) {
     if (!isPagePath(url.pathname)) continue;

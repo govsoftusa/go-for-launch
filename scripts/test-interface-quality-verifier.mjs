@@ -52,6 +52,8 @@ await writeFile(validConfig, `export default ${JSON.stringify({
   differentiationBrowsers: ["chromium"],
   differentiationViewports: ["mobile"],
   minimumDistinctiveDimensions: 2,
+  routeConcurrency: 2,
+  differentiationScope: "every-route-to-family-representative",
   screenshots: "none",
   header: { selector: ".site-header", maximumViewportHeightRatio: 0.2 },
   controls: { targetSize: { enabled: true, severity: "error", ignoreSelectors: [".citation"] } },

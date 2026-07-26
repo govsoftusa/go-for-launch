@@ -33,6 +33,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 ### Case Studies
 
 - Added a normalized WordPress to EmDash news archive migration case study recording the offloaded-media key mismatch, non-reproducible Portable Text conversion, cursor pagination limitation, prose-corrupting shortcode stripper, unsafe theme-generated image variants, adversarial legacy redirect table, inverted thin-archive heuristic, and source compromise findings.
+- Added a normalized WordPress to EmDash Cloudflare release-hardening case study covering isolated candidate identity, D1 and edge-cache performance, responsive media, compression, method-safe caching, server-enforced Turnstile, mobile navigation, CDN-injected test nondeterminism, exact-candidate evidence, and the hard gates that correctly stopped production.
 
 
 ## 0.4.0, 2026-07-22

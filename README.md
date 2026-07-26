@@ -145,6 +145,7 @@ This repository documents the process used to close those gaps while replacing l
 │   ├── cloudflare-rum-hidden-viewport-lcp.md
 │   ├── filtered-header-mobile-safari-menu.md
 │   ├── multi-page-interface-quality.md
+│   ├── wordpress-emdash-cloudflare-release-hardening.md
 │   ├── association-header-announcement-hierarchy.md
 │   └── association-navigation-render-sharpness.md
 └── templates/

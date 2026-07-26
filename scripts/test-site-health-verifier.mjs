@@ -48,7 +48,7 @@ await writeFile(join(valid, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${
 await page(valid, "/", html({
   route: "/",
   title: "Example Public Information",
-  body: '<h1>Home</h1><a href="/about/">About</a><img src="/assets/content.webp" alt="Public information" width="800" height="450">'
+  body: '<h1>Home</h1><a href="/about/">About</a><a href="/encoded-%d1%8f/">Encoded route</a><img src="/assets/content.webp" alt="Public information" width="800" height="450">'
 }));
 await page(valid, "/about/", html({
   route: "/about/",
@@ -56,11 +56,17 @@ await page(valid, "/about/", html({
   pageDescription: "Learn how this example service provides dependable public information, accessible digital tools, and clear ways to contact the responsible team.",
   body: '<h1>About</h1><a href="/">Home</a>'
 }));
+await page(valid, "/encoded-%d1%8f/", html({
+  route: "/encoded-%d1%8f/",
+  title: "Encoded Public Information Route",
+  pageDescription: "This encoded route confirms that links and generated folders use the same normalized route identity during complete site-health verification.",
+  body: '<h1>Encoded route</h1><a href="/">Home</a>'
+}));
 const validOutput = join(root, "valid-report.json");
 const validResult = verify(valid, validOutput);
 if (validResult.status !== 0) throw new Error(`Valid site-health fixture failed:\n${validResult.stdout}${validResult.stderr}`);
 const validReport = JSON.parse(await readFile(validOutput, "utf8"));
-if (validReport.counts.errors !== 0 || validReport.counts.indexablePages !== 2) throw new Error("Valid site-health report has incorrect counts.");
+if (validReport.counts.errors !== 0 || validReport.counts.indexablePages !== 3) throw new Error("Valid site-health report has incorrect counts.");
 
 const scoped = await fixture("scoped");
 await mkdir(join(scoped, "generated", "social"), { recursive: true });
