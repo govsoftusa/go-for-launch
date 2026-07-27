@@ -181,6 +181,10 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Titles and descriptions are unique and within the configured length limits.
 - [ ] The machine-readable site-health report is preserved with release evidence.
 - [ ] Open Graph contact sheets include every indexable page and were reviewed at full size.
+- [ ] The authoritative brand reference and renderer source are hash-bound in the social-card adoption gate.
+- [ ] Representative social-card prototypes covered publication identity, a long headline, source artwork when applicable, and the designed fallback.
+- [ ] A named reviewer approved the current prototypes in a real messaging or social client before bulk regeneration.
+- [ ] The prototype approval matches the current visual-system, brand-reference, renderer, prototype-input, and prototype-output hashes.
 - [ ] Open Graph cards have no overlapping or clipped text, jagged or upscaled artwork, unintended transparency, incorrect page content, or unsafe crop placement.
 - [ ] Every social-card source image is visually informative, with flat placeholders and empty exports replaced by an approved designed fallback.
 - [ ] The normal build reused existing approved Open Graph cards without changing their bytes, names, encoding, or modification times.

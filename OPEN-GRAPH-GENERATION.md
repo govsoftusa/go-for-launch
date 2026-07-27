@@ -13,6 +13,7 @@ Every indexable page needs a relevant social preview. Social cards are release a
 7. Every new or changed card requires full-size human review. Approval must record both the rendering input SHA-256 and final image SHA-256. Any later input or pixel change invalidates approval.
 8. A production candidate must use the same approved files inspected in the contact sheets. Do not rebuild or optimize them between approval, staging, and production.
 9. Do not treat a technically valid file as useful artwork. Measure candidate source images after flattening transparency and reject visually flat, empty, placeholder, or low-detail assets. Use an approved designed fallback when a page source does not carry enough information for the card.
+10. Bulk regeneration is prohibited until a representative prototype set has current named approval tied to the authoritative brand reference, renderer contract, prototype inputs, and prototype output hashes.
 
 ## Configure the Cards
 
@@ -47,6 +48,7 @@ Required controls:
 - `contactInformation` declares whether a visible canonical destination or other contact detail is required.
 - Every card includes `purpose`, a plain-language statement of what the preview must communicate when that page is shared.
 - `reviewContract` records the reviewer, review date, brand reference, readability approval, brand-integrity approval, and contact-information approval.
+- `adoptionGate` records the authoritative brand-reference hash, renderer contract, representative prototype cards and cases, real-client review, and immutable prototype approval path.
 
 Before selecting any logo or mark, follow [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md). Record the authoritative brand-guide hash and exact asset hashes. A full-color asset approved for a light panel cannot be reused on a dark panel unless the guide explicitly allows it. Run the brand asset verifier before regenerating or approving cards.
 
@@ -59,10 +61,19 @@ Copy [`generate-open-graph.mjs`](scripts/generate-open-graph.mjs) and [`review-o
 Explicit maintenance workflow:
 
 ```bash
+node scripts/generate-open-graph.mjs --config=open-graph.config.mjs --prototype
+node scripts/review-open-graph.mjs --config=open-graph.config.mjs --prototype
+node scripts/review-open-graph.mjs --config=open-graph.config.mjs --approve-prototype
 node scripts/generate-open-graph.mjs --config=open-graph.config.mjs --regenerate
 node scripts/review-open-graph.mjs --config=open-graph.config.mjs
 node scripts/review-open-graph.mjs --config=open-graph.config.mjs --approve
 ```
+
+The prototype set lives outside the production output and state manifest. Use it to validate the visual system before bulk work begins. For projects with at least three cards, include at least three prototypes. Cover publication identity and a long headline in every project. Add source artwork and the designed fallback whenever those layouts exist.
+
+`--approve-prototype` requires a named reviewer, review date, authoritative brand reference, named real messaging or social client, and explicit approval of the template, typography, palette, imagery, brand authority, readability, and absence of unapproved synthetic artwork. The resulting approval is bound to the brand-reference hash, renderer source hash, visual-system fingerprint, prototype input hashes, and prototype output hashes.
+
+`--regenerate` validates that approval before writing any production card. A changed template version, renderer hash, brand reference, shared palette, shared typography, brand rule, prototype selection, or prototype input invalidates it.
 
 Normal build and release workflow:
 

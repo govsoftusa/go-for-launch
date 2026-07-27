@@ -37,6 +37,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Project-Owned Open Graph Rendering
 
+- Added a fail-closed adoption gate that prohibits bulk Open Graph regeneration
+  until a representative prototype set has current named approval.
+- Bound prototype approval to the authoritative brand-reference hash, renderer
+  source hash, shared visual-system fingerprint, prototype input hashes, and
+  prototype output hashes.
+- Added separate prototype generation, review, approval, and verification modes
+  so a project can reject an unsuitable visual system before generating the
+  full route inventory.
+- Required real messaging or social-client review plus explicit approval of
+  brand authority, template suitability, typography, palette, imagery,
+  readability, and the absence of unapproved synthetic artwork.
+- Added onboarding records for the brand authority, renderer ownership,
+  representative cases, real-client review, and bulk-generation decision.
 - Added an asynchronous `renderCard` extension hook so a project can keep the
   shared immutable-generation and approval contract without inheriting the
   toolkit reference template as its visual identity.

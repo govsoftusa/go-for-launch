@@ -33,6 +33,8 @@
   "type": "module",
   "scripts": {
     "design:gate": "node scripts/run-design-gate.mjs --config=templates/design-gate.config.mjs",
+    "open-graph:prototype": "node scripts/generate-open-graph.mjs --config=templates/open-graph.config.mjs --prototype && node scripts/review-open-graph.mjs --config=templates/open-graph.config.mjs --prototype",
+    "open-graph:prototype:approve": "node scripts/review-open-graph.mjs --config=templates/open-graph.config.mjs --approve-prototype",
     "open-graph:regenerate": "node scripts/generate-open-graph.mjs --config=templates/open-graph.config.mjs --regenerate",
     "open-graph:verify": "node scripts/generate-open-graph.mjs --config=templates/open-graph.config.mjs && node scripts/review-open-graph.mjs --config=templates/open-graph.config.mjs --check",
     "open-graph:review": "node scripts/review-open-graph.mjs --config=templates/open-graph.config.mjs",

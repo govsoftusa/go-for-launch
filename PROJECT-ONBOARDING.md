@@ -16,6 +16,7 @@ Record which Go for Launch workflows are in scope:
 - Astro and dependency maintenance.
 - Sitemap and technical SEO validation.
 - Answer Engine Optimization content work.
+- Open Graph and social-card generation.
 - Performance and accessibility remediation.
 - Interface geometry, responsive layout, and route-family differentiation.
 - WebKit and native iOS Safari testing.
@@ -48,6 +49,7 @@ Use one of these decisions for every service:
 - **Analytics, site search, support, sales, and form data**, provide first-party questions, journeys, and conversion evidence, conditional for AEO or content research based on what the project has.
 - **Secret manager**, provides least-privilege credential retrieval without placing secrets in the repository, conditional when a workflow uses protected external accounts.
 - **Design-system references**, provide Material, Apple, custom, or hybrid conformance evidence, optional according to project policy.
+- **Authoritative brand guide and current brand kit**, provide the approved visual identity, asset variants, typography, palette, imagery rules, and social-card direction, required whenever Open Graph or another generated visual workflow is selected.
 
 Ahrefs is not required for Go for Launch, technical SEO validation, AEO implementation, sitemap checks, browser tests, PageSpeed, or deployment. When it is unavailable, use approved first-party evidence and record the research limitation.
 
@@ -81,7 +83,24 @@ Playwright WebKit is valuable automated coverage, but it is not evidence from Ap
 
 The mandatory Go for Launch production policy requires native Safari evidence from an explicitly selected Xcode iOS Simulator device and UDID. A Windows or Linux operator can perform the other build and browser work, but the exact candidate must be transferred to a qualified macOS runner before production. If no qualified Mac environment is available, record the limitation and block production under the standard policy. Do not relabel Chromium mobile emulation, a generic WebKit run, or a remote screenshot as native iOS Simulator evidence.
 
-## 5. Finish the setup record
+## 5. Approve the social-card visual system before bulk generation
+
+When Open Graph or social-card generation is selected, complete this sequence before generating the route inventory:
+
+1. Locate the authoritative current brand guide and brand kit.
+2. Record the brand-reference hash and approved logo or wordmark hashes.
+3. Create or select the project-owned renderer. The bundled renderer is a reference implementation, not a neutral brand.
+4. Record the renderer name, version, source hash, and project owner.
+5. Select at least three representative prototype cards when the project has three or more routes. Cover publication identity, a long headline, real source artwork when the project uses it, and the designed fallback.
+6. Generate only the prototypes with `--prototype`.
+7. Review the prototypes at full size and in at least one real messaging or social client.
+8. Record named approval for the template, typography, palette, imagery, brand authority, readability, and absence of unapproved synthetic artwork.
+9. Approve the prototype with `--approve-prototype`.
+10. Run bulk `--regenerate` only after the current prototype approval passes.
+
+The generator fails closed when the prototype approval is missing, stale, tied to different prototype inputs, or tied to a different brand or renderer fingerprint. A hash-valid generic template is not acceptable evidence of brand fit.
+
+## 6. Finish the setup record
 
 Before implementation begins, the completed project record must contain:
 
@@ -96,5 +115,6 @@ Before implementation begins, the completed project record must contain:
 - Staging and production commands, canonical hostname, and deployment authority.
 - The interface-quality command, route-family contract owner, and report location.
 - The current Go for Launch revision used by the project.
+- The authoritative brand reference, renderer contract, representative prototype set, real-client preview, and prototype approval artifact when social cards are selected.
 
 Revisit this record whenever a workflow, provider, billing plan, account owner, deployment target, or release environment changes.

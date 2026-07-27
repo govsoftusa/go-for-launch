@@ -21,6 +21,7 @@
 - [ ] Astro and dependency maintenance
 - [ ] Sitemap and technical SEO
 - [ ] Answer Engine Optimization content work
+- [ ] Open Graph and social-card generation
 - [ ] Performance and accessibility
 - [ ] Interface geometry, responsive layout, and route-family differentiation
 - [ ] WebKit and native iOS Safari testing
@@ -128,6 +129,37 @@ Use `required`, `conditional`, `optional`, `not used`, or `blocked`. Complete on
 - Masked access check:
 - Fallback or blocker:
 
+### Authoritative brand guide and brand kit
+
+- Decision: required when Open Graph or another generated visual workflow is selected
+- Capability supported: approved identity, assets, typography, palette, imagery, and social-card direction
+- Brand authority and owner:
+- Current brand reference:
+- Brand-reference SHA-256:
+- Approved wordmark or logo variants and SHA-256 values:
+- Renderer name, owner, version, and source SHA-256:
+- Fallback or blocker: bulk visual generation is blocked
+
+## Social-card adoption gate
+
+- Project-owned renderer selected:
+- Representative prototype card names:
+- Required cases covered: publication identity / long headline / source artwork when applicable / typographic fallback
+- Prototype generation command:
+- Prototype review artifact:
+- Real messaging or social client used:
+- Named reviewer:
+- Review date:
+- Brand authority approved: yes / no
+- Template appropriate for the project: yes / no
+- Typography approved: yes / no
+- Palette approved: yes / no
+- Imagery approved: yes / no
+- Unapproved synthetic artwork absent: yes / no
+- Readability approved: yes / no
+- Prototype approval file:
+- Bulk regeneration status: blocked / approved
+
 ## Local and release environment
 
 - Operating system and version:
@@ -163,6 +195,7 @@ Use `required`, `conditional`, `optional`, `not used`, or `blocked`. Complete on
 - [ ] Non-Mac native Safari limitations are recorded.
 - [ ] A qualified Mac runner is assigned for the exact production candidate.
 - [ ] No blocked required item is being treated as complete.
+- [ ] Social-card bulk generation remains blocked until the current representative prototype is approved in a real client.
 
 Approved by:
 
