@@ -45,11 +45,12 @@
     "side-navigation:verify": "node scripts/verify-side-navigation.mjs --root=dist --require=true --output=artifacts/side-navigation-report.json",
     "visual-composition:verify": "node scripts/verify-visual-composition.mjs --config=templates/visual-composition.config.mjs",
     "interface-quality:verify": "node scripts/verify-interface-quality.mjs --config=templates/interface-quality.config.mjs",
+    "route-convergence:verify": "node scripts/verify-route-convergence.mjs --config=templates/route-convergence.config.mjs",
     "case-studies:verify": "node scripts/verify-case-study-normalization.mjs",
     "site-health:verify": "node scripts/verify-site-health.mjs --config=templates/site-health.config.mjs",
     "prepack": "npm run case-studies:verify && node scripts/check-docs.mjs",
     "prepublishOnly": "npm test",
-    "test": "astro check && node scripts/check-docs.mjs && node scripts/verify-case-study-normalization.mjs && node scripts/test-case-study-normalization.mjs && node scripts/test-sitemap-verifier.mjs && node scripts/test-seo-verifier.mjs && node scripts/test-semantic-seo-verifier.mjs && node scripts/test-content-quality-verifier.mjs && node scripts/test-site-health-verifier.mjs && node scripts/test-ahrefs-site-audit.mjs && node scripts/test-cloudflare-observability.mjs && node scripts/test-redirect-verifier.mjs && node scripts/test-open-graph-generator.mjs && node scripts/test-artwork-suitability.mjs && node scripts/test-brand-assets.mjs && node scripts/test-design-gate.mjs && node scripts/test-render-sharpness.mjs && node scripts/test-side-navigation-verifier.mjs && node scripts/test-visual-composition.mjs && node scripts/test-interface-quality-verifier.mjs"
+    "test": "astro check && node scripts/check-docs.mjs && node scripts/verify-case-study-normalization.mjs && node scripts/test-case-study-normalization.mjs && node scripts/test-sitemap-verifier.mjs && node scripts/test-seo-verifier.mjs && node scripts/test-semantic-seo-verifier.mjs && node scripts/test-content-quality-verifier.mjs && node scripts/test-site-health-verifier.mjs && node scripts/test-ahrefs-site-audit.mjs && node scripts/test-cloudflare-observability.mjs && node scripts/test-redirect-verifier.mjs && node scripts/test-open-graph-generator.mjs && node scripts/test-artwork-suitability.mjs && node scripts/test-brand-assets.mjs && node scripts/test-design-gate.mjs && node scripts/test-render-sharpness.mjs && node scripts/test-side-navigation-verifier.mjs && node scripts/test-visual-composition.mjs && node scripts/test-interface-quality-verifier.mjs && node scripts/test-route-convergence-verifier.mjs"
   },
   "dependencies": {
     "cheerio": "^1.2.0",
