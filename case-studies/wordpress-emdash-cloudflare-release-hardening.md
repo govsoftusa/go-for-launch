@@ -222,6 +222,38 @@ reliable replacement sequence was:
 5. Repeat the tag purge if route propagation raced the first purge.
 6. Retest in native Safari.
 
+### Split production route state
+
+A controlled production canary attached only the canonical hostname while the
+apex remained on the prior application. Alternating requests to the canonical
+hostname returned the reviewed candidate and the prior application within the
+same sequence. The route API had reported success, but the visitor-visible
+application identity was not yet consistent.
+
+The canary route was removed immediately, the zone cache was purged, and the
+prior application was verified repeatedly before the release stopped. The
+apex was never attached.
+
+The available evidence was consistent with route propagation or split edge
+state immediately after route creation, but did not prove the cause. The
+release process was changed to require an explicit convergence interval and
+repeated multi-network identity checks before application tests begin.
+
+Each route consistency probe must assert:
+
+- Exact release identity.
+- Expected application marker.
+- Public or protected robots policy for the requested hostname.
+- Expected browser and edge cache policy.
+- Stable results across repeated requests and more than one network or region.
+
+### Reusable rule
+
+A successful route API response and one correct HTTP response do not prove
+production convergence. Attach one public hostname as a canary, wait the
+reviewed propagation interval, and require repeated identity agreement before
+PageSpeed, forms, crawlers, or apex attachment. Roll back on any mixed identity.
+
 ### Unsafe method caching
 
 A POST to the temporary hostname received cached GET content. That bypassed the

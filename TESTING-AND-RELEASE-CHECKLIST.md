@@ -265,12 +265,20 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] All eight required PageSpeed category checks equal 100.
 - [ ] No production push occurs before the Simulator and PageSpeed gates pass.
 - [ ] Production deployment completes successfully.
+- [ ] Production begins with one canonical canary hostname while the apex and rollback hostname remain on the prior application.
+- [ ] The canary is given the reviewed route propagation interval before application gates begin.
+- [ ] Repeated probes from more than one network or region agree on the exact candidate identity, application marker, robots policy, and cache policy.
+- [ ] Protected candidate probes alternate with public canary probes and never leak protected robots or cache policy to the public hostname.
+- [ ] The complete route consistency sequence passes again after a second quiet interval.
+- [ ] Any mixed application identity triggers automatic route removal, cache purge, rollback verification, evidence capture, and release stop.
 - [ ] The canonical public hostname serves the new candidate.
+- [ ] Live production SEO passes before PageSpeed, forms, crawler, or observability gates run.
 - [ ] The production `/sitemap.xml`, child sitemaps, and robots declaration pass public HTTP checks.
 - [ ] Public `robots.txt` returns HTTP 200 and advertises the exact canonical sitemap URL.
 - [ ] A fresh approved external crawl was run after deployment, or the access blocker and required follow-up were recorded.
 - [ ] Ahrefs API v3 Site Audit was checked when approved access exists, and the report records pass, fail, or an allowed skipped state.
 - [ ] Apex and alternate-host redirects behave correctly.
+- [ ] The apex is attached only after the canonical canary passes route consistency twice.
 - [ ] Opposite trailing-slash forms return one HTTP 301 or 308 to the exact canonical URL.
 - [ ] Redirect probes preserve paths and query strings unless an approved map intentionally changes the path.
 - [ ] Localized canonical, hreflang, language selector, and sitemap behavior passes on public hosts.

@@ -75,6 +75,34 @@ For every candidate replacement:
 Never accept a gate result from a stale clean URL merely because a cache-busted
 request reached the new Worker.
 
+### Production route convergence canary
+
+A successful production route API response does not prove that every visitor
+edge serves the reviewed candidate. Production promotion must begin with one
+canonical canary hostname while the apex and rollback hostname remain on the
+prior application.
+
+For the canary:
+
+1. Record the absence or exact prior state of production Worker routes.
+2. Attach only the reviewed canonical canary hostname.
+3. Purge the reviewed zone and application cache layers.
+4. Wait the project-defined route propagation interval.
+5. Probe the canary repeatedly from more than one network or region.
+6. Require every response to carry the exact candidate identity, expected
+   application marker, public robots policy, and public cache policy.
+7. Alternate those probes with the protected candidate hostname and require
+   its exact identity, protected robots policy, and protected cache policy.
+8. Repeat the consistency sequence after a second quiet interval.
+9. Run live SEO before PageSpeed, forms, crawler, or observability gates.
+10. Attach the apex only after the canonical hostname passes twice.
+
+Any mixed release identity, application marker, robots policy, or cache policy
+requires immediate route removal and cache purge. Verify the rollback
+application repeatedly, preserve the inconsistent responses as evidence, and
+stop the release. Do not cycle new candidates to address an unproven routing
+problem.
+
 ### Protected staging PageSpeed rule
 
 A staging archive must not be made indexable merely to satisfy Lighthouse
