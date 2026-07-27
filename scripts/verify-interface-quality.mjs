@@ -204,7 +204,7 @@ try {
                   addFinding("error", "route-render-failed", `${engine}/${viewport.name}${route} did not return HTTP 200.`, { engine, viewport: viewport.name, route });
                   continue;
                 }
-                await page.evaluate(async () => {
+                const fontReadiness = await page.evaluate(async () => {
                   /*
                    * `content-visibility: auto` intentionally skips layout for
                    * offscreen content. Measuring every control before it has
@@ -216,11 +216,25 @@ try {
                   auditStyle.dataset.interfaceAudit = "eager-layout";
                   auditStyle.textContent = "* { content-visibility: visible !important; }";
                   document.head.append(auditStyle);
-                  await document.fonts.ready;
+                  const fontStatus = await Promise.race([
+                    document.fonts.ready.then(() => "ready"),
+                    new Promise((resolveFontStatus) => {
+                      window.setTimeout(() => resolveFontStatus("timeout"), 15_000);
+                    })
+                  ]);
                   await new Promise((resolveFrame) => {
                     requestAnimationFrame(() => requestAnimationFrame(resolveFrame));
                   });
+                  return fontStatus;
                 });
+                if (fontReadiness !== "ready") {
+                  addFinding("error", "font-readiness-timeout", `${engine}/${viewport.name}${route} did not finish loading fonts within 15 seconds.`, {
+                    engine,
+                    viewport: viewport.name,
+                    route
+                  });
+                  continue;
+                }
 
                 const measurement = await page.evaluate(({ rule, controlSelector, targetSize, overlapIgnoreSelectors, overlapTolerance, overflowTolerance, headerContract }) => {
                   const viewportWidth = document.documentElement.clientWidth;
