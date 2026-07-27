@@ -1,7 +1,7 @@
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { log } from "node:console";
 import process from "node:process";
 
@@ -38,6 +38,29 @@ function verify(directory, output) {
 
 function verifyWithConfig(config) {
   return spawnSync(process.execPath, [verifier.pathname, `--config=${config}`], { encoding: "utf8" });
+}
+
+async function runtimeImageServer() {
+  const serverScript = join(root, "runtime-image-server.mjs");
+  await writeFile(serverScript, `
+    import { createServer } from "node:http";
+    const server = createServer((request, response) => {
+      if (request.url === "/runtime/present.avif") {
+        response.writeHead(200, { "content-type": "image/avif", "content-length": "1000" });
+        response.end(request.method === "HEAD" ? undefined : Buffer.alloc(1000));
+        return;
+      }
+      response.writeHead(404, { "content-type": "text/plain" });
+      response.end();
+    });
+    server.listen(0, "127.0.0.1", () => console.log(server.address().port));
+  `);
+  const child = spawn(process.execPath, [serverScript], { stdio: ["ignore", "pipe", "inherit"] });
+  const port = await new Promise((resolvePort, reject) => {
+    child.once("error", reject);
+    child.stdout.once("data", (chunk) => resolvePort(Number(String(chunk).trim())));
+  });
+  return { child, url: `http://127.0.0.1:${port}` };
 }
 
 const valid = await fixture("valid");
@@ -88,6 +111,36 @@ await writeFile(scopedConfig, `export default ${JSON.stringify({
 })};\n`);
 const scopedResult = verifyWithConfig(scopedConfig);
 if (scopedResult.status !== 0) throw new Error(`Scoped social-card budget failed:\n${scopedResult.stdout}${scopedResult.stderr}`);
+
+const runtimeServer = await runtimeImageServer();
+const runtime = await fixture("runtime");
+await writeFile(join(runtime, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${site}/sitemap.xml\n`);
+await page(runtime, "/", html({
+  route: "/",
+  title: "Runtime Image Delivery",
+  body: '<h1>Home</h1><img src="/runtime/present.avif" alt="Runtime">'
+}));
+const runtimeConfig = join(root, "runtime.config.mjs");
+const runtimeReport = join(root, "runtime-report.json");
+await writeFile(runtimeConfig, `export default ${JSON.stringify({
+  outputDirectory: runtime,
+  site,
+  output: runtimeReport,
+  sitemapUrl: `${site}/sitemap.xml`,
+  runtimeImagePrefixes: ["/runtime/*"],
+  runtimeImageBaseUrl: runtimeServer.url
+})};\n`);
+const runtimeResult = verifyWithConfig(runtimeConfig);
+if (runtimeResult.status !== 0) throw new Error(`Runtime image verification failed:\n${runtimeResult.stdout}${runtimeResult.stderr}`);
+const runtimeEvidence = JSON.parse(await readFile(runtimeReport, "utf8"));
+if (
+  runtimeEvidence.counts.referencedLocalImages !== 0 ||
+  runtimeEvidence.counts.referencedRuntimeImages !== 1 ||
+  runtimeEvidence.counts.verifiedRuntimeImages !== 1
+) {
+  throw new Error("Runtime image report has incorrect counts.");
+}
+runtimeServer.child.kill();
 
 const invalid = await fixture("invalid");
 await writeFile(join(invalid, "assets", "large.png"), Buffer.alloc(100_001));

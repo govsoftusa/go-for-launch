@@ -8,6 +8,12 @@ export default {
   imageByteLimits: [
     { pattern: "/generated/social/*", maximumBytes: 180_000 }
   ],
+  runtimeImagePrefixes: [],
+  runtimeImageBaseUrl: "https://candidate.example.gov",
+  runtimeImageConcurrency: 16,
+  runtimeImageTimeoutMs: 15_000,
+  runtimeImageAttempts: 3,
+  runtimeImageProgressEvery: 1_000,
   maximumTitleLength: 60,
   minimumDescriptionLength: 110,
   maximumDescriptionLength: 155,

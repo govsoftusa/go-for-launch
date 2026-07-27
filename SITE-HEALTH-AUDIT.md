@@ -20,6 +20,7 @@ The verifier reads the exact output intended for staging and production. It fail
 - An indexable canonical page with no incoming internal links, unless explicitly approved.
 - A referenced local image missing from the build.
 - A referenced local image larger than the configured byte budget.
+- A declared runtime image that fails its live request, returns a nonimage response, or exceeds the configured byte budget.
 - A missing `robots.txt`, a missing `User-agent` directive, or a missing exact canonical sitemap declaration.
 
 Image discovery covers ordinary `src` values, `srcset`, `<source>` elements, Open Graph and Twitter image metadata, inline CSS, and built CSS files. This matters because a large decorative background can escape an audit that checks only `<img>` elements.
@@ -44,6 +45,27 @@ The verifier uses `cheerio`, which is already a Go for Launch dependency. Adapt 
 ```
 
 The command writes a machine-readable JSON report. Preserve that report with release evidence.
+
+## Runtime Image Delivery
+
+Some Cloudflare Workers and other edge runtimes generate same-origin image variants only when a visitor requests them. Those URLs are intentionally absent from the static output, so treating them as missing files creates a false build failure. Do not add them to a general image allowlist.
+
+Declare only the exact path families handled by the reviewed runtime:
+
+```js
+export default {
+  runtimeImagePrefixes: ["/media-fit-v1/*"],
+  runtimeImageBaseUrl: "https://candidate.example.gov",
+  runtimeImageConcurrency: 16,
+  runtimeImageTimeoutMs: 15_000,
+  runtimeImageAttempts: 3,
+  runtimeImageProgressEvery: 1_000
+};
+```
+
+The verifier sends a `HEAD` request for every distinct declared runtime image. Each response must succeed, declare an `image/*` content type, and stay within the applicable byte budget. Transport failures receive only the configured bounded attempts. HTTP failures and invalid responses still fail closed.
+
+Keep ordinary static images in the exact release output. A runtime prefix must never be used to hide a missing built asset.
 
 ## Image Remediation Rules
 
