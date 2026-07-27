@@ -85,9 +85,24 @@ async function inspectSource(source, findings) {
     ]);
     const unstaged = await gitOutput(repo, ["diff", "--name-only", "--", ...paths]);
     const staged = await gitOutput(repo, ["diff", "--cached", "--name-only", "--", ...paths]);
+    const untracked = await gitOutput(repo, [
+      "ls-files",
+      "--others",
+      "--exclude-standard",
+      "--",
+      ...paths,
+    ]);
+    const ignored = await gitOutput(repo, [
+      "ls-files",
+      "--others",
+      "--ignored",
+      "--exclude-standard",
+      "--",
+      ...paths,
+    ]);
     const drift = [
       ...new Set(
-        [committed, unstaged, staged]
+        [committed, unstaged, staged, untracked, ignored]
           .flatMap((entry) => entry.split("\n"))
           .map((entry) => entry.trim())
           .filter(Boolean),

@@ -394,7 +394,10 @@ identifier to the reviewed runtime revision, exact toolkit revision, and
 machine-readable gate artifacts. It must preserve a SHA-256 hash for every
 artifact and fail when a required artifact is missing, an assertion fails, the
 toolkit worktree is dirty, or a configured runtime path drifts from the frozen
-revision.
+revision. Runtime drift includes tracked changes, staged changes, untracked
+files, and ignored files. A local metadata file or generated asset inside a
+configured source path is part of the deployment input even when Git status
+does not show it, so it must block the release.
 
 PageSpeed automation must preserve every scored run. It must not overwrite a
 failed score with a later passing score or retry a genuine category score below
