@@ -44,6 +44,7 @@ verify staging serves the expected candidate
 run Ahrefs Site Audit when approved API v3 or crawler access exists
 run PageSpeed Insights on staging for mobile and desktop
 require four scores of 100 in both strategies, subject only to the protected staging rule below
+verify the hash-bound release evidence manifest for the frozen candidate
 provisionally deploy the same candidate to production
 require four PageSpeed scores of 100 on the canonical production hostname
 verify the canonical hostname
@@ -383,6 +384,22 @@ Retry documented transient API failures only. A genuine category score below 100
 The staging response should expose or otherwise permit verification of a candidate identifier generated during the build. The release process must confirm that staging serves the expected candidate before PageSpeed runs.
 
 Production must receive the same candidate. If source, dependencies, generated assets, configuration, or build output changes, repeat the complete gate.
+
+## Frozen candidate evidence manifest
+
+Before production promotion, run
+[`scripts/verify-release-evidence.mjs`](scripts/verify-release-evidence.mjs)
+with a reviewed project configuration. The verifier must bind the candidate
+identifier to the reviewed runtime revision, exact toolkit revision, and
+machine-readable gate artifacts. It must preserve a SHA-256 hash for every
+artifact and fail when a required artifact is missing, an assertion fails, the
+toolkit worktree is dirty, or a configured runtime path drifts from the frozen
+revision.
+
+PageSpeed automation must preserve every scored run. It must not overwrite a
+failed score with a later passing score or retry a genuine category score below
+100. A project may require multiple complete PageSpeed rounds, but every run in
+every required round must pass.
 
 ## Production Verification
 
