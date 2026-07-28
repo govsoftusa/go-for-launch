@@ -81,6 +81,22 @@ Use `required outcome`, `release blocker`, `recommended follow-up`, or
 - Evidence changed between attempts: yes / no
 - Status: active / blocked / resolved
 
+For a PageSpeed blocker also record:
+
+- First valid failed result:
+- Candidate identity:
+- Audited URL and strategy:
+- Raw report:
+- Category scores:
+- Dominant failed audit:
+- Diagnosis evidence:
+- Filmstrip evidence when Performance failed:
+- Network evidence when Performance failed:
+- LCP evidence when Performance failed:
+- Valid result preserved: yes / no
+- Remaining matrix stopped: yes / no
+- Next bounded action:
+
 ## Blocker decision
 
 - [ ] Continue with a specifically supported next attempt

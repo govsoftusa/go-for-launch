@@ -38,7 +38,8 @@ export function stableCardInput(config, card, name) {
     typography: typographyRules(config),
     sourceAssetSha256: String(card.sourceAssetSha256 || ""),
     brandAssetSha256: String(card.brandAssetSha256 || config.brandAssetSha256 || ""),
-    renderingFingerprint: card.renderingFingerprint ?? null
+    renderingFingerprint: card.renderingFingerprint ?? null,
+    ...(card.artworkReview ? { artworkReview: card.artworkReview } : {})
   };
 }
 
@@ -80,6 +81,61 @@ export function prototypeCards(config) {
   return (config.adoptionGate?.prototypeCardNames || [])
     .map((name) => configured.get(name))
     .filter(Boolean);
+}
+
+const ARTWORK_SELECTION_METHODS = new Set([
+  "route-owned",
+  "editor-curated-project-asset",
+  "licensed-editorial-asset",
+  "designed-fallback"
+]);
+
+function isPlaceholder(value) {
+  return !value || /^(?:REPLACE\b|TBD\b|TODO\b|UNKNOWN\b|PLACEHOLDER\b)/i.test(String(value).trim());
+}
+
+function validatePrototypeArtworkReview(card, failures) {
+  const name = card.name || card.slug || "unnamed";
+  const review = card.artworkReview;
+  if (!review || typeof review !== "object") {
+    failures.push(`Prototype card ${name} requires artworkReview`);
+    return;
+  }
+
+  if (!ARTWORK_SELECTION_METHODS.has(review.selectionMethod)) {
+    failures.push(
+      `Prototype card ${name} artworkReview.selectionMethod must be route-owned, editor-curated-project-asset, licensed-editorial-asset, or designed-fallback`
+    );
+  }
+  if (isPlaceholder(review.routeRelevance)) {
+    failures.push(`Prototype card ${name} artworkReview.routeRelevance must explain why the visual represents the route`);
+  }
+  if (review.routeRelevanceApproved !== true) {
+    failures.push(`Prototype card ${name} requires route relevance approval`);
+  }
+  if (review.rightsReviewed !== true) {
+    failures.push(`Prototype card ${name} requires rights review`);
+  }
+  if (review.thirdPartyMarksReviewed !== true) {
+    failures.push(`Prototype card ${name} requires review for third-party marks`);
+  }
+  if (review.noUnapprovedSyntheticArtwork !== true) {
+    failures.push(`Prototype card ${name} must reject unapproved synthetic artwork`);
+  }
+
+  if (review.selectionMethod === "designed-fallback") {
+    if (isPlaceholder(review.fallbackReason)) {
+      failures.push(`Prototype card ${name} designed fallback requires fallbackReason`);
+    }
+    return;
+  }
+
+  if (isPlaceholder(review.sourceReference)) {
+    failures.push(`Prototype card ${name} source artwork requires a durable sourceReference`);
+  }
+  if (!/^[a-f0-9]{64}$/i.test(String(card.sourceAssetSha256 || ""))) {
+    failures.push(`Prototype card ${name} source artwork requires sourceAssetSha256`);
+  }
 }
 
 export function validateAdoptionGate(config) {
@@ -146,6 +202,9 @@ export function validateAdoptionGate(config) {
       failures.push(`Prototype case references a card outside prototypeCardNames: ${entry.name}`);
     }
   }
+  for (const card of prototypeCards(config)) {
+    validatePrototypeArtworkReview(card, failures);
+  }
 
   return failures;
 }
@@ -184,7 +243,6 @@ export function validatePrototypeApproval(config, approval) {
   }
 
   const review = approval.reviewContract || {};
-  const isPlaceholder = (value) => !value || /^REPLACE\b/i.test(String(value).trim());
   if (isPlaceholder(review.reviewer)) failures.push("Prototype approval requires a named reviewer");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(review.reviewedOn || ""))) {
     failures.push("Prototype approval requires reviewedOn in YYYY-MM-DD format");
@@ -196,6 +254,10 @@ export function validatePrototypeApproval(config, approval) {
   if (review.typographyApproved !== true) failures.push("Prototype approval requires typography confirmation");
   if (review.paletteApproved !== true) failures.push("Prototype approval requires palette confirmation");
   if (review.imageryApproved !== true) failures.push("Prototype approval requires imagery confirmation");
+  if (review.routeRelevanceApproved !== true) failures.push("Prototype approval requires route relevance confirmation");
+  if (review.rightsAndMarksApproved !== true) {
+    failures.push("Prototype approval requires rights and third-party marks confirmation");
+  }
   if (review.noUnapprovedSyntheticArtwork !== true) {
     failures.push("Prototype approval must reject unapproved synthetic artwork and decorative geometry");
   }

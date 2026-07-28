@@ -157,13 +157,25 @@ const manifest = {
       typographyApproved: reviewContract.typographyApproved === true,
       paletteApproved: reviewContract.paletteApproved === true,
       imageryApproved: reviewContract.imageryApproved === true,
+      routeRelevanceApproved: reviewContract.routeRelevanceApproved === true,
+      rightsAndMarksApproved: reviewContract.rightsAndMarksApproved === true,
       noUnapprovedSyntheticArtwork: reviewContract.noUnapprovedSyntheticArtwork === true
     } : {}),
     readabilityApproved: reviewContract.readabilityApproved === true,
     brandIntegrityApproved: reviewContract.brandIntegrityApproved === true,
     contactInformationApproved: reviewContract.contactInformationApproved === true
   },
-  cards: records.map(({ name, file, inputSha256, sha256, purpose }) => ({ name, file, purpose, inputSha256, sha256 }))
+  cards: records.map(({ name, file, inputSha256, sha256, purpose }) => {
+    const card = activeCards.find((entry) => (entry.name || entry.slug) === name);
+    return {
+      name,
+      file,
+      purpose,
+      inputSha256,
+      sha256,
+      ...(prototype ? { artworkReview: card?.artworkReview || null } : {})
+    };
+  })
 };
 
 if (approve || checkOnly) {

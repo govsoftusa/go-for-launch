@@ -151,6 +151,48 @@ for (const gate of Object.values(frozenPending.candidate.gates)) {
 const frozenPendingResult = await verifyExecutionControl(frozenPending);
 assert.equal(frozenPendingResult.status, "passed");
 
+const failedPageSpeedWithoutTriage = record({ phase: "candidate-frozen" });
+failedPageSpeedWithoutTriage.candidate.gates.desktopPageSpeed = {
+  status: "failed",
+  evidence: "artifacts/pagespeed-desktop.json",
+  scores: { performance: 98, accessibility: 100, bestPractices: 100, seo: 100 },
+};
+const failedPageSpeedWithoutTriageResult = await verifyExecutionControl(
+  failedPageSpeedWithoutTriage,
+);
+assert.equal(failedPageSpeedWithoutTriageResult.status, "failed");
+assert(
+  failedPageSpeedWithoutTriageResult.findings.some(
+    (item) => item.area === "candidate.gates.desktopPageSpeed.failureTriage.rawReport",
+  ),
+);
+
+const failedPageSpeedWithTriage = record({ phase: "candidate-frozen" });
+failedPageSpeedWithTriage.candidate.gates.desktopPageSpeed = {
+  status: "failed",
+  evidence: "artifacts/pagespeed-desktop.json",
+  scores: { performance: 98, accessibility: 100, bestPractices: 100, seo: 100 },
+  failureTriage: {
+    candidate: "candidate-007",
+    strategy: "desktop",
+    auditedUrl: "https://candidate.example.com/category/reviews/",
+    firstFailedAt: "2026-01-01T12:30:00Z",
+    rawReport: "artifacts/pagespeed-desktop.json",
+    dominantAudit: "Speed Index",
+    diagnosisEvidence: "artifacts/pagespeed-desktop-diagnosis.json",
+    filmstripEvidence: "artifacts/pagespeed-desktop-filmstrip/",
+    networkEvidence: "artifacts/pagespeed-desktop-network.json",
+    lcpEvidence: "artifacts/pagespeed-desktop-lcp.json",
+    nextAction: "Use a release-local derivative for the first-viewport image",
+    validResultPreserved: true,
+    matrixStopped: true,
+  },
+};
+const failedPageSpeedWithTriageResult = await verifyExecutionControl(
+  failedPageSpeedWithTriage,
+);
+assert.equal(failedPageSpeedWithTriageResult.status, "passed");
+
 console.log(
-  "Execution-control verifier tests passed for perfect scores, bounded attempts, reviewed exceptions, and candidate phases.",
+  "Execution-control verifier tests passed for perfect scores, bounded attempts, reviewed exceptions, candidate phases, and failed PageSpeed triage.",
 );

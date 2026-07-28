@@ -68,6 +68,7 @@ capture an advisory Cloudflare production RUM baseline when approved access exis
 deploy the exact candidate to staging
 verify staging serves the expected candidate
 run Ahrefs Site Audit when approved API v3 or crawler access exists
+verify PageSpeed provider access with one scored probe before a full matrix
 run PageSpeed Insights on staging for mobile and desktop
 require four scores of 100 in both strategies, subject only to the protected staging rule below
 verify the hash-bound release evidence manifest for the frozen candidate
@@ -81,6 +82,23 @@ query Cloudflare edge errors immediately and compare RUM after sufficient produc
 ```
 
 Do not rebuild between the successful staging audit and production promotion unless the new output repeats the complete gate.
+
+### PageSpeed first-failure handling
+
+Run one scored provider probe before a full PageSpeed matrix. An API quota,
+authentication, billing, or provider error is an external-service blocker, not
+a performance score and not a reason to change the candidate.
+
+Preserve every valid score. Stop the matrix at the first category below 100 and
+record the raw report, exact candidate, URL, strategy, dominant audit,
+diagnosis evidence, and next bounded action. For a Performance failure, also
+record the filmstrip, network trace, LCP element and resource, request timing,
+and preload and responsive-source evidence.
+
+After any fix, create a new candidate and run the full required matrix and all
+other mandatory gates against that final candidate. Early stopping prevents
+wasted audit work. It does not weaken the requirement for 100 in all four
+categories on both mobile and desktop.
 
 ### Candidate route and cache replacement
 

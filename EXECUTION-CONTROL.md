@@ -44,6 +44,13 @@ candidate records, and production-readiness claims without every required gate.
 For production readiness, both PageSpeed strategies must explicitly record 100
 for Performance, Accessibility, Best Practices, and SEO.
 
+A frozen candidate with a failed PageSpeed gate must also record the first
+valid failed result, raw report, diagnosis evidence, and next bounded action.
+The remaining matrix must stop so the failed result can be diagnosed before
+another attempt. A Performance failure additionally requires filmstrip,
+network, and LCP evidence. These records preserve the failure and reduce
+speculative reruns. They do not change the 100 requirement.
+
 ## 2. Classify findings before acting
 
 Classify every new finding as one of these:
@@ -154,6 +161,12 @@ complete mandatory suite again before production.
 
 Targeted tests may accelerate development. They cannot replace the final
 complete suite.
+
+For a multi-route PageSpeed matrix, first prove provider access with one scored
+probe. Stop on the first valid category below 100, preserve the raw result, and
+diagnose the failed audit before another candidate change or PageSpeed attempt.
+After the fix, freeze a new candidate and run the complete matrix. A provider
+quota error is an external blocker, not a site-performance diagnosis.
 
 ## 8. Preserve checkpoints and evidence
 

@@ -202,10 +202,13 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Open Graph contact sheets include every indexable page and were reviewed at full size.
 - [ ] The authoritative brand reference and renderer source are hash-bound in the social-card adoption gate.
 - [ ] Representative social-card prototypes covered publication identity, a long headline, source artwork when applicable, and the designed fallback.
+- [ ] Every prototype records an approved selection method, route-relevance rationale, source reference when applicable, rights review, third-party-mark review, and synthetic-artwork review.
+- [ ] Publication-identity artwork was curated for that route and was not selected implicitly from the newest content item or first inventory record.
 - [ ] A named reviewer approved the current prototypes in a real messaging or social client before bulk regeneration.
 - [ ] The prototype approval matches the current visual-system, brand-reference, renderer, prototype-input, and prototype-output hashes.
 - [ ] Open Graph cards have no overlapping or clipped text, jagged or upscaled artwork, unintended transparency, incorrect page content, or unsafe crop placement.
 - [ ] Every social-card source image is visually informative, with flat placeholders and empty exports replaced by an approved designed fallback.
+- [ ] No unapproved trademark, sponsor mark, watermark, product packaging, or generated text becomes the focal identity of a card.
 - [ ] The normal build reused existing approved Open Graph cards without changing their bytes, names, encoding, or modification times.
 - [ ] Any regenerated card was explicitly requested because a rendering input changed, and unchanged cards were not rewritten.
 - [ ] Card input fingerprints exclude unrelated SEO policy, sitemap, citation, dependency, timestamp, environment, and build values.
@@ -252,6 +255,13 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] PageSpeed desktop Accessibility equals 100.
 - [ ] PageSpeed desktop Best Practices equals 100.
 - [ ] PageSpeed desktop SEO equals 100.
+- [ ] One PageSpeed provider preflight returned a scored result before the full route and strategy matrix began.
+- [ ] API quota, authentication, billing, or provider failures were classified as external blockers rather than site-performance findings.
+- [ ] Every valid PageSpeed result was preserved.
+- [ ] The matrix stopped at the first valid category below 100 for diagnosis.
+- [ ] A failed result records the exact candidate, URL, strategy, raw report, dominant audit, diagnosis evidence, and next bounded action.
+- [ ] A Performance failure records filmstrip, network, LCP resource, request timing, preload, and responsive-source evidence.
+- [ ] After any PageSpeed remediation, a new candidate ran the complete required mobile and desktop matrix.
 - [ ] Any claimed PageSpeed HTML warmup uses the exact audited URL and sends an HTML `Accept` header plus `Sec-Fetch-Dest: document`.
 - [ ] Any claimed PageSpeed HTML warmup verifies candidate identity, application markers, and final reusable cache state in a preserved machine-readable report.
 - [ ] Warmup evidence remains separate from cold-document, first-request-after-deploy, bounded burst, WebKit, native Safari, and real-user evidence.

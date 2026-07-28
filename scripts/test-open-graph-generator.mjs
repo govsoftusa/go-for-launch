@@ -43,6 +43,8 @@ const baseConfig = {
       typographyApproved: true,
       paletteApproved: true,
       imageryApproved: true,
+      routeRelevanceApproved: true,
+      rightsAndMarksApproved: true,
       noUnapprovedSyntheticArtwork: true,
       readabilityApproved: true,
       brandIntegrityApproved: true,
@@ -88,7 +90,24 @@ const baseConfig = {
     brandIntegrityApproved: true,
     contactInformationApproved: true
   },
-  cards: [{ name: "home", purpose: "Verify a readable homepage sharing card.", lineOne: "Build better", lineTwo: "Astro websites." }]
+  cards: [
+    {
+      name: "home",
+      purpose: "Verify a readable homepage sharing card.",
+      lineOne: "Build better",
+      lineTwo: "Astro websites.",
+      sourceAssetSha256: "c".repeat(64),
+      artworkReview: {
+        selectionMethod: "editor-curated-project-asset",
+        sourceReference: "project-media://homepage-city-photo",
+        routeRelevance: "The reviewed city photograph represents the publication homepage.",
+        routeRelevanceApproved: true,
+        rightsReviewed: true,
+        thirdPartyMarksReviewed: true,
+        noUnapprovedSyntheticArtwork: true
+      }
+    }
+  ]
 };
 
 async function writeConfig(value = baseConfig) {
@@ -140,6 +159,42 @@ if (
   !rejectedPrototypeApproval.stderr.includes("template appropriateness")
 ) {
   throw new Error("Prototype approval was allowed without template appropriateness confirmation.");
+}
+
+await writeConfig({
+  ...baseConfig,
+  cards: baseConfig.cards.map((card) => ({
+    ...card,
+    artworkReview: {
+      ...card.artworkReview,
+      routeRelevanceApproved: false
+    }
+  }))
+});
+const rejectedRouteRelevance = run(["--prototype"]);
+if (
+  rejectedRouteRelevance.status === 0 ||
+  !rejectedRouteRelevance.stderr.includes("route relevance approval")
+) {
+  throw new Error("Prototype generation was allowed without route relevance approval.");
+}
+
+await writeConfig({
+  ...baseConfig,
+  cards: baseConfig.cards.map((card) => ({
+    ...card,
+    artworkReview: {
+      ...card.artworkReview,
+      thirdPartyMarksReviewed: false
+    }
+  }))
+});
+const rejectedMarksReview = run(["--prototype"]);
+if (
+  rejectedMarksReview.status === 0 ||
+  !rejectedMarksReview.stderr.includes("review for third-party marks")
+) {
+  throw new Error("Prototype generation was allowed without third-party marks review.");
 }
 
 await writeConfig();
@@ -212,7 +267,7 @@ if (approved.status !== 0) throw new Error(`Approved Open Graph images did not p
 
 const changedConfig = {
   ...baseConfig,
-  cards: [{ name: "home", purpose: "Verify a readable homepage sharing card.", lineOne: "Ship better", lineTwo: "Astro websites." }]
+  cards: baseConfig.cards.map((card) => ({ ...card, lineOne: "Ship better" }))
 };
 await writeConfig(changedConfig);
 const changedWithoutPermission = run();

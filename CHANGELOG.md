@@ -6,6 +6,90 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### Editorial Artwork Provenance for Social-Card Prototypes
+
+#### Symptom
+
+- A technically valid homepage prototype used the first available recent
+  article image. The photograph was unrelated to the publication identity, and
+  another convenient source contained a prominent third-party event mark.
+- Dimensions, file hashes, palette checks, and general imagery approval all
+  passed because the contract did not explain why the selected visual
+  represented the shared route.
+
+#### Root Cause
+
+- Source eligibility and editorial suitability were treated as the same
+  decision.
+- Inventory order silently became an art-direction rule.
+- Image ownership review did not separately require inspection for trademarks,
+  sponsor marks, watermarks, generated text, or synthetic content.
+
+#### Hard Rules and Implementation
+
+- Every representative prototype now requires an `artworkReview` contract with
+  an approved selection method, route-relevance rationale, rights review,
+  third-party-mark review, and synthetic-artwork review.
+- Source artwork requires a durable source reference and SHA-256. A designed
+  fallback records why no suitable source image was selected.
+- Publication-identity artwork must be curated for that route. The newest item
+  or first inventory record cannot become the implicit homepage image.
+- Prototype approval now separately records route-relevance approval and
+  rights-and-marks approval, and those values are bound into the immutable
+  prototype input and approval records.
+- Updated onboarding, production instructions, the release checklist, and the
+  reusable Open Graph template with neutral examples.
+
+#### Test Evidence
+
+- Prototype generation fails when route relevance is not approved.
+- Prototype generation fails when third-party-mark review is missing.
+- The existing renderer, brand, input-hash, output-hash, and real-client
+  approval tests remain required.
+
+### PageSpeed Provider Preflight and First-Failure Triage
+
+#### Symptom
+
+- A full audit matrix was started before provider quota was verified, so every
+  request failed before scoring.
+- After authenticated access produced valid results, one route scored below
+  100 because its first-viewport image used an on-demand transform while
+  another route reused a release-local derivative of the same source.
+
+#### Root Cause
+
+- Provider readiness, site performance, and matrix completion were handled as
+  one loop.
+- A valid failed score did not require preservation of the filmstrip, network,
+  LCP resource, responsive-source, and comparison-route evidence before
+  another attempt.
+
+#### Hard Rules and Implementation
+
+- Require one scored provider probe before a multi-route or repeated-round
+  matrix. Quota, authentication, billing, and provider errors are external
+  blockers, not site-performance findings.
+- Preserve every valid score and stop the remaining matrix at the first
+  category below 100.
+- Require the frozen candidate's execution-control record to identify the raw
+  report, candidate, URL, strategy, dominant audit, diagnosis evidence, and
+  next bounded action.
+- Performance failures additionally require filmstrip, network, and LCP
+  evidence, including preload and responsive-source inspection.
+- Any remediation creates a new candidate. The final candidate still runs the
+  complete mobile and desktop matrix and must earn 100 in Performance,
+  Accessibility, Best Practices, and SEO.
+
+#### Test Evidence
+
+- A frozen candidate with a failed PageSpeed gate and no triage record fails
+  execution-control verification.
+- A complete preserved first-failure record passes the process verifier while
+  the candidate remains in the failed, non-production-ready phase.
+- Existing regression coverage still rejects a PageSpeed score of 99 for
+  production readiness.
+
 ### Machine-Verifiable Execution Control
 
 - Added `scripts/verify-execution-control.mjs` and a reusable project

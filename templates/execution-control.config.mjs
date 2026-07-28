@@ -41,11 +41,13 @@ export default {
         status: "pending",
         evidence: "",
         scores: { performance: 0, accessibility: 0, bestPractices: 0, seo: 0 },
+        failureTriage: null,
       },
       desktopPageSpeed: {
         status: "pending",
         evidence: "",
         scores: { performance: 0, accessibility: 0, bestPractices: 0, seo: 0 },
+        failureTriage: null,
       },
       chromium: { status: "pending", evidence: "" },
       playwrightWebKit: { status: "pending", evidence: "" },

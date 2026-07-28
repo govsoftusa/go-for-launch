@@ -181,6 +181,46 @@ function verifyPageSpeedGate(gate, area, findings) {
   }
 }
 
+function verifyFailedPageSpeedTriage(gate, area, candidate, strategy, findings) {
+  for (const key of SCORE_KEYS) {
+    const score = gate?.scores?.[key];
+    if (!Number.isInteger(score) || score < 0 || score > 100) {
+      finding(findings, `${area}.scores.${key}`, "must be an integer from 0 through 100");
+    }
+  }
+
+  const triage = gate?.failureTriage ?? {};
+  for (const key of [
+    "candidate",
+    "auditedUrl",
+    "firstFailedAt",
+    "rawReport",
+    "dominantAudit",
+    "diagnosisEvidence",
+    "nextAction",
+  ]) {
+    requireText(findings, `${area}.failureTriage.${key}`, triage[key]);
+  }
+  if (triage.candidate && triage.candidate !== candidate.buildIdentity) {
+    finding(findings, `${area}.failureTriage.candidate`, "must match the frozen build identity");
+  }
+  if (triage.strategy !== strategy) {
+    finding(findings, `${area}.failureTriage.strategy`, `must equal ${strategy}`);
+  }
+  if (triage.validResultPreserved !== true) {
+    finding(findings, `${area}.failureTriage.validResultPreserved`, "must be true");
+  }
+  if (triage.matrixStopped !== true) {
+    finding(findings, `${area}.failureTriage.matrixStopped`, "must be true");
+  }
+
+  if (gate?.scores?.performance < 100) {
+    for (const key of ["filmstripEvidence", "networkEvidence", "lcpEvidence"]) {
+      requireText(findings, `${area}.failureTriage.${key}`, triage[key]);
+    }
+  }
+}
+
 function verifyCandidate(record, findings) {
   const phaseIndex = PHASES.indexOf(record.phase);
   if (phaseIndex < PHASES.indexOf("candidate-frozen")) return;
@@ -197,6 +237,24 @@ function verifyCandidate(record, findings) {
     if (!gate || !["pending", "passed", "failed"].includes(gate.status)) {
       finding(findings, `candidate.gates.${gateName}.status`, "must be pending, passed, or failed");
       continue;
+    }
+    if (gateName === "mobilePageSpeed" && gate.status === "failed") {
+      verifyFailedPageSpeedTriage(
+        gate,
+        `candidate.gates.${gateName}`,
+        candidate,
+        "mobile",
+        findings,
+      );
+    }
+    if (gateName === "desktopPageSpeed" && gate.status === "failed") {
+      verifyFailedPageSpeedTriage(
+        gate,
+        `candidate.gates.${gateName}`,
+        candidate,
+        "desktop",
+        findings,
+      );
     }
     if (phaseIndex >= PHASES.indexOf("production-ready")) {
       if (gate.status !== "passed") {

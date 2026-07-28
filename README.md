@@ -214,6 +214,8 @@ This repository documents the process used to close those gaps while replacing l
 26. Turn every discovered migration defect into a reusable test or checklist item.
 27. Bound scope, remediation, and progress reporting without weakening any mandatory release gate.
 28. Prove that every claimed PageSpeed document warmup follows the browser navigation path and reaches observable reusable cache state.
+29. Curate and hash-bind representative social-card artwork with route relevance, rights, third-party-mark, and synthetic-artwork review before bulk generation.
+30. Preflight PageSpeed provider access, preserve the first valid failed score, and diagnose filmstrip, network, and LCP evidence before another attempt.
 
 ## Evidence Model
 

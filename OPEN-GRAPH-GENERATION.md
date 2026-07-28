@@ -14,6 +14,7 @@ Every indexable page needs a relevant social preview. Social cards are release a
 8. A production candidate must use the same approved files inspected in the contact sheets. Do not rebuild or optimize them between approval, staging, and production.
 9. Do not treat a technically valid file as useful artwork. Measure candidate source images after flattening transparency and reject visually flat, empty, placeholder, or low-detail assets. Use an approved designed fallback when a page source does not carry enough information for the card.
 10. Bulk regeneration is prohibited until a representative prototype set has current named approval tied to the authoritative brand reference, renderer contract, prototype inputs, and prototype output hashes.
+11. Every prototype card must record how its artwork was selected, why it represents the route, the durable source reference when artwork is used, and explicit review of rights, third-party marks, and synthetic content. An automatically selected recent item is not homepage evidence merely because it is available.
 
 ## Configure the Cards
 
@@ -49,6 +50,7 @@ Required controls:
 - Every card includes `purpose`, a plain-language statement of what the preview must communicate when that page is shared.
 - `reviewContract` records the reviewer, review date, brand reference, readability approval, brand-integrity approval, and contact-information approval.
 - `adoptionGate` records the authoritative brand-reference hash, renderer contract, representative prototype cards and cases, real-client review, and immutable prototype approval path.
+- Every prototype card includes `artworkReview`. Use `route-owned`, `editor-curated-project-asset`, `licensed-editorial-asset`, or `designed-fallback` as the selection method. Record route relevance, rights review, third-party-mark review, and synthetic-artwork review. Source artwork also requires a durable source reference and `sourceAssetSha256`.
 
 Before selecting any logo or mark, follow [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md). Record the authoritative brand-guide hash and exact asset hashes. A full-color asset approved for a light panel cannot be reused on a dark panel unless the guide explicitly allows it. Run the brand asset verifier before regenerating or approving cards.
 
@@ -71,7 +73,7 @@ node scripts/review-open-graph.mjs --config=open-graph.config.mjs --approve
 
 The prototype set lives outside the production output and state manifest. Use it to validate the visual system before bulk work begins. For projects with at least three cards, include at least three prototypes. Cover publication identity and a long headline in every project. Add source artwork and the designed fallback whenever those layouts exist.
 
-`--approve-prototype` requires a named reviewer, review date, authoritative brand reference, named real messaging or social client, and explicit approval of the template, typography, palette, imagery, brand authority, readability, and absence of unapproved synthetic artwork. The resulting approval is bound to the brand-reference hash, renderer source hash, visual-system fingerprint, prototype input hashes, and prototype output hashes.
+`--approve-prototype` requires a named reviewer, review date, authoritative brand reference, named real messaging or social client, and explicit approval of the template, typography, palette, imagery, route relevance, rights and third-party marks, brand authority, readability, and absence of unapproved synthetic artwork. The resulting approval is bound to the brand-reference hash, renderer source hash, visual-system fingerprint, prototype input hashes, and prototype output hashes.
 
 `--regenerate` validates that approval before writing any production card. A changed template version, renderer hash, brand reference, shared palette, shared typography, brand rule, prototype selection, or prototype input invalidates it.
 
@@ -109,6 +111,13 @@ Commit stable social-card files, the state manifest, and the approval manifest. 
 - Prefer real page photography or illustration when the project owns it and
   the file is large enough for the intended crop. A designed typographic
   fallback is safer than enlarging a small source or inventing unrelated art.
+- Curate publication-identity artwork for the publication route. Do not use the
+  newest article image, first inventory item, or generic image search result as
+  an implicit homepage selection rule.
+- Inspect the entire crop for trademarks, event marks, sponsor walls, product
+  packaging, watermarks, and generated text. A project may own the photograph
+  while still lacking approval to make a third-party mark the visual identity
+  of the shared route.
 - Do not reuse decorative geometry, synthetic marks, or a toolkit's house
   style merely because the renderer can produce it. The card must look like
   the publication or product that owns the destination.
@@ -125,6 +134,8 @@ Inspect every card at full size and in the complete contact sheet. Check:
 - No flat gray placeholder, empty transparent export, low-information gradient, or other source that reads as missing content.
 - No template symbols that could be mistaken for status, validation, warning, or error icons.
 - The page topic, title, and destination match the page metadata and visible content.
+- The selected image represents the shared route, not merely a recent or technically eligible item.
+- Source ownership or license was reviewed, and no unapproved third-party mark becomes the card's focal identity.
 - Destination text is readable and useful, with no truncation.
 - Small labels remain sharp at actual preview size.
 - Brand marks retain their aspect ratio and have adequate clear space.

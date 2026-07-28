@@ -89,6 +89,9 @@ Use `required`, `conditional`, `optional`, `not used`, or `blocked`. Complete on
 - Account and scope owner:
 - Paid plan approved by:
 - Masked access check:
+- Scored provider preflight command and evidence:
+- Full matrix order:
+- First-failure evidence directory:
 - Fallback or blocker:
 
 ### PageSpeed document warmup
@@ -164,6 +167,10 @@ Use `required`, `conditional`, `optional`, `not used`, or `blocked`. Complete on
 - Project-owned renderer selected:
 - Representative prototype card names:
 - Required cases covered: publication identity / long headline / source artwork when applicable / typographic fallback
+- Artwork selection method and durable source reference for each prototype:
+- Route-relevance rationale for each prototype:
+- Rights review complete: yes / no
+- Third-party marks reviewed: yes / no
 - Prototype generation command:
 - Prototype review artifact:
 - Real messaging or social client used:
@@ -174,6 +181,8 @@ Use `required`, `conditional`, `optional`, `not used`, or `blocked`. Complete on
 - Typography approved: yes / no
 - Palette approved: yes / no
 - Imagery approved: yes / no
+- Route relevance approved: yes / no
+- Rights and third-party marks approved: yes / no
 - Unapproved synthetic artwork absent: yes / no
 - Readability approved: yes / no
 - Prototype approval file:

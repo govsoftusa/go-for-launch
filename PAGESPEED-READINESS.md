@@ -91,12 +91,71 @@ Every valid PageSpeed result remains controlling. A category below 100 is a
 failed gate. Warmup verification does not authorize score retries, selective
 result deletion, or promotion of a different candidate.
 
+## Provider and Matrix Preflight
+
+Before starting a multi-route, multi-strategy, or repeated-round matrix, run
+one authenticated or public probe through the exact API path the matrix will
+use. Confirm that it returns a scored Lighthouse result rather than a quota,
+authentication, billing, or provider error.
+
+Classify an API quota or provider rejection as an external-service blocker.
+It is not a site score and it does not justify editing the candidate. Use the
+project's approved secret-manager path for an API credential when anonymous
+quota is unavailable. Never print or preserve the secret value in commands,
+logs, or evidence.
+
+After a successful provider probe:
+
+1. Run the matrix in a deterministic route and strategy order.
+2. Preserve each valid result as soon as it arrives.
+3. Stop the matrix at the first category below 100.
+4. Diagnose that result before another PageSpeed attempt or candidate change.
+5. Resume with a new exact candidate only after the supported fix passes its
+   targeted check.
+6. Run the complete matrix and all required rounds against the final frozen
+   candidate.
+
+Stopping early controls wasted work. It does not waive the failed score or the
+final complete matrix.
+
+## First-Failure Diagnostic Record
+
+For every valid result below 100, preserve the raw report, candidate identity,
+URL, strategy, timestamp, category scores, dominant failed audit, diagnosis,
+and next bounded action. Mark that the valid result was preserved and that the
+remaining matrix stopped.
+
+When Performance is below 100, also preserve:
+
+- The Lighthouse filmstrip or equivalent progress frames.
+- The LCP element and resource URL.
+- Request start and end timing for the LCP resource.
+- Preload, `fetchpriority`, `srcset`, and `sizes` evidence.
+- The relevant network trace or audit detail.
+- A comparison with a passing route that uses the same content asset, when one
+  exists.
+
+The first-viewport resource path may differ across homepage, archive, taxonomy,
+and article templates even when they display the same image. If a passing route
+uses a release-local responsive derivative while a failing route performs an
+on-demand transform, fix the shared priority-media contract or the affected
+route family. Do not keep rerunning the unchanged candidate in the hope that
+the transform becomes warm.
+
+The execution-control verifier requires this triage record whenever a frozen
+candidate declares a failed mobile or desktop PageSpeed gate. A Performance
+failure additionally requires filmstrip, network, and LCP evidence.
+
 ## Recommended Order
 
-1. Freeze and identify the exact candidate.
-2. Verify route convergence.
-3. Run cold, warm, and bounded burst server tests separately.
-4. Run the PageSpeed document-readiness verifier on every audited URL.
-5. Run complete mobile and desktop PageSpeed rounds.
-6. Preserve every scored run and the warmup report.
-7. Stop production if any required category is below 100.
+1. Verify PageSpeed provider access with one scored probe.
+2. Freeze and identify the exact candidate.
+3. Verify route convergence.
+4. Run cold, warm, and bounded burst server tests separately.
+5. Run the PageSpeed document-readiness verifier on every audited URL.
+6. Run the deterministic mobile and desktop matrix, stopping at the first valid score below 100.
+7. Preserve and diagnose the first failed result before another attempt.
+8. Freeze a new candidate after any change.
+9. Run complete mobile and desktop PageSpeed rounds against the final candidate.
+10. Preserve every scored run and the warmup report.
+11. Stop production if any required category is below 100.

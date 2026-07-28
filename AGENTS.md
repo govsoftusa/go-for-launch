@@ -71,6 +71,7 @@
 - When Open Graph, SEO, or AI discovery work is in scope, verify every indexable public page declares its own unique Open Graph image and that each declared image resolves with the exact declared dimensions.
 - Treat approved Open Graph files as immutable release artifacts. Normal builds must verify and reuse them without rewriting bytes, filenames, encoding, or modification times. Only an explicit reviewed regeneration command may create or replace a card.
 - Before any first bulk Open Graph generation or visual-system replacement, require a current representative prototype approval tied to the authoritative brand reference and renderer source. Review the prototypes in a real messaging or social client. Missing or stale prototype approval blocks bulk regeneration.
+- Require every Open Graph prototype to record editorial selection method, route relevance, source provenance when applicable, rights review, third-party-mark review, and synthetic-artwork review. Do not treat the newest content image or first inventory item as an approved publication-identity image.
 - Fingerprint only card-rendering inputs. Unrelated SEO policy, sitemap, citation, dependency, timestamp, environment, and build changes must not regenerate or invalidate a card.
 - Require a state manifest containing the rendering input hash and output hash. A missing card, changed input, altered file, or stale manifest must fail closed instead of silently generating output.
 - Generate contact sheets for every Open Graph image, inspect them for overlap, clipping, jagged artwork, incorrect content, and unsafe cropping, then record hash-bound approval for the exact reviewed files. Missing or stale visual approval blocks release.
@@ -82,6 +83,7 @@
 - Deploy the exact built candidate to staging before production.
 - Run PageSpeed Insights against the staged candidate for both mobile and desktop.
 - Read `PAGESPEED-READINESS.md` before using any synthetic document warmup. A warmup must send browser-document headers, request the exact audited URL, prove candidate identity and final reusable cache state, and preserve a machine-readable report. A generic server-side fetch is not visitor-cache evidence.
+- Before a PageSpeed matrix, require one scored provider probe. Preserve and diagnose the first valid score below 100, stop the remaining matrix, and record filmstrip, network, and LCP evidence for Performance failures. Provider quota failures are external blockers, not site-performance findings.
 - Require a score of 100 for Performance, Accessibility, Best Practices, and SEO on both mobile and desktop.
 - Do not deploy or push the candidate to production when any required iOS Simulator check fails or any PageSpeed category is below 100.
 - After production deployment, repeat the live WebKit suite and a native iOS Safari smoke test against the canonical hostname.

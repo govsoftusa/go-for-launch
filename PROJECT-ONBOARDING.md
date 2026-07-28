@@ -62,7 +62,7 @@ Use one of these decisions for every service:
 - **Cloudflare**, provides Pages or Workers hosting, DNS, headers, bindings, and deployment, conditional when Cloudflare is the selected provider.
 - **Cloudflare Web Analytics and GraphQL Analytics**, provide production RUM, LCP element evidence, and optional edge HTTP error rates, conditional when Cloudflare hosts the canonical site and approved read access exists.
 - **Cloudflare Turnstile and Email Service**, provide abuse protection and server-side form delivery, conditional when a website has forms and selects this pattern.
-- **Google PageSpeed Insights**, provides required mobile and desktop release scores, required for every production release, public access is sufficient.
+- **Google PageSpeed Insights**, provides required mobile and desktop release scores, required for every production release. Run one scored provider preflight before a full matrix and record the deterministic matrix order and first-failure evidence directory.
 - **PageSpeed API credential**, provides automated requests and additional API quota, conditional when the public interface or anonymous quota is insufficient.
 - **PageSpeed document warmup**, conditional when a dynamic site intentionally
   primes HTML before an audit. Record the exact request contract, observable
@@ -115,12 +115,13 @@ When Open Graph or social-card generation is selected, complete this sequence be
 2. Record the brand-reference hash and approved logo or wordmark hashes.
 3. Create or select the project-owned renderer. The bundled renderer is a reference implementation, not a neutral brand.
 4. Record the renderer name, version, source hash, and project owner.
-5. Select at least three representative prototype cards when the project has three or more routes. Cover publication identity, a long headline, real source artwork when the project uses it, and the designed fallback.
+5. Select at least three representative prototype cards when the project has three or more routes. Cover publication identity, a long headline, real source artwork when the project uses it, and the designed fallback. Do not let inventory order or the newest article silently choose publication-identity artwork.
 6. Generate only the prototypes with `--prototype`.
-7. Review the prototypes at full size and in at least one real messaging or social client.
-8. Record named approval for the template, typography, palette, imagery, brand authority, readability, and absence of unapproved synthetic artwork.
-9. Approve the prototype with `--approve-prototype`.
-10. Run bulk `--regenerate` only after the current prototype approval passes.
+7. For every prototype, record the artwork selection method, durable source reference when applicable, route-relevance rationale, rights review, third-party-mark review, and synthetic-artwork review.
+8. Review the prototypes at full size and in at least one real messaging or social client.
+9. Record named approval for the template, typography, palette, imagery, route relevance, rights and marks, brand authority, readability, and absence of unapproved synthetic artwork.
+10. Approve the prototype with `--approve-prototype`.
+11. Run bulk `--regenerate` only after the current prototype approval passes.
 
 The generator fails closed when the prototype approval is missing, stale, tied to different prototype inputs, or tied to a different brand or renderer fingerprint. A hash-valid generic template is not acceptable evidence of brand fit.
 
@@ -141,5 +142,6 @@ Before implementation begins, the completed project record must contain:
 - The current Go for Launch revision used by the project.
 - The execution-control record, config, passing phase report, task envelope, completion conditions, finding classifications, checkpoint history, and blocker decisions.
 - The authoritative brand reference, renderer contract, representative prototype set, real-client preview, and prototype approval artifact when social cards are selected.
+- The PageSpeed scored provider preflight, deterministic matrix order, and first-failure evidence location.
 
 Revisit this record whenever a workflow, provider, billing plan, account owner, deployment target, or release environment changes.

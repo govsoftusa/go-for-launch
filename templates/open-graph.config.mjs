@@ -38,6 +38,8 @@ export default {
       typographyApproved: false,
       paletteApproved: false,
       imageryApproved: false,
+      routeRelevanceApproved: false,
+      rightsAndMarksApproved: false,
       noUnapprovedSyntheticArtwork: false,
       readabilityApproved: false,
       brandIntegrityApproved: false,
@@ -87,8 +89,52 @@ export default {
     contactInformationApproved: false
   },
   cards: [
-    { name: "home", purpose: "Introduce the toolkit when the homepage is shared.", lineOne: "Build better", lineTwo: "Astro websites." },
-    { name: "article-photographic", purpose: "Exercise the reviewed photographic layout with a representative long headline.", lineOne: "A representative", lineTwo: "editorial headline." },
-    { name: "article-fallback", purpose: "Exercise the designed typographic fallback when suitable source artwork is unavailable.", lineOne: "A clear fallback", lineTwo: "without invented art." }
+    {
+      name: "home",
+      purpose: "Introduce the toolkit when the homepage is shared.",
+      lineOne: "Build better",
+      lineTwo: "Astro websites.",
+      sourceAssetSha256: "REPLACE WITH SHA-256 OF CURATED PROJECT ASSET",
+      artworkReview: {
+        selectionMethod: "editor-curated-project-asset",
+        sourceReference: "REPLACE WITH DURABLE PROJECT ASSET REFERENCE",
+        routeRelevance: "REPLACE WITH WHY THIS VISUAL REPRESENTS THE HOMEPAGE",
+        routeRelevanceApproved: false,
+        rightsReviewed: false,
+        thirdPartyMarksReviewed: false,
+        noUnapprovedSyntheticArtwork: false
+      }
+    },
+    {
+      name: "article-photographic",
+      purpose: "Exercise the reviewed photographic layout with a representative long headline.",
+      lineOne: "A representative",
+      lineTwo: "editorial headline.",
+      sourceAssetSha256: "REPLACE WITH SHA-256 OF ROUTE ARTWORK",
+      artworkReview: {
+        selectionMethod: "route-owned",
+        sourceReference: "REPLACE WITH DURABLE ROUTE ASSET REFERENCE",
+        routeRelevance: "REPLACE WITH WHY THIS VISUAL REPRESENTS THE ARTICLE",
+        routeRelevanceApproved: false,
+        rightsReviewed: false,
+        thirdPartyMarksReviewed: false,
+        noUnapprovedSyntheticArtwork: false
+      }
+    },
+    {
+      name: "article-fallback",
+      purpose: "Exercise the designed typographic fallback when suitable source artwork is unavailable.",
+      lineOne: "A clear fallback",
+      lineTwo: "without invented art.",
+      artworkReview: {
+        selectionMethod: "designed-fallback",
+        routeRelevance: "The fallback communicates the route through reviewed typography when no suitable source visual exists.",
+        fallbackReason: "No source artwork passed the reviewed relevance, rights, marks, and crop checks.",
+        routeRelevanceApproved: false,
+        rightsReviewed: false,
+        thirdPartyMarksReviewed: false,
+        noUnapprovedSyntheticArtwork: false
+      }
+    }
   ]
 };
