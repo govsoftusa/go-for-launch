@@ -8,6 +8,22 @@ Copy [`templates/project-onboarding.md`](templates/project-onboarding.md) into t
 
 Read [Project-Specific Extensions](PROJECT-EXTENSIONS.md) during onboarding. Record the target project's local instruction file, extension record, configuration, custom scripts, approval artifacts, and the required build or test command that invokes them. Project-specific behavior must live in the target project and must be part of its normal Go for Launch verification path.
 
+## Execution-control record
+
+Read [Execution Control and Bounded Delivery](EXECUTION-CONTROL.md), then copy
+[`templates/execution-control-record.md`](templates/execution-control-record.md)
+into the target repository before implementation begins.
+
+Record the requested outcome, acceptance owner, systems in scope, explicit
+exclusions, completion conditions, deployment authority, rollback method, and
+default remediation thresholds. Classify new findings before acting so
+recommended follow-up and unrelated work do not silently expand the task.
+
+Execution controls determine when work pauses for a decision. They never waive
+a mandatory release requirement. The exact final candidate must still pass the
+complete required mobile, desktop, WebKit, native iOS Safari, accessibility,
+security, interface, performance, and PageSpeed gate.
+
 ## 1. Select the workflows
 
 Record which Go for Launch workflows are in scope:
@@ -115,6 +131,7 @@ Before implementation begins, the completed project record must contain:
 - Staging and production commands, canonical hostname, and deployment authority.
 - The interface-quality command, route-family contract owner, and report location.
 - The current Go for Launch revision used by the project.
+- The execution-control record, task envelope, completion conditions, finding classifications, checkpoint history, and blocker decisions.
 - The authoritative brand reference, renderer contract, representative prototype set, real-client preview, and prototype approval artifact when social cards are selected.
 
 Revisit this record whenever a workflow, provider, billing plan, account owner, deployment target, or release environment changes.

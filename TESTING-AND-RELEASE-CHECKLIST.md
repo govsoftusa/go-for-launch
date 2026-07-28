@@ -25,6 +25,23 @@ This checklist is mandatory before production. Any unchecked required item block
 - [ ] If the active operator uses Windows or Linux, the exact candidate handoff to the qualified Mac runner is documented.
 - [ ] Production is blocked when required native iOS Simulator evidence cannot be produced.
 
+## Execution control and bounded delivery
+
+- [ ] `EXECUTION-CONTROL.md` was read before implementation began.
+- [ ] `templates/execution-control-record.md` was copied into the target repository and completed.
+- [ ] The task envelope names the requested outcome, acceptance owner, in-scope systems, explicit exclusions, completion conditions, deployment authority, and rollback method.
+- [ ] Every new finding is classified as required outcome, release blocker, recommended follow-up, or unrelated before work expands.
+- [ ] Subjective brand, editorial, navigation, information-architecture, and interaction directions have representative proof and named human approval before bulk implementation.
+- [ ] Blocker attempts and active investigation time are recorded.
+- [ ] Two unsuccessful attempts, ninety minutes of active work, or two materially identical failure cycles stop speculative remediation unless a supported bounded continuation is explicitly approved.
+- [ ] Reaching a control threshold leaves the failed gate failed and changes the task status to blocked.
+- [ ] Checkpoint records identify the current commit, candidate, change, test evidence, blocker, next bounded action, and active time.
+- [ ] Candidate freeze excludes polish and unrelated improvements from release remediation.
+- [ ] Targeted development tests did not replace the complete mandatory release suite.
+- [ ] The complete mandatory release suite passed after the final change against the exact frozen candidate.
+- [ ] Any change after candidate freeze created a new candidate and repeated the complete mandatory suite.
+- [ ] Follow-up work is recorded separately and is not presented as part of the completed task.
+
 ## Stanford Rule content quality
 
 - [ ] `STANFORD-RULE-CONTENT-QUALITY.md` was read before public content was written or revised.

@@ -10,6 +10,26 @@ Native Safari through the Xcode iOS Simulator requires a qualified macOS environ
 
 The Stanford Rule content quality gate is mandatory. Every route must name its intended audience and primary task, pass the configured final-output checks, and have a current hash-bound editorial approval using the senior psychology professor perspective. Compare openings, closings, and full copy across content families so unrelated pages do not repeat one generic argument. The Stanford Rule is a Go for Launch standard, not a Stanford University policy or an AI-authorship detector.
 
+## Execution controls and non-waiver rule
+
+Before implementation begins, complete
+[`templates/execution-control-record.md`](templates/execution-control-record.md)
+as directed by [Execution Control and Bounded Delivery](EXECUTION-CONTROL.md).
+Use it to bound scope, prototype subjective work, record checkpoint evidence,
+and stop repeated remediation when it is no longer producing new information.
+
+Execution controls govern how work proceeds, not what production must pass. A
+time limit, attempt limit, scope limit, deferral, owner decision, delivery
+deadline, or prior test result cannot waive, downgrade, or bypass a mandatory
+release gate. Reaching a control threshold changes the task status to blocked.
+It does not change a failed result to passed and does not authorize production.
+
+Targeted tests may be used during implementation for faster feedback. After the
+final source, content, dependency, configuration, infrastructure, or artifact
+change, freeze a new candidate and run the complete mandatory release suite
+against that exact candidate. Any later change creates another candidate and
+requires the complete mandatory suite again before production.
+
 ## Policy
 
 A migrated Astro site must not be deployed or pushed to production until the exact production candidate passes the required build, browser, native iOS Safari, staging, and PageSpeed gates in this document.

@@ -6,6 +6,35 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### Execution Control and Bounded Delivery
+
+- Added a reusable execution-control policy that separates process limits from
+  release requirements. Time limits, attempt limits, scope decisions,
+  deferrals, deadlines, and prior test results cannot waive a mandatory gate.
+- Added a task-envelope requirement covering the requested outcome, acceptance
+  owner, in-scope systems, explicit exclusions, completion conditions,
+  deployment authority, rollback, and the initial candidate state.
+- Added a four-way finding classification so required outcomes and release
+  blockers remain distinct from recommended follow-up and unrelated work.
+- Added representative-proof and named-review requirements before bulk work on
+  subjective branding, navigation, information architecture, editorial,
+  interaction, and design-system changes.
+- Added a default stop threshold of two unsuccessful attempts or ninety minutes
+  of active work on one blocker. Crossing the threshold records a blocked
+  result and requires a supported owner decision before work continues.
+- Added a repeated-evidence stop rule so materially identical failures trigger
+  root-cause review instead of speculative adjacent changes.
+- Added tiered testing for fast edit loops and phase checkpoints while
+  preserving the complete mandatory release suite for the exact frozen
+  candidate after the final change.
+- Added candidate-freeze, checkpoint, progress-record, follow-up, and
+  production-remediation rules that preserve known-good work and rollback.
+- Added `templates/execution-control-record.md` for task envelopes, finding
+  registers, checkpoints, blocker evidence, bounded continuation decisions,
+  exact-candidate results, promotion, and closeout.
+- Integrated execution control into project onboarding, repository agent
+  instructions, production policy, and the mandatory release checklist.
+
 ### WordPress to EmDash on Astro Migration Path
 
 - Added a WordPress to EmDash adapter covering the three assumptions an EmDash target breaks: database-resident content, per-request route resolution, and Portable Text rich text.

@@ -12,6 +12,11 @@
 - Local instruction file:
 - Project extension record:
 - Required build or test command that invokes project extensions:
+- Execution-control record:
+- Acceptance owner:
+- Explicit scope exclusions:
+- Deployment authority:
+- Rollback method:
 
 ## Selected workflows
 
@@ -196,6 +201,9 @@ Use `required`, `conditional`, `optional`, `not used`, or `blocked`. Complete on
 - [ ] A qualified Mac runner is assigned for the exact production candidate.
 - [ ] No blocked required item is being treated as complete.
 - [ ] Social-card bulk generation remains blocked until the current representative prototype is approved in a real client.
+- [ ] The execution-control record defines completion conditions, scope exclusions, checkpoints, blocker limits, and rollback.
+- [ ] Time and attempt limits are treated as pause conditions, not as waivers for mandatory release gates.
+- [ ] The complete mandatory release suite will run against the exact frozen candidate after the final change.
 
 Approved by:
 

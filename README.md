@@ -8,7 +8,7 @@ Go for Launch was started and is sponsored by [GovSoft](https://www.govsoft.com)
 
 ## What Go for Launch Covers
 
-The toolbox serves fifteen purposes:
+The toolbox serves sixteen purposes:
 
 1. **Converting existing sites to Astro.** Complete workflows for rebuilding websites in Astro without losing content, design fidelity, responsive behavior, SEO, accessibility, performance, or browser reliability. The Webflow and WordPress workflows are proven in production, and the platform-neutral framework extends to Squarespace, Wix, Drupal, static HTML, and custom content management systems as alpha guidance.
 2. **Keeping existing Astro sites current.** A maintenance process for updating Astro sites already in production to the latest compatible Astro version and dependency set, with every upgrade passing the same release gates as a new migration. See [AUTOMATION-INTEGRATION.md](AUTOMATION-INTEGRATION.md).
@@ -25,6 +25,7 @@ The toolbox serves fifteen purposes:
 13. **Ahrefs-style final-output health auditing.** Fail builds on oversized referenced images, weak or duplicate metadata, redirecting internal links, missing targets, orphaned canonical pages, and invalid crawler declarations. See [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md).
 14. **Semantic SEO and citation review.** Require canonical consistency, descriptive and content-aligned titles, route-specific search intent, reviewed content depth, valid citation links, and evidence records that detect claim or source drift. Use Ahrefs API v3 as an optional public-crawl input when approved access exists. See [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md).
 15. **Stanford Rule content quality.** Define the audience and task for every page, check final HTML for machine-like filler, inflated language, excessive sentence and paragraph length, repetitive openings, inaccessible reading density, and cross-route copy similarity, then require a hash-bound editorial review from a senior psychology professor perspective. See [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md).
+16. **Bounded delivery without weaker gates.** Define the task envelope, classify findings, prototype subjective work, stop repeated remediation, preserve checkpoints, freeze exact candidates, and separate follow-up work while retaining every mandatory mobile, desktop, WebKit, native Safari, and PageSpeed release requirement. See [Execution Control and Bounded Delivery](EXECUTION-CONTROL.md).
 
 ## Why This Exists
 
@@ -44,38 +45,39 @@ This repository documents the process used to close those gaps while replacing l
 ## Start Here
 
 1. [Project Onboarding, Requirements, and External Services](PROJECT-ONBOARDING.md)
-2. [Project-Specific Extensions](PROJECT-EXTENSIONS.md)
-3. [Changelog](CHANGELOG.md)
-4. [Webflow to Astro Migration Guide](WEBFLOW-TO-ASTRO-MIGRATION.md)
-5. [Platform-Agnostic Migration Framework](PLATFORM-MIGRATION-FRAMEWORK.md)
-6. [WordPress to EmDash on Astro Migration Guide](WORDPRESS-TO-EMDASH-MIGRATION.md)
-7. [Pre-Migration Source Compromise Audit](SOURCE-COMPROMISE-AUDIT.md)
-8. [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md)
-9. [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md)
-10. [Production Release Policy](PRODUCTION-RELEASE-POLICY.md)
-11. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
-12. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
-13. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
-14. [Cloudflare Production Observability](CLOUDFLARE-OBSERVABILITY.md)
-15. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
-16. [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md)
-17. [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md)
-18. [Astro Assets Implementation and Verification](ASTRO-ASSETS.md)
-19. [Internationalization, Canonicals, and Hreflang](INTERNATIONALIZATION-AND-HREFLANG.md)
-20. [Redirect Verification](REDIRECT-VERIFICATION.md)
-21. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
-22. [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md)
-23. [Visual Composition Testing](VISUAL-COMPOSITION-TESTING.md)
-24. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
-25. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
-26. [Interface Quality and Page Differentiation Gate](INTERFACE-QUALITY-AND-PAGE-DIFFERENTIATION.md)
-27. [Case Study Normalization Policy](CASE-STUDY-NORMALIZATION.md)
-28. [Render Sharpness Gate](RENDER-SHARPNESS.md)
-29. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
-30. [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md)
-31. [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md)
-32. [Contributing Guide](CONTRIBUTING.md)
-33. [Roadmap](ROADMAP.md)
+2. [Execution Control and Bounded Delivery](EXECUTION-CONTROL.md)
+3. [Project-Specific Extensions](PROJECT-EXTENSIONS.md)
+4. [Changelog](CHANGELOG.md)
+5. [Webflow to Astro Migration Guide](WEBFLOW-TO-ASTRO-MIGRATION.md)
+6. [Platform-Agnostic Migration Framework](PLATFORM-MIGRATION-FRAMEWORK.md)
+7. [WordPress to EmDash on Astro Migration Guide](WORDPRESS-TO-EMDASH-MIGRATION.md)
+8. [Pre-Migration Source Compromise Audit](SOURCE-COMPROMISE-AUDIT.md)
+9. [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md)
+10. [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md)
+11. [Production Release Policy](PRODUCTION-RELEASE-POLICY.md)
+12. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
+13. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
+14. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
+15. [Cloudflare Production Observability](CLOUDFLARE-OBSERVABILITY.md)
+16. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
+17. [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md)
+18. [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md)
+19. [Astro Assets Implementation and Verification](ASTRO-ASSETS.md)
+20. [Internationalization, Canonicals, and Hreflang](INTERNATIONALIZATION-AND-HREFLANG.md)
+21. [Redirect Verification](REDIRECT-VERIFICATION.md)
+22. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
+23. [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md)
+24. [Visual Composition Testing](VISUAL-COMPOSITION-TESTING.md)
+25. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
+26. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
+27. [Interface Quality and Page Differentiation Gate](INTERFACE-QUALITY-AND-PAGE-DIFFERENTIATION.md)
+28. [Case Study Normalization Policy](CASE-STUDY-NORMALIZATION.md)
+29. [Render Sharpness Gate](RENDER-SHARPNESS.md)
+30. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
+31. [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md)
+32. [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md)
+33. [Contributing Guide](CONTRIBUTING.md)
+34. [Roadmap](ROADMAP.md)
 
 ## Repository Structure
 
@@ -84,6 +86,7 @@ This repository documents the process used to close those gaps while replacing l
 ├── README.md
 ├── CHANGELOG.md
 ├── PROJECT-ONBOARDING.md
+├── EXECUTION-CONTROL.md
 ├── PROJECT-EXTENSIONS.md
 ├── CASE-STUDY-NORMALIZATION.md
 ├── WEBFLOW-TO-ASTRO-MIGRATION.md
@@ -171,6 +174,7 @@ This repository documents the process used to close those gaps while replacing l
     ├── gap-analysis.md
     ├── design-optimization-brief.md
     ├── project-onboarding.md
+    ├── execution-control-record.md
     └── migration-acceptance-record.md
 ```
 
@@ -202,6 +206,7 @@ This repository documents the process used to close those gaps while replacing l
 24. Capture approved Cloudflare production RUM before a release and compare it after sufficient traffic reaches the promoted candidate.
 25. Record intentional differences so accessibility and performance improvements are not mistaken for missing parity.
 26. Turn every discovered migration defect into a reusable test or checklist item.
+27. Bound scope, remediation, and progress reporting without weakening any mandatory release gate.
 
 ## Evidence Model
 
@@ -210,6 +215,7 @@ Strong migration evidence combines:
 - Exported source files and CMS data.
 - Live source-site inspection.
 - A route and section inventory.
+- A completed execution-control record with the task envelope, finding classifications, checkpoints, blocker decisions, and exact-candidate identity.
 - Asset manifests with hashes and missing-file reports.
 - Automated route, interaction, accessibility, and metadata checks.
 - Screenshot comparisons at multiple breakpoints.
