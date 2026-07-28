@@ -250,6 +250,10 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] PageSpeed desktop Accessibility equals 100.
 - [ ] PageSpeed desktop Best Practices equals 100.
 - [ ] PageSpeed desktop SEO equals 100.
+- [ ] Any claimed PageSpeed HTML warmup uses the exact audited URL and sends an HTML `Accept` header plus `Sec-Fetch-Dest: document`.
+- [ ] Any claimed PageSpeed HTML warmup verifies candidate identity, application markers, and final reusable cache state in a preserved machine-readable report.
+- [ ] Warmup evidence remains separate from cold-document, first-request-after-deploy, bounded burst, WebKit, native Safari, and real-user evidence.
+- [ ] No warmup result is used to retry, discard, or waive a genuine PageSpeed score below 100.
 - [ ] Normal text and large text meet WCAG 2.2 AA contrast requirements in every changed surface state.
 - [ ] Changed content and controls remain usable at 200 percent text resize.
 - [ ] Ordinary page content reflows without two-dimensional scrolling at 320 CSS pixels.
@@ -283,6 +287,7 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] The exact tested candidate is deployed to staging.
 - [ ] Staging returns the candidate identifier expected by the release gate.
 - [ ] PageSpeed audited the expected staging candidate rather than an error, stale, or access-denied page.
+- [ ] If the PageSpeed runner warms HTML, `scripts/verify-pagespeed-warmup.mjs` passes for every audited URL and its report is bound into release evidence.
 - [ ] All eight required PageSpeed category checks equal 100.
 - [ ] No production push occurs before the Simulator and PageSpeed gates pass.
 - [ ] Production deployment completes successfully.

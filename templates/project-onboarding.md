@@ -89,6 +89,18 @@ Use `required`, `conditional`, `optional`, `not used`, or `blocked`. Complete on
 - Masked access check:
 - Fallback or blocker:
 
+### PageSpeed document warmup
+
+- Decision: conditional when dynamic HTML is primed before an audit
+- Exact audited URLs:
+- Browser-document request contract:
+- Candidate identity header:
+- Application cache-state header:
+- Approved cache-hit values:
+- Machine-readable warmup report:
+- Cold-document and first-request-after-deploy evidence kept separate:
+- Confirmation that a score below 100 remains a failed gate:
+
 ### Google Search Console
 
 - Decision:

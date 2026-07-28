@@ -6,6 +6,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### PageSpeed Document Readiness
+
+- Added a reusable verifier for projects that warm dynamic HTML before
+  PageSpeed. It sends browser-document headers, verifies the exact candidate
+  and application markers, and requires the final request to expose an
+  approved reusable cache state.
+- Added a configuration template and regression fixture proving that a generic
+  server-side fetch can miss middleware cache eligibility while an HTML
+  document navigation reaches the intended cache path.
+- Required projects that use warmups to preserve a separate machine-readable
+  readiness report for every audited URL.
+- Kept cold-document, first-request-after-deploy, bounded burst, real-user,
+  WebKit, native Safari, and PageSpeed evidence independent.
+- Explicitly prohibited treating a successful warmup as permission to retry,
+  discard, or waive a genuine PageSpeed score below 100.
+
 ### Execution Control and Bounded Delivery
 
 - Added a reusable execution-control policy that separates process limits from

@@ -80,6 +80,7 @@
 - Record the brand guide hash, asset hash, named variant, allowed surfaces, rendered dimensions, and clear space in `brand-assets.config.mjs`, then run `scripts/verify-brand-assets.mjs`. Wrong surface variants, changed hashes, distortion, undersizing, or insufficient clear space block release.
 - Deploy the exact built candidate to staging before production.
 - Run PageSpeed Insights against the staged candidate for both mobile and desktop.
+- Read `PAGESPEED-READINESS.md` before using any synthetic document warmup. A warmup must send browser-document headers, request the exact audited URL, prove candidate identity and final reusable cache state, and preserve a machine-readable report. A generic server-side fetch is not visitor-cache evidence.
 - Require a score of 100 for Performance, Accessibility, Best Practices, and SEO on both mobile and desktop.
 - Do not deploy or push the candidate to production when any required iOS Simulator check fails or any PageSpeed category is below 100.
 - After production deployment, repeat the live WebKit suite and a native iOS Safari smoke test against the canonical hostname.

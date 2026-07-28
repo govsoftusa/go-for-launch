@@ -401,6 +401,26 @@ When 1Password is the secret manager and the 1Password CLI (`op`) is available, 
 
 Retry documented transient API failures only. A genuine category score below 100 is a failed release gate, not a reason to bypass the gate.
 
+### Document warmup integrity
+
+Read [PageSpeed Document Readiness](PAGESPEED-READINESS.md) before a PageSpeed
+workflow warms dynamic HTML.
+
+A claimed warmup must request the exact URL that PageSpeed will audit, send an
+HTML `Accept` header and `Sec-Fetch-Dest: document`, verify the expected
+candidate and application markers, repeat the request, and require an
+observable reusable cache state on the final response. Preserve the
+machine-readable warmup report with the PageSpeed evidence.
+
+A generic server-side fetch may bypass middleware that admits only browser
+document navigations. Response time alone does not prove a cache hit. When the
+application cache does not expose trustworthy state, instrument a safe
+diagnostic header or do not claim that the route was warmed.
+
+Warmup evidence never replaces purged cold-document, first-request-after-deploy,
+bounded burst, WebKit, native Safari, real-user, or PageSpeed evidence. It
+never authorizes retrying or discarding a genuine category score below 100.
+
 ## Candidate Identity
 
 The staging response should expose or otherwise permit verification of a candidate identifier generated during the build. The release process must confirm that staging serves the expected candidate before PageSpeed runs.
@@ -425,6 +445,9 @@ PageSpeed automation must preserve every scored run. It must not overwrite a
 failed score with a later passing score or retry a genuine category score below
 100. A project may require multiple complete PageSpeed rounds, but every run in
 every required round must pass.
+
+When a PageSpeed process warms dynamic HTML, the frozen evidence must also
+preserve the passing document-readiness report for every audited URL.
 
 ## Production Verification
 

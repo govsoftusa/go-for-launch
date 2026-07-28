@@ -60,6 +60,10 @@ Use one of these decisions for every service:
 - **Cloudflare Turnstile and Email Service**, provide abuse protection and server-side form delivery, conditional when a website has forms and selects this pattern.
 - **Google PageSpeed Insights**, provides required mobile and desktop release scores, required for every production release, public access is sufficient.
 - **PageSpeed API credential**, provides automated requests and additional API quota, conditional when the public interface or anonymous quota is insufficient.
+- **PageSpeed document warmup**, conditional when a dynamic site intentionally
+  primes HTML before an audit. Record the exact request contract, observable
+  cache header, accepted hit values, and machine-readable evidence path. A
+  generic fetch or response-time estimate is not cache proof.
 - **Google Search Console**, provides query evidence, property state, inspection, and sitemap submission, conditional when approved property access exists or the project requires ownership work.
 - **Ahrefs**, provides paid keyword research, backlink evidence, and public crawl data, optional and used only when the project approves and provides access.
 - **Analytics, site search, support, sales, and form data**, provide first-party questions, journeys, and conversion evidence, conditional for AEO or content research based on what the project has.

@@ -48,21 +48,22 @@
     "visual-composition:verify": "node scripts/verify-visual-composition.mjs --config=templates/visual-composition.config.mjs",
     "interface-quality:verify": "node scripts/verify-interface-quality.mjs --config=templates/interface-quality.config.mjs",
     "route-convergence:verify": "node scripts/verify-route-convergence.mjs --config=templates/route-convergence.config.mjs",
+    "pagespeed-warmup:verify": "node scripts/verify-pagespeed-warmup.mjs --config=templates/pagespeed-warmup.config.mjs",
     "release-evidence:verify": "node scripts/verify-release-evidence.mjs --config=templates/release-evidence.config.mjs",
     "case-studies:verify": "node scripts/verify-case-study-normalization.mjs",
     "site-health:verify": "node scripts/verify-site-health.mjs --config=templates/site-health.config.mjs",
     "prepack": "npm run case-studies:verify && node scripts/check-docs.mjs",
     "prepublishOnly": "npm test",
-    "test": "astro check && node scripts/check-docs.mjs && node scripts/verify-case-study-normalization.mjs && node scripts/test-case-study-normalization.mjs && node scripts/test-sitemap-verifier.mjs && node scripts/test-seo-verifier.mjs && node scripts/test-semantic-seo-verifier.mjs && node scripts/test-content-quality-verifier.mjs && node scripts/test-site-health-verifier.mjs && node scripts/test-ahrefs-site-audit.mjs && node scripts/test-cloudflare-observability.mjs && node scripts/test-redirect-verifier.mjs && node scripts/test-open-graph-generator.mjs && node scripts/test-artwork-suitability.mjs && node scripts/test-brand-assets.mjs && node scripts/test-design-gate.mjs && node scripts/test-render-sharpness.mjs && node scripts/test-side-navigation-verifier.mjs && node scripts/test-visual-composition.mjs && node scripts/test-interface-quality-verifier.mjs && node scripts/test-route-convergence-verifier.mjs && node scripts/test-release-evidence-verifier.mjs"
+    "test": "astro check && node scripts/check-docs.mjs && node scripts/verify-case-study-normalization.mjs && node scripts/test-case-study-normalization.mjs && node scripts/test-sitemap-verifier.mjs && node scripts/test-seo-verifier.mjs && node scripts/test-semantic-seo-verifier.mjs && node scripts/test-content-quality-verifier.mjs && node scripts/test-site-health-verifier.mjs && node scripts/test-ahrefs-site-audit.mjs && node scripts/test-cloudflare-observability.mjs && node scripts/test-redirect-verifier.mjs && node scripts/test-open-graph-generator.mjs && node scripts/test-artwork-suitability.mjs && node scripts/test-brand-assets.mjs && node scripts/test-design-gate.mjs && node scripts/test-render-sharpness.mjs && node scripts/test-side-navigation-verifier.mjs && node scripts/test-visual-composition.mjs && node scripts/test-interface-quality-verifier.mjs && node scripts/test-route-convergence-verifier.mjs && node scripts/test-pagespeed-warmup-verifier.mjs && node scripts/test-release-evidence-verifier.mjs"
   },
   "dependencies": {
     "cheerio": "^1.2.0",
     "sharp": "0.35.3"
   },
   "devDependencies": {
-    "@astrojs/check": "0.9.9",
-    "@playwright/test": "1.61.1",
-    "astro": "^7.1.3",
+    "@astrojs/check": "0.9.10",
+    "@playwright/test": "1.62.0",
+    "astro": "^7.1.5",
     "typescript": "^6.0.3"
   },
   "license": "MIT"

@@ -510,6 +510,29 @@ This distinction matters. More client minification would not fix a document
 that has not arrived. The evidence record therefore preserved separate cold
 render, warm edge, and browser resource results.
 
+### Synthetic warmup missed the document cache
+
+The PageSpeed runner attempted to prime the candidate with two generic
+server-side fetches. The middleware admitted only browser document
+navigations, identified by an HTML `Accept` header and
+`Sec-Fetch-Dest: document`. The warmup requests never entered that branch, so
+the next audit paid for a fresh database render.
+
+The runner was changed to issue the exact audited URL with browser-document
+headers and to require an application cache-state header to report a reusable
+hit on the final request. That evidence was stored separately from every
+PageSpeed result.
+
+This did not redefine a cold request, permit score retries, or weaken the
+perfect-score gate. It made the stated warm-path measurement match the
+visitor-cache behavior it claimed to test.
+
+### Reusable rule
+
+If a synthetic performance workflow claims to warm HTML, verify the request
+contract and the cache state. A pair of successful generic fetches and a lower
+response time do not prove that a browser navigation can reuse the document.
+
 ## CDN-Injected Bot Detection and Local Snapshots
 
 Cloudflare bot protection appended a request-specific JavaScript probe after

@@ -8,7 +8,7 @@ Go for Launch was started and is sponsored by [GovSoft](https://www.govsoft.com)
 
 ## What Go for Launch Covers
 
-The toolbox serves sixteen purposes:
+The toolbox serves seventeen purposes:
 
 1. **Converting existing sites to Astro.** Complete workflows for rebuilding websites in Astro without losing content, design fidelity, responsive behavior, SEO, accessibility, performance, or browser reliability. The Webflow and WordPress workflows are proven in production, and the platform-neutral framework extends to Squarespace, Wix, Drupal, static HTML, and custom content management systems as alpha guidance.
 2. **Keeping existing Astro sites current.** A maintenance process for updating Astro sites already in production to the latest compatible Astro version and dependency set, with every upgrade passing the same release gates as a new migration. See [AUTOMATION-INTEGRATION.md](AUTOMATION-INTEGRATION.md).
@@ -26,6 +26,7 @@ The toolbox serves sixteen purposes:
 14. **Semantic SEO and citation review.** Require canonical consistency, descriptive and content-aligned titles, route-specific search intent, reviewed content depth, valid citation links, and evidence records that detect claim or source drift. Use Ahrefs API v3 as an optional public-crawl input when approved access exists. See [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md).
 15. **Stanford Rule content quality.** Define the audience and task for every page, check final HTML for machine-like filler, inflated language, excessive sentence and paragraph length, repetitive openings, inaccessible reading density, and cross-route copy similarity, then require a hash-bound editorial review from a senior psychology professor perspective. See [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md).
 16. **Bounded delivery without weaker gates.** Define the task envelope, classify findings, prototype subjective work, stop repeated remediation, preserve checkpoints, freeze exact candidates, and separate follow-up work while retaining every mandatory mobile, desktop, WebKit, native Safari, and PageSpeed release requirement. See [Execution Control and Bounded Delivery](EXECUTION-CONTROL.md).
+17. **Verified PageSpeed document readiness.** When a dynamic site intentionally warms HTML before PageSpeed, issue a real browser-document request, prove the exact candidate and reusable cache state, and preserve that report without weakening cold-path tests or the 100 requirement. See [PageSpeed Document Readiness](PAGESPEED-READINESS.md).
 
 ## Why This Exists
 
@@ -78,6 +79,7 @@ This repository documents the process used to close those gaps while replacing l
 32. [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md)
 33. [Contributing Guide](CONTRIBUTING.md)
 34. [Roadmap](ROADMAP.md)
+35. [PageSpeed Document Readiness](PAGESPEED-READINESS.md)
 
 ## Repository Structure
 
@@ -96,6 +98,7 @@ This repository documents the process used to close those gaps while replacing l
 ├── ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md
 ├── TESTING-AND-RELEASE-CHECKLIST.md
 ├── PRODUCTION-RELEASE-POLICY.md
+├── PAGESPEED-READINESS.md
 ├── AUTOMATION-INTEGRATION.md
 ├── AUTOMATED-MAINTENANCE.md
 ├── CLOUDFLARE-FORMS.md
@@ -129,6 +132,7 @@ This repository documents the process used to close those gaps while replacing l
 │   ├── verify-cloudflare-observability.mjs
 │   ├── verify-redirects.mjs
 │   ├── verify-route-parity.mjs
+│   ├── verify-pagespeed-warmup.mjs
 │   ├── wp-extract.mjs
 │   ├── emdash-seed.mjs
 │   ├── emdash-import.mjs
@@ -168,6 +172,7 @@ This repository documents the process used to close those gaps while replacing l
     ├── content-quality.reviews.json
     ├── ahrefs-site-audit.config.mjs
     ├── cloudflare-observability.config.mjs
+    ├── pagespeed-warmup.config.mjs
     ├── design-gate.config.mjs
     ├── design-review-record.json
     ├── route-and-content-inventory.md
@@ -207,6 +212,7 @@ This repository documents the process used to close those gaps while replacing l
 25. Record intentional differences so accessibility and performance improvements are not mistaken for missing parity.
 26. Turn every discovered migration defect into a reusable test or checklist item.
 27. Bound scope, remediation, and progress reporting without weakening any mandatory release gate.
+28. Prove that every claimed PageSpeed document warmup follows the browser navigation path and reaches observable reusable cache state.
 
 ## Evidence Model
 
@@ -249,7 +255,7 @@ Every site using Go for Launch must pass the following gate before production de
 13. Verify the desktop and mobile network resource sets and confirm preloads match the measured LCP resources.
 14. Capture an advisory Cloudflare production baseline when approved account analytics access exists.
 15. Deploy the same candidate to staging.
-16. Run PageSpeed Insights against staging for mobile and desktop.
+16. When the PageSpeed process warms dynamic HTML, verify browser-document cache readiness for every audited URL, then run PageSpeed Insights against staging for mobile and desktop.
 17. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
 18. Run Ahrefs Site Audit when approved API or crawler access exists.
 19. Block production when any required test fails or any PageSpeed category is below 100.

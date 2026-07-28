@@ -183,12 +183,20 @@ PageSpeed Insights has a free anonymous tier with low rate limits, suitable for 
 PageSpeed evidence must be tied to the staged candidate:
 
 - Verify the audited URL, HTTP status, title, canonical URL, and visible content.
+- When dynamic HTML is warmed, run the document-readiness verifier from
+  [PAGESPEED-READINESS.md](PAGESPEED-READINESS.md) against the exact audited
+  URL and preserve its cache-state report.
 - Run mobile and desktop strategies.
 - Require all four Lighthouse categories to equal 100 in both strategies.
 - Treat any lower score as a release blocker.
 - Never print PageSpeed API keys or token-bearing URLs.
 
 If PageSpeed audits a stale page, redirect placeholder, access-denied page, Cloudflare error, or unrelated preview, the result is invalid.
+
+A generic automation fetch is not a browser-document warmup. Do not describe a
+route as warm unless the request sends the documented navigation headers and
+the final response proves reusable cache state. This verification does not
+permit score retries or reduce the eight required 100 checks.
 
 ## Cloudflare Production Observability
 
