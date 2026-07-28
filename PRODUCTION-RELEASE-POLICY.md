@@ -18,6 +18,12 @@ as directed by [Execution Control and Bounded Delivery](EXECUTION-CONTROL.md).
 Use it to bound scope, prototype subjective work, record checkpoint evidence,
 and stop repeated remediation when it is no longer producing new information.
 
+Run `scripts/verify-execution-control.mjs` at every phase checkpoint and before
+declaring the candidate production ready. The machine-readable control report
+must pass. This verifies that process limits and candidate evidence are
+complete. It does not replace any build, browser, device, PageSpeed, security,
+accessibility, or live-production gate.
+
 Execution controls govern how work proceeds, not what production must pass. A
 time limit, attempt limit, scope limit, deferral, owner decision, delivery
 deadline, or prior test result cannot waive, downgrade, or bypass a mandatory

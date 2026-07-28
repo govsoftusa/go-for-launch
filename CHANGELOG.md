@@ -6,6 +6,27 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### Machine-Verifiable Execution Control
+
+- Added `scripts/verify-execution-control.mjs` and a reusable project
+  configuration so bounded-delivery rules are checked rather than relying only
+  on narrative process documentation.
+- Required a complete task envelope, reviewed scope, evidence-bearing
+  checkpoints, supported finding classifications, and explicit blocker states.
+- Rejected raised attempt, investigation, or progress limits unless a named
+  owner records the rationale and the specifically supported next action.
+- Rejected active blockers that reach their attempt or time limit without a
+  reviewed bounded continuation.
+- Required frozen candidates to declare every build, browser, device,
+  interface, accessibility, security, and PageSpeed gate.
+- Required production-ready candidates to record passing evidence for every
+  declared gate and exactly 100 in all four PageSpeed categories for both
+  mobile and desktop.
+- Added regression coverage proving that a 99 PageSpeed result, an unreviewed
+  raised limit, and an unapproved third attempt all fail closed.
+- Kept execution control separate from release evidence. A passing process
+  report cannot replace the complete exact-candidate release suite.
+
 ### PageSpeed Document Readiness
 
 - Added a reusable verifier for projects that warm dynamic HTML before

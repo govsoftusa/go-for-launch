@@ -37,6 +37,10 @@
 These thresholds control when work pauses. They do not waive or downgrade any
 mandatory release gate.
 
+- Machine-readable control config:
+- Latest control report:
+- Latest control report status:
+
 ## Representative proof
 
 - Smallest vertical slice or prototype:
@@ -121,4 +125,3 @@ mandatory release suite again.
 - Final acceptance owner:
 - Final acceptance date:
 - Follow-up register location:
-

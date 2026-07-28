@@ -13,6 +13,10 @@ Read [Project-Specific Extensions](PROJECT-EXTENSIONS.md) during onboarding. Rec
 Read [Execution Control and Bounded Delivery](EXECUTION-CONTROL.md), then copy
 [`templates/execution-control-record.md`](templates/execution-control-record.md)
 into the target repository before implementation begins.
+Copy
+[`templates/execution-control.config.mjs`](templates/execution-control.config.mjs)
+into the target repository and wire `scripts/verify-execution-control.mjs` into
+phase checkpoints and the production-readiness workflow.
 
 Record the requested outcome, acceptance owner, systems in scope, explicit
 exclusions, completion conditions, deployment authority, rollback method, and
@@ -135,7 +139,7 @@ Before implementation begins, the completed project record must contain:
 - Staging and production commands, canonical hostname, and deployment authority.
 - The interface-quality command, route-family contract owner, and report location.
 - The current Go for Launch revision used by the project.
-- The execution-control record, task envelope, completion conditions, finding classifications, checkpoint history, and blocker decisions.
+- The execution-control record, config, passing phase report, task envelope, completion conditions, finding classifications, checkpoint history, and blocker decisions.
 - The authoritative brand reference, renderer contract, representative prototype set, real-client preview, and prototype approval artifact when social cards are selected.
 
 Revisit this record whenever a workflow, provider, billing plan, account owner, deployment target, or release environment changes.

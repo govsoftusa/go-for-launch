@@ -1,0 +1,58 @@
+export default {
+  phase: "orientation",
+  output: "artifacts/execution-control-report.json",
+  taskEnvelope: {
+    requestedOutcome: "Replace with the requested project outcome",
+    acceptanceOwner: "Replace with the accountable project owner",
+    targetRepository: "/workspace/example-project",
+    targetBranch: "release",
+    initialRevision: "replace-with-initial-commit",
+    toolkitRevision: "replace-with-go-for-launch-commit",
+    rollbackMethod: "Replace with the verified rollback procedure",
+    scope: ["Replace with the reviewed routes, systems, and environments"],
+    exclusions: [],
+    separateAuthorization: [],
+  },
+  thresholds: {
+    maximumUnsuccessfulAttempts: 2,
+    activeInvestigationMinutes: 90,
+    progressRecordMinutes: 30,
+  },
+  findings: [],
+  checkpoints: [
+    {
+      recordedAt: "Replace with an ISO 8601 timestamp",
+      phase: "orientation",
+      candidate: "No candidate frozen",
+      change: "Recorded the source, scope, and initial state",
+      evidence: "Replace with the baseline evidence path",
+      nextAction: "Complete the smallest representative proof",
+    },
+  ],
+  blockers: [],
+  candidate: {
+    frozenRevision: "",
+    buildIdentity: "",
+    frozenAt: "",
+    mandatorySuiteCommand: "",
+    gates: {
+      build: { status: "pending", evidence: "" },
+      mobilePageSpeed: {
+        status: "pending",
+        evidence: "",
+        scores: { performance: 0, accessibility: 0, bestPractices: 0, seo: 0 },
+      },
+      desktopPageSpeed: {
+        status: "pending",
+        evidence: "",
+        scores: { performance: 0, accessibility: 0, bestPractices: 0, seo: 0 },
+      },
+      chromium: { status: "pending", evidence: "" },
+      playwrightWebKit: { status: "pending", evidence: "" },
+      nativeIosSafari: { status: "pending", evidence: "" },
+      interfaceQuality: { status: "pending", evidence: "" },
+      accessibility: { status: "pending", evidence: "" },
+      security: { status: "pending", evidence: "" },
+    },
+  },
+};

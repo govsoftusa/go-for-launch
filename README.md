@@ -180,6 +180,7 @@ This repository documents the process used to close those gaps while replacing l
     ├── design-optimization-brief.md
     ├── project-onboarding.md
     ├── execution-control-record.md
+    ├── execution-control.config.mjs
     └── migration-acceptance-record.md
 ```
 
@@ -222,6 +223,7 @@ Strong migration evidence combines:
 - Live source-site inspection.
 - A route and section inventory.
 - A completed execution-control record with the task envelope, finding classifications, checkpoints, blocker decisions, and exact-candidate identity.
+- A passing machine-readable execution-control report for the current phase, including every mandatory gate and both PageSpeed strategies at four scores of 100 before production readiness.
 - Asset manifests with hashes and missing-file reports.
 - Automated route, interaction, accessibility, and metadata checks.
 - Screenshot comparisons at multiple breakpoints.

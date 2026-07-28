@@ -29,6 +29,8 @@ This checklist is mandatory before production. Any unchecked required item block
 
 - [ ] `EXECUTION-CONTROL.md` was read before implementation began.
 - [ ] `templates/execution-control-record.md` was copied into the target repository and completed.
+- [ ] `templates/execution-control.config.mjs` was copied into the target repository, and `scripts/verify-execution-control.mjs` passes for the current phase.
+- [ ] The production-ready execution-control report records Performance, Accessibility, Best Practices, and SEO at 100 for both mobile and desktop PageSpeed.
 - [ ] The task envelope names the requested outcome, acceptance owner, in-scope systems, explicit exclusions, completion conditions, deployment authority, and rollback method.
 - [ ] Every new finding is classified as required outcome, release blocker, recommended follow-up, or unrelated before work expands.
 - [ ] Subjective brand, editorial, navigation, information-architecture, and interaction directions have representative proof and named human approval before bulk implementation.

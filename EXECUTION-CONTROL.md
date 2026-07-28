@@ -27,6 +27,23 @@ into the target project and record:
 The task envelope is the active contract. A new finding does not silently
 expand it.
 
+Also copy
+[`templates/execution-control.config.mjs`](templates/execution-control.config.mjs)
+into the target project. Keep the machine-readable record aligned with the
+human checkpoint record, then run:
+
+```bash
+node ../go-for-launch/scripts/verify-execution-control.mjs \
+  --config=execution-control.config.mjs
+```
+
+The verifier makes the process controls fail closed. It rejects incomplete task
+envelopes, raised limits without a named owner decision, active blockers that
+reached their limit without a supported continuation, incomplete frozen
+candidate records, and production-readiness claims without every required gate.
+For production readiness, both PageSpeed strategies must explicitly record 100
+for Performance, Accessibility, Best Practices, and SEO.
+
 ## 2. Classify findings before acting
 
 Classify every new finding as one of these:
@@ -185,10 +202,10 @@ Every active adoption or release project must preserve:
 
 - The completed project onboarding record.
 - The completed execution-control record.
+- The passing machine-readable execution-control report for the current phase.
 - The current task envelope and finding classifications.
 - Prototype or representative-proof approvals when applicable.
 - Candidate identities and checkpoint commits.
 - Attempt and time-limit decisions for blockers.
 - The final complete release evidence for the exact candidate.
 - Follow-up items excluded from the completed task.
-
