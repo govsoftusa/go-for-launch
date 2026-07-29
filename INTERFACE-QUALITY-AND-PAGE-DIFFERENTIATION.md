@@ -33,6 +33,24 @@ An inline link can wrap across two lines. Its overall bounding rectangle include
 
 The interface gate compares every rectangle returned by `getClientRects()`. It also excludes controls inside a closed `details` region while retaining the visible `summary`. These rules avoid two false positives found during real responsive testing.
 
+## Font readiness confirmation
+
+The gate waits up to 15 seconds for `document.fonts.ready` before measuring
+geometry. A font-readiness timeout can identify a real missing or stalled font,
+but a long WebKit sweep can also leave one reused page with a stalled
+`FontFaceSet` promise after many thousands of successful navigations.
+
+The verifier does not accept a timeout silently. It discards the affected page
+and requires the same route to finish font loading on three consecutive fresh
+pages in the same engine and viewport. Any failed fresh-page confirmation
+remains a blocking `font-readiness-timeout`. When all three confirmations pass,
+the gate measures the last fresh page and records the initial timeout plus
+every confirmation in `fontReadinessRecoveries`.
+
+This confirmation rule does not retry a failed geometry assertion, lower a
+threshold, or remove a browser or viewport. It isolates browser-process state
+while preserving a fail-closed result for a persistent font problem.
+
 ## Route family and archetype contract
 
 Every indexable route must be covered when `requireIndexableCoverage` is enabled. Each route record declares:

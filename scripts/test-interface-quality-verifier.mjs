@@ -108,6 +108,120 @@ if (!validResult.stdout.includes("Interface quality progress: 3/3 checks (100.0%
 const validData = JSON.parse(await readFile(validReport, "utf8"));
 if (validData.counts.errors !== 0 || validData.counts.checks !== 3) throw new Error("Valid interface report has incorrect counts.");
 
+const recoveredFontDirectory = join(root, "recovered-font", "dist");
+await page(recoveredFontDirectory, "/", `<!doctype html><html><head>
+  <link rel="canonical" href="https://example.com/">
+  <script>
+    if (!localStorage.getItem("font-readiness-initial-timeout")) {
+      localStorage.setItem("font-readiness-initial-timeout", "seen");
+      Object.defineProperty(document.fonts, "ready", {
+        configurable: true,
+        value: new Promise(() => {})
+      });
+    }
+  </script>
+  ${sharedValidStyle}
+</head><body>
+  <header class="site-header"><a href="/">Home</a></header>
+  <main class="home-layout" data-page-archetype="editorial-cover">
+    <section class="hero"><h1>Fresh page font confirmation</h1></section>
+  </main>
+</body></html>`);
+const recoveredFontReport = join(root, "recovered-font", "report.json");
+const recoveredFontConfig = join(root, "recovered-font", "config.mjs");
+await writeFile(recoveredFontConfig, `export default ${JSON.stringify({
+  outputDirectory: recoveredFontDirectory,
+  report: recoveredFontReport,
+  screenshotDirectory: join(root, "recovered-font", "screenshots"),
+  browsers: ["chromium"],
+  viewports: [{ name: "mobile", width: 320, height: 700 }],
+  differentiationBrowsers: [],
+  differentiationViewports: [],
+  routeConcurrency: 1,
+  fontReadinessTimeoutMs: 20,
+  screenshots: "none",
+  header: { selector: ".site-header", maximumViewportHeightRatio: 0.2 },
+  controls: { targetSize: { enabled: false } },
+  routes: [
+    {
+      path: "/",
+      family: "home",
+      archetype: "editorial-cover",
+      purpose: "Verify fresh-page font confirmation",
+      contentRhythm: "One test region",
+      visualIdentity: "Test fixture",
+      requiredSelectors: ["main"],
+      distinctiveSelectors: [".home-layout"]
+    }
+  ]
+})};\n`);
+const recoveredFontResult = run(recoveredFontConfig);
+if (recoveredFontResult.status !== 0) {
+  throw new Error(`Recoverable font timeout fixture failed:\n${recoveredFontResult.stdout}${recoveredFontResult.stderr}`);
+}
+const recoveredFontData = JSON.parse(await readFile(recoveredFontReport, "utf8"));
+if (
+  recoveredFontData.counts.fontReadinessRecoveries !== 1 ||
+  recoveredFontData.fontReadinessRecoveries[0]?.status !== "recovered" ||
+  recoveredFontData.fontReadinessRecoveries[0]?.confirmations?.length !== 3
+) {
+  throw new Error("Recoverable font timeout did not record three fresh-page confirmations.");
+}
+
+const stalledFontDirectory = join(root, "stalled-font", "dist");
+await page(stalledFontDirectory, "/", `<!doctype html><html><head>
+  <link rel="canonical" href="https://example.com/">
+  <script>
+    Object.defineProperty(document.fonts, "ready", {
+      configurable: true,
+      value: new Promise(() => {})
+    });
+  </script>
+  ${sharedValidStyle}
+</head><body>
+  <header class="site-header"><a href="/">Home</a></header>
+  <main class="home-layout" data-page-archetype="editorial-cover">
+    <section class="hero"><h1>Persistent font timeout</h1></section>
+  </main>
+</body></html>`);
+const stalledFontReport = join(root, "stalled-font", "report.json");
+const stalledFontConfig = join(root, "stalled-font", "config.mjs");
+await writeFile(stalledFontConfig, `export default ${JSON.stringify({
+  outputDirectory: stalledFontDirectory,
+  report: stalledFontReport,
+  screenshotDirectory: join(root, "stalled-font", "screenshots"),
+  browsers: ["chromium"],
+  viewports: [{ name: "mobile", width: 320, height: 700 }],
+  differentiationBrowsers: [],
+  differentiationViewports: [],
+  routeConcurrency: 1,
+  fontReadinessTimeoutMs: 20,
+  screenshots: "none",
+  header: { selector: ".site-header", maximumViewportHeightRatio: 0.2 },
+  controls: { targetSize: { enabled: false } },
+  routes: [
+    {
+      path: "/",
+      family: "home",
+      archetype: "editorial-cover",
+      purpose: "Verify persistent font failure",
+      contentRhythm: "One test region",
+      visualIdentity: "Test fixture",
+      requiredSelectors: ["main"],
+      distinctiveSelectors: [".home-layout"]
+    }
+  ]
+})};\n`);
+const stalledFontResult = run(stalledFontConfig);
+if (stalledFontResult.status === 0) throw new Error("Persistent font timeout fixture passed.");
+const stalledFontData = JSON.parse(await readFile(stalledFontReport, "utf8"));
+if (
+  stalledFontData.fontReadinessRecoveries[0]?.status !== "failed" ||
+  !stalledFontData.findings.some((finding) => finding.code === "font-readiness-timeout")
+) {
+  throw new Error("Persistent font timeout did not fail closed.");
+}
+
 const invalidDirectory = join(root, "invalid", "dist");
 const invalidStyle = `<style>
   * { box-sizing: border-box; }

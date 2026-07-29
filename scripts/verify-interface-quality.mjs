@@ -45,6 +45,16 @@ const overflowTolerance = config.overflowTolerance ?? 1;
 const screenshotMode = config.screenshots || "failures";
 const failOnWarnings = config.failOnWarnings ?? false;
 const routeConcurrency = Math.max(1, Number.parseInt(config.routeConcurrency || "1", 10));
+const configuredFontReadinessTimeoutMs = Number.parseInt(
+  config.fontReadinessTimeoutMs || "15000",
+  10
+);
+const fontReadinessTimeoutMs =
+  Number.isFinite(configuredFontReadinessTimeoutMs) &&
+  configuredFontReadinessTimeoutMs >= 10
+    ? configuredFontReadinessTimeoutMs
+    : 15_000;
+const fontReadinessFreshPageConfirmations = 3;
 const differentiationScope = config.differentiationScope || "all-pairs";
 const controlSelector = config.controls?.selector || 'a[href], button, summary, input:not([type="hidden"]), textarea, select';
 const targetSize = {
@@ -58,6 +68,7 @@ const overlapIgnoreSelectors = config.controls?.overlap?.ignoreSelectors || [];
 
 const findings = [];
 const records = [];
+const fontReadinessRecoveries = [];
 const contentTypes = new Map([
   [".avif", "image/avif"],
   [".css", "text/css; charset=utf-8"],
@@ -180,6 +191,31 @@ await new Promise((resolveListening) => server.listen(0, "127.0.0.1", resolveLis
 const address = server.address();
 const baseUrl = `http://127.0.0.1:${address.port}`;
 
+async function preparePageForAudit(page) {
+  return page.evaluate(async ({ timeoutMs }) => {
+    /*
+     * `content-visibility: auto` intentionally skips layout for offscreen
+     * content. Measuring every control before it has entered the viewport
+     * otherwise reports placeholder boxes as overlaps. Force eager layout for
+     * the audit only. This does not change geometry once content is visible.
+     */
+    const auditStyle = document.createElement("style");
+    auditStyle.dataset.interfaceAudit = "eager-layout";
+    auditStyle.textContent = "* { content-visibility: visible !important; }";
+    document.head.append(auditStyle);
+    const fontStatus = await Promise.race([
+      document.fonts.ready.then(() => "ready"),
+      new Promise((resolveFontStatus) => {
+        window.setTimeout(() => resolveFontStatus("timeout"), timeoutMs);
+      })
+    ]);
+    await new Promise((resolveFrame) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolveFrame));
+    });
+    return fontStatus;
+  }, { timeoutMs: fontReadinessTimeoutMs });
+}
+
 try {
   if (screenshotMode !== "none") await mkdir(screenshotDirectory, { recursive: true });
   for (const engine of engines) {
@@ -192,7 +228,10 @@ try {
         const workers = Array.from(
           { length: Math.min(routeConcurrency, routeRules.length) },
           async () => {
-            const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
+            const context = await browser.newContext({
+              viewport: { width: viewport.width, height: viewport.height }
+            });
+            let page = await context.newPage();
             try {
               while (nextRouteIndex < routeRules.length) {
                 const ruleIndex = nextRouteIndex;
@@ -204,36 +243,64 @@ try {
                   addFinding("error", "route-render-failed", `${engine}/${viewport.name}${route} did not return HTTP 200.`, { engine, viewport: viewport.name, route });
                   continue;
                 }
-                const fontReadiness = await page.evaluate(async () => {
-                  /*
-                   * `content-visibility: auto` intentionally skips layout for
-                   * offscreen content. Measuring every control before it has
-                   * entered the viewport otherwise reports placeholder boxes
-                   * as overlaps. Force eager layout for the audit only. This
-                   * does not change geometry once the content is visible.
-                   */
-                  const auditStyle = document.createElement("style");
-                  auditStyle.dataset.interfaceAudit = "eager-layout";
-                  auditStyle.textContent = "* { content-visibility: visible !important; }";
-                  document.head.append(auditStyle);
-                  const fontStatus = await Promise.race([
-                    document.fonts.ready.then(() => "ready"),
-                    new Promise((resolveFontStatus) => {
-                      window.setTimeout(() => resolveFontStatus("timeout"), 15_000);
-                    })
-                  ]);
-                  await new Promise((resolveFrame) => {
-                    requestAnimationFrame(() => requestAnimationFrame(resolveFrame));
-                  });
-                  return fontStatus;
-                });
+                let fontReadiness = await preparePageForAudit(page);
                 if (fontReadiness !== "ready") {
-                  addFinding("error", "font-readiness-timeout", `${engine}/${viewport.name}${route} did not finish loading fonts within 15 seconds.`, {
+                  const recovery = {
                     engine,
                     viewport: viewport.name,
-                    route
-                  });
-                  continue;
+                    route,
+                    initialStatus: fontReadiness,
+                    requiredFreshPageConfirmations: fontReadinessFreshPageConfirmations,
+                    confirmations: []
+                  };
+                  let recoveryFailed = false;
+
+                  for (
+                    let confirmation = 1;
+                    confirmation <= fontReadinessFreshPageConfirmations;
+                    confirmation += 1
+                  ) {
+                    await page.close();
+                    page = await context.newPage();
+                    const retryResponse = await page.goto(new URL(route, baseUrl).href, {
+                      waitUntil: "domcontentloaded"
+                    });
+                    if (!retryResponse || retryResponse.status() !== 200) {
+                      recovery.confirmations.push({
+                        attempt: confirmation,
+                        status: "route-render-failed",
+                        httpStatus: retryResponse?.status() ?? null
+                      });
+                      addFinding(
+                        "error",
+                        "route-render-failed",
+                        `${engine}/${viewport.name}${route} did not return HTTP 200 during fresh-page font confirmation ${confirmation}.`,
+                        { engine, viewport: viewport.name, route, confirmation }
+                      );
+                      recoveryFailed = true;
+                      break;
+                    }
+
+                    fontReadiness = await preparePageForAudit(page);
+                    recovery.confirmations.push({
+                      attempt: confirmation,
+                      status: fontReadiness
+                    });
+                    if (fontReadiness !== "ready") {
+                      addFinding(
+                        "error",
+                        "font-readiness-timeout",
+                        `${engine}/${viewport.name}${route} did not finish loading fonts within ${fontReadinessTimeoutMs} milliseconds on fresh-page confirmation ${confirmation}.`,
+                        { engine, viewport: viewport.name, route, confirmation }
+                      );
+                      recoveryFailed = true;
+                      break;
+                    }
+                  }
+
+                  recovery.status = recoveryFailed ? "failed" : "recovered";
+                  fontReadinessRecoveries.push(recovery);
+                  if (recoveryFailed) continue;
                 }
 
                 const measurement = await page.evaluate(({ rule, controlSelector, targetSize, overlapIgnoreSelectors, overlapTolerance, overflowTolerance, headerContract }) => {
@@ -422,7 +489,7 @@ try {
                 }
               }
             } finally {
-              await page.close();
+              await context.close();
             }
           },
         );
@@ -469,6 +536,7 @@ const counts = {
   viewports: viewports.length,
   browsers: engines.length,
   checks: records.length,
+  fontReadinessRecoveries: fontReadinessRecoveries.length,
   errors: findings.filter((item) => item.severity === "error").length,
   warnings: findings.filter((item) => item.severity === "warning").length
 };
@@ -482,6 +550,7 @@ const report = {
   minimumDistinctiveDimensions,
   counts,
   records,
+  fontReadinessRecoveries,
   differentiation,
   findings
 };
