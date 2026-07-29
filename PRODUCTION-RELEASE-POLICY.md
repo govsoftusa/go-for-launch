@@ -508,6 +508,14 @@ produces the same artifact hash. A changed artifact hash requires a new
 candidate. Never change the identifier merely because a test runner, local
 fixture, evidence formatter, or toolkit revision changed.
 
+Identify and control framework-generated build entropy before using artifact
+hashes as candidate identity. Build-time encryption keys, generated salts,
+timestamps, absolute workspace paths, and random manifest values can change
+output without a source change. Use the framework's supported private
+environment input for stable secrets, build at a canonical path when paths are
+embedded, and compare two clean builds before declaring the artifact
+reproducible. Never commit or print the secret.
+
 ## Frozen candidate evidence manifest
 
 Before production promotion, run

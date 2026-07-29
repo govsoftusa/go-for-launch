@@ -39,6 +39,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - Defined candidate identity as the deployable artifact identity. Harness-only
   changes invalidate evidence but retain the candidate identifier only when a
   deterministic artifact hash remains unchanged.
+- Required projects to identify framework-generated build entropy. Stable
+  build secrets must use supported private environment inputs, while embedded
+  paths require a canonical workspace. Secrets must never enter source,
+  console output, or evidence.
 
 #### Test Evidence
 
