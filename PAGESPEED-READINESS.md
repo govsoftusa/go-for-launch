@@ -130,6 +130,13 @@ value can therefore leave the production projection noindex. Prove the
 protected response first, set the reviewed production-mode value explicitly,
 then prove the indexable response before launching Lighthouse.
 
+Start the provider runtime directly when it must run in the background.
+Backgrounding a package runner can leave the actual server as an unowned child.
+Before changing modes, terminate the owned runtime, wait for its listener to
+close, then start the next runtime and verify that this new process owns the
+port. A successful request does not prove the new mode started when an older
+listener can answer it.
+
 Use separate local runtime state for the protected candidate and the
 production projection whenever response or HTML caches are host-insensitive,
 their key contract is uncertain, or an earlier failed run may have polluted

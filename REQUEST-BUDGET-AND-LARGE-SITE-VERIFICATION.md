@@ -172,6 +172,12 @@ reuse one local provider state. Do not assume that omitting a variable removes
 a previous command-line override. Verify the response header and robots
 metadata after each transition, before opening a browser.
 
+Own the provider runtime process, not a package-runner wrapper that launches it
+as a child. After stopping one mode, verify that its listener has closed before
+starting the next mode. A readiness probe is invalid when a previous process
+can still answer it. Fail immediately on an occupied port or a startup process
+that exits before it owns the expected listener.
+
 Protected and indexable processes should use separate local response-cache
 state. Restore both from the same deterministic CMS fixture, and populate both
 from the same bounded object fixture. This prevents a protected HTML response
