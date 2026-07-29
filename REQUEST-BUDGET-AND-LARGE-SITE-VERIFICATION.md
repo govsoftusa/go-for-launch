@@ -167,6 +167,11 @@ Lighthouse origin must still resolve only to private addresses. This proves the
 real indexable branch without publishing a crawlable candidate or ignoring an
 SEO failure.
 
+Set the protected and indexable runtime modes explicitly when both processes
+reuse one local provider state. Do not assume that omitting a variable removes
+a previous command-line override. Verify the response header and robots
+metadata after each transition, before opening a browser.
+
 If the provider's local runtime speaks only HTTP/1.1 but production uses
 HTTP/2 or HTTP/3, an HTTP/1.1 Lighthouse result may measure connection
 serialization that production does not have. Put a loopback-only HTTP/2 proxy

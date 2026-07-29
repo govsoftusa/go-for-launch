@@ -122,6 +122,14 @@ the production branch of the exact artifact when all of these conditions hold:
 6. Production verification later proves the same indexable behavior on the
    canonical public hostname.
 
+When one local runtime state is reused across protected and indexable
+processes, set both modes explicitly. Some provider development runtimes can
+carry a prior command-line variable into a later process when omission is
+treated as reuse rather than removal. A protected value followed by an omitted
+value can therefore leave the production projection noindex. Prove the
+protected response first, set the reviewed production-mode value explicitly,
+then prove the indexable response before launching Lighthouse.
+
 Private transport also needs production fidelity. When the local provider
 runtime offers only HTTP/1.1 and the production edge uses HTTP/2 or HTTP/3,
 place a loopback-only HTTP/2 TLS proxy in front of the runtime. Preserve the
