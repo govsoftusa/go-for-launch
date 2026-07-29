@@ -14,6 +14,15 @@ function validRecord() {
       applicationChanges: [],
       applicationBuildRun: false,
     },
+    requestBudget: {
+      estimatedExternalRequests: 20,
+      maximumExternalRequests: 200,
+      estimatedTransferBytes: 10_000_000,
+      maximumTransferBytes: 250_000_000,
+      observedExternalRequests: 18,
+      observedTransferBytes: 8_000_000,
+      estimationMethod: "Count each targeted request and its response bytes.",
+    },
     entries: [
       {
         sourceId: "source-1",
@@ -76,6 +85,14 @@ assert.equal(verifyEditorialPublish(applicationChange).ok, false);
 const buildRun = validRecord();
 buildRun.mutation.applicationBuildRun = true;
 assert.equal(verifyEditorialPublish(buildRun).ok, false);
+
+const excessiveEditorialBudget = validRecord();
+excessiveEditorialBudget.requestBudget.maximumExternalRequests = 201;
+assert.equal(verifyEditorialPublish(excessiveEditorialBudget).ok, false);
+
+const observedEditorialOverrun = validRecord();
+observedEditorialOverrun.requestBudget.observedExternalRequests = 201;
+assert.equal(verifyEditorialPublish(observedEditorialOverrun).ok, false);
 
 const missingDependency = validRecord();
 missingDependency.dependencies.sitemaps.verified = false;

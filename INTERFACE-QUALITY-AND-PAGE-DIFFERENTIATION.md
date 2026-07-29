@@ -53,7 +53,14 @@ while preserving a fail-closed result for a persistent font problem.
 
 ## Route family and archetype contract
 
-Every indexable route must be covered when `requireIndexableCoverage` is enabled. Each route record declares:
+Every indexable route must be covered when `requireIndexableCoverage` is
+enabled. Small sites may browser-test every route. Large archives may use
+`coverageMode: "representatives"` while providing a `coverageInventory` that
+still contains every indexable route. Each inventory entry maps to a coverage
+class through `coverageKeyFields`, and every class must have a browser-tested
+representative with a `representativeReason`.
+
+Each route record declares:
 
 - `family`, the route family that may intentionally share one composition.
 - `archetype`, the project-owned page composition used by that family.
@@ -86,7 +93,16 @@ Different route families must differ in at least the configured number of dimens
 
 Do not chase the score by adding arbitrary colors, images, or markup. The project must first define a useful route archetype, then implement the differences that support the page's purpose.
 
-The default `differentiationScope` is `all-pairs`. Large editorial archives may use `every-route-to-family-representative` to compare every route with the representative of every other family without creating a quadratic report. The reduced scope still checks each indexable route and every cross-family relationship. `routeConcurrency` may increase browser throughput, but the project should keep it low enough for the release host and local machine.
+The default `differentiationScope` is `all-pairs`. Large editorial archives may
+use `every-route-to-family-representative` to avoid a quadratic report. With
+representative coverage, the browser checks every template and meaningful
+rendering variant while exhaustive static gates continue to check every
+indexable route.
+
+The verifier serves the built output locally and blocks external network
+requests by default. It counts blocked attempts, completed external requests,
+reported transfer bytes, and external origins. A local interface run must not
+silently become traffic against a CDN or production host.
 
 ## Header and hero contracts
 
@@ -133,7 +149,8 @@ Both reports are required evidence. Neither report proves design quality or huma
 1. Copy [`templates/interface-quality.config.mjs`](templates/interface-quality.config.mjs) into the target project.
 2. Add `data-site-header` to the persistent site header.
 3. Add one `data-page-archetype` marker to each configured route.
-4. Define every indexable route, family, purpose, content rhythm, visual identity, and distinctive selector.
+4. Define the complete indexable inventory, its coverage classes, and either
+   every route contract or deterministic representative contracts.
 5. Add hero and clearance contracts only where the relationship exists.
 6. Run the verifier after the exact production build.
 7. Wire it into the normal build or unskippable release verification command.

@@ -23,6 +23,8 @@ into the target project and record:
 - Deployment authority and the rollback method.
 - The initial branch, commit, working-tree state, and Go for Launch revision.
 - Default investigation and remediation limits.
+- The estimated and maximum external requests and transfer bytes.
+- The per-gate method used to calculate those estimates.
 
 The task envelope is the active contract. A new finding does not silently
 expand it.
@@ -41,6 +43,8 @@ The verifier makes the process controls fail closed. It rejects incomplete task
 envelopes, raised limits without a named owner decision, active blockers that
 reached their limit without a supported continuation, incomplete frozen
 candidate records, and production-readiness claims without every required gate.
+It also rejects a missing resource budget, a projected or observed budget
+overrun, and a high-cost maximum without a named owner approval.
 For production readiness, both PageSpeed strategies must explicitly record 100
 for Performance, Accessibility, Best Practices, and SEO.
 
@@ -161,6 +165,13 @@ complete mandatory suite again before production.
 
 Targeted tests may accelerate development. They cannot replace the final
 complete suite.
+
+Local browser gates must block external network requests unless the project
+declares and budgets a required external dependency. A full static route
+inventory may be checked exhaustively while browser geometry uses deterministic
+representatives for every template and meaningful rendering variant. Read
+`REQUEST-BUDGET-AND-LARGE-SITE-VERIFICATION.md` before running a suite over a
+large archive.
 
 For a multi-route PageSpeed matrix, first prove provider access with one scored
 probe. Stop on the first valid category below 100, preserve the raw result, and

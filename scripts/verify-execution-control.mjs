@@ -29,6 +29,8 @@ const REQUIRED_GATES = [
 ];
 const SCORE_KEYS = ["performance", "accessibility", "bestPractices", "seo"];
 const PLACEHOLDER = /^(?:tbd|todo|unknown|n\/a|none|placeholder|example|replace\b|no candidate\b)/i;
+const DEFAULT_MAXIMUM_EXTERNAL_REQUESTS = 10_000;
+const DEFAULT_MAXIMUM_TRANSFER_BYTES = 1_000_000_000;
 
 function cliOptions(argumentsList) {
   return Object.fromEntries(
@@ -98,6 +100,89 @@ function verifyThresholds(record, findings) {
     const exception = thresholds.ownerApprovedException ?? {};
     for (const key of ["approvedBy", "approvedAt", "rationale", "supportedNextAction"]) {
       requireText(findings, `thresholds.ownerApprovedException.${key}`, exception[key]);
+    }
+  }
+}
+
+function verifyResourceBudget(record, findings) {
+  const budget = record.resourceBudget ?? {};
+  if (!["application-release", "editorial-publish"].includes(budget.lane)) {
+    finding(
+      findings,
+      "resourceBudget.lane",
+      "must be application-release or editorial-publish",
+    );
+  }
+  requireText(findings, "resourceBudget.estimationMethod", budget.estimationMethod);
+
+  for (const key of [
+    "estimatedExternalRequests",
+    "maximumExternalRequests",
+    "estimatedTransferBytes",
+    "maximumTransferBytes",
+  ]) {
+    const value = budget[key];
+    if (!Number.isInteger(value) || value < (key.startsWith("maximum") ? 1 : 0)) {
+      finding(
+        findings,
+        `resourceBudget.${key}`,
+        key.startsWith("maximum")
+          ? "must be a positive integer"
+          : "must be a nonnegative integer",
+      );
+    }
+  }
+
+  if (
+    Number.isInteger(budget.estimatedExternalRequests) &&
+    Number.isInteger(budget.maximumExternalRequests) &&
+    budget.estimatedExternalRequests > budget.maximumExternalRequests
+  ) {
+    finding(
+      findings,
+      "resourceBudget.estimatedExternalRequests",
+      "exceeds maximumExternalRequests, redesign the run before starting",
+    );
+  }
+  if (
+    Number.isInteger(budget.estimatedTransferBytes) &&
+    Number.isInteger(budget.maximumTransferBytes) &&
+    budget.estimatedTransferBytes > budget.maximumTransferBytes
+  ) {
+    finding(
+      findings,
+      "resourceBudget.estimatedTransferBytes",
+      "exceeds maximumTransferBytes, redesign the run before starting",
+    );
+  }
+
+  for (const [observedKey, maximumKey] of [
+    ["observedExternalRequests", "maximumExternalRequests"],
+    ["observedTransferBytes", "maximumTransferBytes"],
+  ]) {
+    const observed = budget[observedKey];
+    if (observed == null) continue;
+    if (!Number.isInteger(observed) || observed < 0) {
+      finding(findings, `resourceBudget.${observedKey}`, "must be a nonnegative integer");
+    } else if (
+      Number.isInteger(budget[maximumKey]) &&
+      observed > budget[maximumKey]
+    ) {
+      finding(
+        findings,
+        `resourceBudget.${observedKey}`,
+        `exceeds ${maximumKey}, stop the run and preserve the evidence`,
+      );
+    }
+  }
+
+  if (
+    budget.maximumExternalRequests > DEFAULT_MAXIMUM_EXTERNAL_REQUESTS ||
+    budget.maximumTransferBytes > DEFAULT_MAXIMUM_TRANSFER_BYTES
+  ) {
+    const approval = budget.ownerApprovedHighCostRun ?? {};
+    for (const key of ["approvedBy", "approvedAt", "rationale", "supportedRun"]) {
+      requireText(findings, `resourceBudget.ownerApprovedHighCostRun.${key}`, approval[key]);
     }
   }
 }
@@ -279,6 +364,7 @@ export async function verifyExecutionControl(record) {
   }
   verifyTaskEnvelope(record, findings);
   verifyThresholds(record, findings);
+  verifyResourceBudget(record, findings);
   verifyFindings(record, findings);
   verifyCheckpoints(record, findings);
   verifyBlockers(record, findings);

@@ -35,6 +35,7 @@ await page(validDirectory, "/", `<!doctype html><html><head><link rel="canonical
   <main class="home-layout" data-page-archetype="editorial-cover">
     <section class="hero"><h1>Start with a useful question</h1><div class="actions"><button>Begin</button><a href="/about/">Learn more</a></div><div class="divider">Current status</div></section>
     <section class="next"><figure>Distinctive home illustration</figure><p>Read the evidence before deciding what a claim means.</p></section>
+    <img src="https://cdn.example.com/must-not-load.png" alt="">
   </main></body></html>`);
 await page(validDirectory, "/about/", `<!doctype html><html><head><link rel="canonical" href="https://example.com/about/">${sharedValidStyle}</head><body>
   <header class="site-header"><a href="/">Home</a></header>
@@ -44,6 +45,10 @@ await page(validDirectory, "/about/", `<!doctype html><html><head><link rel="can
 await page(validDirectory, "/encoded/%d1%8f/", `<!doctype html><html><head><link rel="canonical" href="https://example.com/encoded/%d1%8f/">${sharedValidStyle}</head><body>
   <header class="site-header"><a href="/">Home</a></header>
   <main class="about-layout" data-page-archetype="narrative-record"><article><h1>Encoded route</h1><p>Percent-encoded snapshot paths remain reachable.</p></article></main>
+</body></html>`);
+await page(validDirectory, "/about-two/", `<!doctype html><html><head><link rel="canonical" href="https://example.com/about-two/">${sharedValidStyle}</head><body>
+  <header class="site-header"><a href="/">Home</a></header>
+  <main class="about-layout" data-page-archetype="narrative-record"><article><h1>Second narrative route</h1><p>This route is covered by a tested representative instead of another browser sweep.</p></article></main>
 </body></html>`);
 const validReport = join(root, "valid", "report.json");
 const validConfig = join(root, "valid", "config.mjs");
@@ -58,6 +63,18 @@ await writeFile(validConfig, `export default ${JSON.stringify({
   minimumDistinctiveDimensions: 2,
   routeConcurrency: 2,
   progressEvery: 1,
+  coverageMode: "representatives",
+  coverageKeyFields: ["family", "archetype"],
+  coverageInventory: [
+    { path: "/", family: "home", archetype: "editorial-cover" },
+    { path: "/about/", family: "about", archetype: "narrative-record" },
+    { path: "/encoded/%d1%8f/", family: "about", archetype: "narrative-record" },
+    { path: "/about-two/", family: "about", archetype: "narrative-record" }
+  ],
+  network: {
+    externalRequests: "block",
+    maximumCompletedExternalRequests: 0
+  },
   differentiationScope: "every-route-to-family-representative",
   screenshots: "none",
   header: { selector: ".site-header", maximumViewportHeightRatio: 0.2 },
@@ -73,6 +90,7 @@ await writeFile(validConfig, `export default ${JSON.stringify({
       purpose: "Orient a new visitor",
       contentRhythm: "Compact opening followed by an illustrated explanation",
       visualIdentity: "Dark editorial cover",
+      representativeReason: "The only editorial-cover route",
       requiredSelectors: ["main", ".actions"],
       distinctiveSelectors: [".home-layout"],
       hero: { selector: ".hero", maximumViewportHeightRatio: 0.5, nextContentSelector: ".next", minimumNextContentPixels: 20 },
@@ -85,6 +103,7 @@ await writeFile(validConfig, `export default ${JSON.stringify({
       purpose: "Explain the review method",
       contentRhythm: "Single long-form narrative",
       visualIdentity: "Light reading surface",
+      representativeReason: "Representative narrative route with wrapping inline links",
       requiredSelectors: ["article"],
       distinctiveSelectors: [".about-layout"]
     },
@@ -95,6 +114,7 @@ await writeFile(validConfig, `export default ${JSON.stringify({
       purpose: "Verify encoded snapshot routing",
       contentRhythm: "Single long-form narrative",
       visualIdentity: "Light reading surface",
+      representativeReason: "Encoded-path routing outlier",
       requiredSelectors: ["article"],
       distinctiveSelectors: [".about-layout"]
     }
@@ -107,6 +127,14 @@ if (!validResult.stdout.includes("Interface quality progress: 3/3 checks (100.0%
 }
 const validData = JSON.parse(await readFile(validReport, "utf8"));
 if (validData.counts.errors !== 0 || validData.counts.checks !== 3) throw new Error("Valid interface report has incorrect counts.");
+if (
+  validData.coverageMode !== "representatives" ||
+  validData.counts.inventoryRoutes !== 4 ||
+  validData.network.completedExternalRequests !== 0 ||
+  validData.network.blockedExternalRequests < 1
+) {
+  throw new Error("Representative coverage or external-network isolation was not recorded.");
+}
 
 const recoveredFontDirectory = join(root, "recovered-font", "dist");
 await page(recoveredFontDirectory, "/", `<!doctype html><html><head>

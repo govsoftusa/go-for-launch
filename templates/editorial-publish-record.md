@@ -34,6 +34,21 @@
 - Feeds:
 - Sitemaps:
 
+## Request and Transfer Budget
+
+- Estimated external requests:
+- Maximum external requests, normal editorial ceiling is 200:
+- Estimated transfer bytes:
+- Maximum transfer bytes, normal editorial ceiling is 250,000,000:
+- Estimation method:
+- Observed external requests:
+- Observed transfer bytes:
+- Budget status:
+
+Stop before the next request when either maximum is reached. Redesign the
+targeted check instead of switching to an archive-wide crawl or application
+release suite.
+
 ## Mutation Method
 
 - Supported CMS UI or API:

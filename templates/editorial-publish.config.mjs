@@ -9,6 +9,15 @@ export default {
     applicationChanges: [],
     applicationBuildRun: false,
   },
+  requestBudget: {
+    estimatedExternalRequests: 20,
+    maximumExternalRequests: 200,
+    estimatedTransferBytes: 10_000_000,
+    maximumTransferBytes: 250_000_000,
+    observedExternalRequests: 0,
+    observedTransferBytes: 0,
+    estimationMethod: "Count GET, HEAD, media, feed, search, sitemap, and targeted performance requests before publishing",
+  },
   entries: [
     {
       sourceId: "source-entry-123",

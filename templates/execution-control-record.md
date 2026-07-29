@@ -37,6 +37,22 @@
 These thresholds control when work pauses. They do not waive or downgrade any
 mandatory release gate.
 
+## Request and transfer budget
+
+- Lane, `application-release` or `editorial-publish`:
+- Estimated external requests:
+- Maximum external requests:
+- Estimated transfer bytes:
+- Maximum transfer bytes:
+- Per-gate estimation method:
+- Observed external requests:
+- Observed transfer bytes:
+- Owner approval when the maximum exceeds 10,000 requests or 1,000,000,000 bytes:
+- Stop evidence when a maximum was reached:
+
+The run stops before its next request when either maximum is reached. Increasing
+a maximum after an overrun does not convert the failed run into a pass.
+
 - Machine-readable control config:
 - Latest control report:
 - Latest control report status:

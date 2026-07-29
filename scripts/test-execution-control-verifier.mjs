@@ -22,6 +22,16 @@ function record(overrides = {}) {
       activeInvestigationMinutes: 90,
       progressRecordMinutes: 30,
     },
+    resourceBudget: {
+      lane: "application-release",
+      estimatedExternalRequests: 2_500,
+      maximumExternalRequests: 10_000,
+      estimatedTransferBytes: 250_000_000,
+      maximumTransferBytes: 1_000_000_000,
+      estimationMethod: "Sum the declared maximum requests and transfer bytes for each gate.",
+      observedExternalRequests: 2_400,
+      observedTransferBytes: 240_000_000,
+    },
     findings: [
       {
         summary: "Social-card direction requires representative approval",
@@ -82,6 +92,36 @@ function record(overrides = {}) {
 
 const valid = await verifyExecutionControl(record());
 assert.equal(valid.status, "passed");
+
+const projectedRequestOverrun = record();
+projectedRequestOverrun.resourceBudget.estimatedExternalRequests = 10_001;
+const projectedRequestOverrunResult = await verifyExecutionControl(projectedRequestOverrun);
+assert.equal(projectedRequestOverrunResult.status, "failed");
+assert(
+  projectedRequestOverrunResult.findings.some(
+    (item) => item.area === "resourceBudget.estimatedExternalRequests",
+  ),
+);
+
+const observedTransferOverrun = record();
+observedTransferOverrun.resourceBudget.observedTransferBytes = 1_000_000_001;
+const observedTransferOverrunResult = await verifyExecutionControl(observedTransferOverrun);
+assert.equal(observedTransferOverrunResult.status, "failed");
+assert(
+  observedTransferOverrunResult.findings.some(
+    (item) => item.area === "resourceBudget.observedTransferBytes",
+  ),
+);
+
+const unapprovedHighCostRun = record();
+unapprovedHighCostRun.resourceBudget.maximumExternalRequests = 10_001;
+const unapprovedHighCostRunResult = await verifyExecutionControl(unapprovedHighCostRun);
+assert.equal(unapprovedHighCostRunResult.status, "failed");
+assert(
+  unapprovedHighCostRunResult.findings.some(
+    (item) => item.area.startsWith("resourceBudget.ownerApprovedHighCostRun."),
+  ),
+);
 
 const weakPageSpeed = record();
 weakPageSpeed.candidate.gates.mobilePageSpeed.scores.performance = 99;

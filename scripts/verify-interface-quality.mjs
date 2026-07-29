@@ -45,6 +45,12 @@ const overflowTolerance = config.overflowTolerance ?? 1;
 const screenshotMode = config.screenshots || "failures";
 const failOnWarnings = config.failOnWarnings ?? false;
 const routeConcurrency = Math.max(1, Number.parseInt(config.routeConcurrency || "1", 10));
+const coverageMode = config.coverageMode || "every-route";
+const coverageInventory = config.coverageInventory || routeRules;
+const coverageKeyFields = config.coverageKeyFields || ["family", "archetype"];
+const networkPolicy = config.network?.externalRequests || "block";
+const maximumCompletedExternalRequests =
+  config.network?.maximumCompletedExternalRequests ?? 0;
 const configuredFontReadinessTimeoutMs = Number.parseInt(
   config.fontReadinessTimeoutMs || "15000",
   10
@@ -69,6 +75,13 @@ const overlapIgnoreSelectors = config.controls?.overlap?.ignoreSelectors || [];
 const findings = [];
 const records = [];
 const fontReadinessRecoveries = [];
+const networkActivity = {
+  attemptedExternalRequests: 0,
+  blockedExternalRequests: 0,
+  completedExternalRequests: 0,
+  reportedExternalTransferBytes: 0,
+  externalOrigins: {},
+};
 const contentTypes = new Map([
   [".avif", "image/avif"],
   [".css", "text/css; charset=utf-8"],
@@ -114,6 +127,24 @@ if (!["all", "failures", "none"].includes(screenshotMode)) {
 if (!["all-pairs", "every-route-to-family-representative"].includes(differentiationScope)) {
   throw new Error("differentiationScope must be all-pairs or every-route-to-family-representative.");
 }
+if (!["every-route", "representatives"].includes(coverageMode)) {
+  throw new Error("coverageMode must be every-route or representatives.");
+}
+if (!Array.isArray(coverageInventory) || coverageInventory.length === 0) {
+  throw new Error("coverageInventory must contain at least one route.");
+}
+if (!Array.isArray(coverageKeyFields) || coverageKeyFields.length === 0) {
+  throw new Error("coverageKeyFields must contain at least one field.");
+}
+if (!["block", "allow"].includes(networkPolicy)) {
+  throw new Error("network.externalRequests must be block or allow.");
+}
+if (
+  !Number.isInteger(maximumCompletedExternalRequests) ||
+  maximumCompletedExternalRequests < 0
+) {
+  throw new Error("network.maximumCompletedExternalRequests must be a nonnegative integer.");
+}
 
 const configuredPaths = new Set();
 for (const rule of routeRules) {
@@ -144,10 +175,63 @@ for (const rule of routeRules) {
 }
 
 const indexablePages = await readIndexablePages(root);
-if (config.requireIndexableCoverage ?? true) {
+if ((config.requireIndexableCoverage ?? true) && coverageMode === "every-route") {
   for (const page of indexablePages) {
     if (!configuredPaths.has(page.route) && !(config.exemptRoutes || []).includes(page.route)) {
       addFinding("error", "indexable-route-uncovered", `${page.route} is indexable but has no interface quality route contract.`, { route: page.route });
+    }
+  }
+}
+if ((config.requireIndexableCoverage ?? true) && coverageMode === "representatives") {
+  const inventoryPaths = new Set(coverageInventory.map((route) => routePath(route)));
+  for (const page of indexablePages) {
+    if (!inventoryPaths.has(page.route) && !(config.exemptRoutes || []).includes(page.route)) {
+      addFinding("error", "indexable-route-uninventoried", `${page.route} is indexable but is absent from the representative coverage inventory.`, { route: page.route });
+    }
+  }
+
+  const coverageKey = (record) =>
+    coverageKeyFields.map((field) => String(record?.[field] || "").trim()).join("\u001f");
+  const representativeKeys = new Set();
+  for (const rule of routeRules) {
+    if (!String(rule.representativeReason || "").trim()) {
+      addFinding(
+        "error",
+        "representative-reason-missing",
+        `${routePath(rule)} does not explain why it represents its coverage class.`,
+        { route: routePath(rule) },
+      );
+    }
+    for (const field of coverageKeyFields) {
+      if (!String(rule[field] || "").trim()) {
+        addFinding(
+          "error",
+          "representative-coverage-key-missing",
+          `${routePath(rule)} does not define coverage key ${field}.`,
+          { route: routePath(rule), field },
+        );
+      }
+    }
+    representativeKeys.add(coverageKey(rule));
+  }
+  for (const route of coverageInventory) {
+    for (const field of coverageKeyFields) {
+      if (!String(route?.[field] || "").trim()) {
+        addFinding(
+          "error",
+          "inventory-coverage-key-missing",
+          `${routePath(route)} does not define coverage key ${field}.`,
+          { route: routePath(route), field },
+        );
+      }
+    }
+    if (!representativeKeys.has(coverageKey(route))) {
+      addFinding(
+        "error",
+        "coverage-class-unrepresented",
+        `${routePath(route)} has no browser-tested representative for its coverage class.`,
+        { route: routePath(route) },
+      );
     }
   }
 }
@@ -190,6 +274,12 @@ const server = createServer(async (request, response) => {
 await new Promise((resolveListening) => server.listen(0, "127.0.0.1", resolveListening));
 const address = server.address();
 const baseUrl = `http://127.0.0.1:${address.port}`;
+const localOrigin = new URL(baseUrl).origin;
+
+function recordExternalOrigin(url) {
+  const current = networkActivity.externalOrigins[url.origin] || 0;
+  networkActivity.externalOrigins[url.origin] = current + 1;
+}
 
 async function preparePageForAudit(page) {
   return page.evaluate(async ({ timeoutMs }) => {
@@ -230,6 +320,30 @@ try {
           async () => {
             const context = await browser.newContext({
               viewport: { width: viewport.width, height: viewport.height }
+            });
+            await context.route("**/*", async (route) => {
+              const requestUrl = new URL(route.request().url());
+              if (requestUrl.origin === localOrigin) {
+                await route.continue();
+                return;
+              }
+              networkActivity.attemptedExternalRequests += 1;
+              recordExternalOrigin(requestUrl);
+              if (networkPolicy === "block") {
+                networkActivity.blockedExternalRequests += 1;
+                await route.abort("blockedbyclient");
+                return;
+              }
+              await route.continue();
+            });
+            context.on("response", (response) => {
+              const responseUrl = new URL(response.url());
+              if (responseUrl.origin === localOrigin) return;
+              networkActivity.completedExternalRequests += 1;
+              const contentLength = Number(response.headers()["content-length"]);
+              if (Number.isFinite(contentLength) && contentLength > 0) {
+                networkActivity.reportedExternalTransferBytes += contentLength;
+              }
             });
             let page = await context.newPage();
             try {
@@ -503,6 +617,18 @@ try {
   await new Promise((resolveClosed) => server.close(resolveClosed));
 }
 
+if (networkActivity.completedExternalRequests > maximumCompletedExternalRequests) {
+  addFinding(
+    "error",
+    "external-request-budget-exceeded",
+    `Browser verification completed ${networkActivity.completedExternalRequests} external requests, maximum is ${maximumCompletedExternalRequests}.`,
+    {
+      completedExternalRequests: networkActivity.completedExternalRequests,
+      maximumCompletedExternalRequests,
+    },
+  );
+}
+
 const differentiation = [];
 for (const engine of differentiationBrowsers) {
   for (const viewport of differentiationViewports) {
@@ -533,6 +659,7 @@ for (const engine of differentiationBrowsers) {
 
 const counts = {
   routes: routeRules.length,
+  inventoryRoutes: coverageInventory.length,
   viewports: viewports.length,
   browsers: engines.length,
   checks: records.length,
@@ -548,6 +675,13 @@ const report = {
   viewports,
   engines,
   minimumDistinctiveDimensions,
+  coverageMode,
+  coverageKeyFields,
+  network: {
+    policy: networkPolicy,
+    maximumCompletedExternalRequests,
+    ...networkActivity,
+  },
   counts,
   records,
   fontReadinessRecoveries,

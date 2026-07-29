@@ -5,6 +5,7 @@ export default {
   screenshotDirectory: "artifacts/interface-quality",
   screenshots: "failures",
   routeConcurrency: 1,
+  coverageMode: "every-route",
   requireIndexableCoverage: true,
   exemptRoutes: [],
   browsers: ["chromium", "webkit"],
@@ -22,6 +23,10 @@ export default {
   differentiationViewports: ["expanded", "mobile"],
   differentiationScope: "all-pairs",
   failOnWarnings: false,
+  network: {
+    externalRequests: "block",
+    maximumCompletedExternalRequests: 0
+  },
   header: {
     selector: "[data-site-header]",
     maximumViewportHeightRatio: 0.2

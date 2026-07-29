@@ -79,6 +79,12 @@ Use the supported CMS UI or API. Normal publishing must not:
 - flush the entire site cache;
 - write directly to the CMS database.
 
+Normal editorial publishing also has a hard request budget. Record estimated
+and observed requests and transfer bytes in the editorial publish record. The
+normal ceiling is 200 external requests and 250,000,000 transfer bytes. Stop
+and redesign the targeted route graph before either ceiling is exceeded. Do not
+switch to an archive-wide crawl, full application build, or release suite.
+
 Direct database changes are break-glass operations. They require explicit
 approval, a point-in-time backup or export, a precise rollback statement,
 least-privilege access, a record of every affected row, and post-write API and

@@ -5,6 +5,8 @@ import { pathToFileURL } from "node:url";
 const PLACEHOLDER = /^(?:tbd|todo|unknown|n\/a|none|placeholder|replace-with)/i;
 const DEPENDENCIES = ["home", "archives", "authors", "search", "feeds", "sitemaps"];
 const RISKS = new Set(["low", "medium", "high"]);
+const EDITORIAL_REQUEST_CEILING = 200;
+const EDITORIAL_TRANSFER_CEILING = 250_000_000;
 
 function options(argumentsList) {
   return Object.fromEntries(
@@ -49,6 +51,59 @@ export function verifyEditorialPublish(record) {
   }
   if (mutation.applicationBuildRun !== false) {
     add(findings, "mutation.applicationBuildRun", "must be false");
+  }
+
+  const budget = record?.requestBudget ?? {};
+  requireText(findings, "requestBudget.estimationMethod", budget.estimationMethod);
+  for (const key of [
+    "estimatedExternalRequests",
+    "maximumExternalRequests",
+    "estimatedTransferBytes",
+    "maximumTransferBytes",
+    "observedExternalRequests",
+    "observedTransferBytes",
+  ]) {
+    if (!Number.isInteger(budget[key]) || budget[key] < (key.startsWith("maximum") ? 1 : 0)) {
+      add(
+        findings,
+        `requestBudget.${key}`,
+        key.startsWith("maximum")
+          ? "must be a positive integer"
+          : "must be a nonnegative integer",
+      );
+    }
+  }
+  if (budget.maximumExternalRequests > EDITORIAL_REQUEST_CEILING) {
+    add(
+      findings,
+      "requestBudget.maximumExternalRequests",
+      `must not exceed the normal editorial ceiling of ${EDITORIAL_REQUEST_CEILING}`,
+    );
+  }
+  if (budget.maximumTransferBytes > EDITORIAL_TRANSFER_CEILING) {
+    add(
+      findings,
+      "requestBudget.maximumTransferBytes",
+      `must not exceed the normal editorial ceiling of ${EDITORIAL_TRANSFER_CEILING} bytes`,
+    );
+  }
+  for (const [valueKey, maximumKey] of [
+    ["estimatedExternalRequests", "maximumExternalRequests"],
+    ["estimatedTransferBytes", "maximumTransferBytes"],
+    ["observedExternalRequests", "maximumExternalRequests"],
+    ["observedTransferBytes", "maximumTransferBytes"],
+  ]) {
+    if (
+      Number.isInteger(budget[valueKey]) &&
+      Number.isInteger(budget[maximumKey]) &&
+      budget[valueKey] > budget[maximumKey]
+    ) {
+      add(
+        findings,
+        `requestBudget.${valueKey}`,
+        `exceeds ${maximumKey}, stop and redesign the targeted verification`,
+      );
+    }
   }
 
   if (!Array.isArray(record?.entries) || record.entries.length === 0) {
@@ -149,6 +204,14 @@ export function verifyEditorialPublish(record) {
     classification: record?.classification ?? null,
     currentApplicationIdentity: record?.currentApplicationIdentity ?? null,
     entries: Array.isArray(record?.entries) ? record.entries.length : 0,
+    requestBudget: {
+      estimatedExternalRequests: budget.estimatedExternalRequests ?? null,
+      maximumExternalRequests: budget.maximumExternalRequests ?? null,
+      observedExternalRequests: budget.observedExternalRequests ?? null,
+      estimatedTransferBytes: budget.estimatedTransferBytes ?? null,
+      maximumTransferBytes: budget.maximumTransferBytes ?? null,
+      observedTransferBytes: budget.observedTransferBytes ?? null,
+    },
     findings,
   };
 }

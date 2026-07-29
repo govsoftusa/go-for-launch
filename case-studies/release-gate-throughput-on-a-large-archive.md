@@ -259,6 +259,83 @@ findings are collected and reviewed on a cadence; they never invalidate a
 candidate and never trigger a re-run. Promoting a class from advisory to
 blocking is a deliberate, recorded decision.
 
+## Finding 10: Public candidate verification became a production workload
+
+A later release cycle ran browser, performance, form-security, snapshot, and
+cold-path verification against public edge infrastructure. Candidate services
+shared production data bindings. Repeated attempts and orphaned headless
+browser processes produced millions of requests, roughly one hundred gigabytes
+of transfer, and large database read amplification in a short period.
+
+The traffic shape made the source clear. Headless browsers dominated the user
+agents, one test client dominated request volume, the anti-bot client became a
+top path, and candidate hosts appeared beside the canonical host. This was not
+ordinary reader traffic. It was a release process consuming the platform it
+claimed to validate.
+
+The cost was not limited to request count. A server-rendered CMS candidate can
+turn each cold route into database reads, object-cache work, media access,
+image transformation, and archive maintenance. Sharing D1, R2, KV, cron, or
+image bindings between candidate and production makes a test request a
+production data operation.
+
+### Reusable rule
+
+For an edge-hosted application, make the provider deployment-only unless a
+public candidate is explicitly required and budgeted.
+
+1. Build the exact commit in a fresh local or private container.
+2. Seed local service bindings and import a deterministic CMS fixture locally.
+3. Start the production-format artifact through the provider's local runtime.
+4. Run exhaustive static gates and representative browser gates there.
+5. Block external browser requests by default.
+6. Run mobile and desktop Lighthouse locally with all four category thresholds
+   fixed at 100.
+7. Freeze the passing artifact.
+8. Upload that exact artifact once.
+9. Limit production verification to a pre-counted canonical and redirect smoke
+   set.
+
+The release controller must reject public candidate origins. A warning is not
+enough because a copied hostname or default argument can restore the expensive
+path.
+
+Any external dependency needed by the browser suite must be mapped to a local
+fixture or a private proxy with request and transfer ceilings. Form-security
+clients should be tested through static client placement and fail-closed server
+rejection locally. A real third-party challenge belongs in the bounded
+production smoke only when it is necessary.
+
+Process cleanup is also a gate. The controller owns every browser child process,
+terminates the full process tree on success, failure, timeout, and interruption,
+and verifies no owned browser remains before releasing the run lock.
+
+## Finding 11: Editorial publishing was routed through an application release
+
+Two new CMS posts triggered archive rebuilds, application candidates, and
+archive-wide verification. That is the wrong release class. A CMS cannot be
+operationally useful when ordinary publishing requires rebuilding and
+recertifying the whole application.
+
+### Reusable rule
+
+Separate the editorial lane from the application lane.
+
+An editorial publish changes CMS records, publication state, taxonomy
+relationships, bylines, and media metadata. It verifies the changed entry plus
+its declared dependent routes, such as the home feed, relevant archives,
+sitemap, feed, search, and social preview. It has a small hard request budget
+and never builds Astro.
+
+An application release changes code, schema, dependencies, shared templates,
+routing, cache behavior, forms, or infrastructure. It uses the complete
+private-container release workflow.
+
+If a post exposes an application rendering defect, publish or correct the
+content through the editorial lane when safe, then fix the shared renderer in
+a separately frozen application release. Do not turn every future post into an
+application migration.
+
 ## Reusable Checks to Add
 
 - Per-gate evidence carry-forward keyed by declared input hashes.

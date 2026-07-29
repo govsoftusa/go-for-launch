@@ -45,7 +45,7 @@ async function runtimeImageServer() {
   await writeFile(serverScript, `
     import { createServer } from "node:http";
     const server = createServer((request, response) => {
-      if (request.url === "/runtime/present.avif") {
+      if (request.url?.startsWith("/runtime/")) {
         response.writeHead(200, { "content-type": "image/avif", "content-length": "1000" });
         response.end(request.method === "HEAD" ? undefined : Buffer.alloc(1000));
         return;
@@ -118,7 +118,7 @@ await writeFile(join(runtime, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: 
 await page(runtime, "/", html({
   route: "/",
   title: "Runtime Image Delivery",
-  body: '<h1>Home</h1><img src="/runtime/present.avif" alt="Runtime">'
+  body: '<h1>Home</h1><img src="/runtime/first.avif" alt="First"><img src="/runtime/second.avif" alt="Second"><img src="/runtime/third.avif" alt="Third">'
 }));
 const runtimeConfig = join(root, "runtime.config.mjs");
 const runtimeReport = join(root, "runtime-report.json");
@@ -128,14 +128,16 @@ await writeFile(runtimeConfig, `export default ${JSON.stringify({
   output: runtimeReport,
   sitemapUrl: `${site}/sitemap.xml`,
   runtimeImagePrefixes: ["/runtime/*"],
-  runtimeImageBaseUrl: runtimeServer.url
+  runtimeImageBaseUrl: runtimeServer.url,
+  runtimeImageMaximumChecks: 1
 })};\n`);
 const runtimeResult = verifyWithConfig(runtimeConfig);
 if (runtimeResult.status !== 0) throw new Error(`Runtime image verification failed:\n${runtimeResult.stdout}${runtimeResult.stderr}`);
 const runtimeEvidence = JSON.parse(await readFile(runtimeReport, "utf8"));
 if (
   runtimeEvidence.counts.referencedLocalImages !== 0 ||
-  runtimeEvidence.counts.referencedRuntimeImages !== 1 ||
+  runtimeEvidence.counts.referencedRuntimeImages !== 3 ||
+  runtimeEvidence.counts.selectedRuntimeImages !== 1 ||
   runtimeEvidence.counts.verifiedRuntimeImages !== 1
 ) {
   throw new Error("Runtime image report has incorrect counts.");

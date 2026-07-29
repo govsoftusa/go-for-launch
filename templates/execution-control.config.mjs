@@ -18,6 +18,16 @@ export default {
     activeInvestigationMinutes: 90,
     progressRecordMinutes: 30,
   },
+  resourceBudget: {
+    lane: "application-release",
+    estimatedExternalRequests: 0,
+    maximumExternalRequests: 10_000,
+    estimatedTransferBytes: 0,
+    maximumTransferBytes: 1_000_000_000,
+    estimationMethod: "Replace with the per-gate request and transfer estimate",
+    observedExternalRequests: null,
+    observedTransferBytes: null,
+  },
   findings: [],
   checkpoints: [
     {

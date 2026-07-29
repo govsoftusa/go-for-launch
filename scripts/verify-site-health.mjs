@@ -110,6 +110,10 @@ const runtimeImageConcurrency = positiveIntegerOption("--runtime-image-concurren
 const runtimeImageTimeoutMs = positiveIntegerOption("--runtime-image-timeout-ms", fileConfig.runtimeImageTimeoutMs ?? 15_000);
 const runtimeImageAttempts = positiveIntegerOption("--runtime-image-attempts", fileConfig.runtimeImageAttempts ?? 3);
 const runtimeImageProgressEvery = positiveIntegerOption("--runtime-image-progress-every", fileConfig.runtimeImageProgressEvery ?? 1_000);
+const runtimeImageMaximumChecks = numberOption(
+  "--runtime-image-maximum-checks",
+  fileConfig.runtimeImageMaximumChecks ?? Number.MAX_SAFE_INTEGER
+);
 const configuredRedirectRoutes = fileConfig.redirectRoutes || [];
 const imageExtensions = new Set((fileConfig.imageExtensions || [".avif", ".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"]).map((value) => value.toLowerCase()));
 const failures = [];
@@ -180,7 +184,20 @@ async function verifyRuntimeImage(pathname, owners) {
 }
 
 async function verifyRuntimeImages() {
-  const entries = [...runtimeImageReferences.entries()];
+  const completeEntries = [...runtimeImageReferences.entries()].sort(([left], [right]) =>
+    left.localeCompare(right)
+  );
+  const maximum = Math.max(0, Math.floor(runtimeImageMaximumChecks));
+  const entries =
+    completeEntries.length <= maximum
+      ? completeEntries
+      : Array.from({ length: maximum }, (_, index) => {
+          const selectedIndex =
+            maximum === 1
+              ? 0
+              : Math.floor((index * (completeEntries.length - 1)) / (maximum - 1));
+          return completeEntries[selectedIndex];
+        });
   let next = 0;
   let completed = 0;
   let verified = 0;
@@ -196,7 +213,7 @@ async function verifyRuntimeImages() {
     }
   }
   await Promise.all(Array.from({ length: Math.min(runtimeImageConcurrency, entries.length) }, worker));
-  return verified;
+  return { verified, selected: entries.length };
 }
 
 for (const file of await collectHtmlFiles(outputDirectory)) {
@@ -330,7 +347,7 @@ for (const [pathname, owners] of imageReferences) {
   }
 }
 
-const verifiedRuntimeImages = await verifyRuntimeImages();
+const runtimeImageVerification = await verifyRuntimeImages();
 
 const robotsPath = resolve(outputDirectory, "robots.txt");
 if (requireRobots && !existsSync(robotsPath)) {
@@ -353,6 +370,10 @@ const report = {
     runtimeImageConcurrency,
     runtimeImageTimeoutMs,
     runtimeImageAttempts,
+    runtimeImageMaximumChecks:
+      runtimeImageMaximumChecks === Number.MAX_SAFE_INTEGER
+        ? null
+        : runtimeImageMaximumChecks,
     maximumTitleLength,
     minimumDescriptionLength,
     maximumDescriptionLength
@@ -363,7 +384,8 @@ const report = {
     redirectRoutes: redirectRoutes.size,
     referencedLocalImages: imageReferences.size,
     referencedRuntimeImages: runtimeImageReferences.size,
-    verifiedRuntimeImages,
+    selectedRuntimeImages: runtimeImageVerification.selected,
+    verifiedRuntimeImages: runtimeImageVerification.verified,
     errors: [...new Set(failures)].length
   },
   errors: [...new Set(failures)]
@@ -377,5 +399,5 @@ if (report.errors.length > 0) {
   for (const failure of report.errors) error(`- ${failure}`);
   process.exitCode = 1;
 } else {
-  log(`Site health verification passed: ${indexablePages.length} indexable pages, ${imageReferences.size} local image references, ${verifiedRuntimeImages} runtime image references, and no audit findings.`);
+  log(`Site health verification passed: ${indexablePages.length} indexable pages, ${imageReferences.size} local image references, ${runtimeImageVerification.verified} runtime image references, and no audit findings.`);
 }
