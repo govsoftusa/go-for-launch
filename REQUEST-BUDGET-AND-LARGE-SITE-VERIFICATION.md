@@ -101,6 +101,19 @@ would exceed the request budget. Record the total reference count, selected
 count, and verified count separately. New editorial media still requires a
 targeted check in the editorial publishing lane.
 
+The deterministic archive sample must be combined with every runtime resource
+declared by the routes selected for Lighthouse, WebKit, and other browser
+gates. Sampling the archive alone can omit the exact images a browser
+measurement needs. If the private object binding then follows a production
+fallback, the test may download a legacy original and report a payload defect
+that the normal fitted path does not have.
+
+Derive the required browser resources from the captured route markup or a
+shared route contract. Do not maintain a second handwritten resource list.
+Deduplicate the combined set, enforce one total object ceiling, and record how
+many objects came from the archive sample and how many came from browser
+routes. A cache hit does not remove the ceiling.
+
 Generate the deterministic subset with the same parser that performs the
 verification. Emit a zero-request inventory first, populate local fixtures from
 that exact selected list, then run the live private check. A separate fixture
@@ -139,6 +152,32 @@ The report records:
 - external origins.
 
 The default completed external request maximum is zero.
+
+## Preserve production transport and host behavior locally
+
+Private browser testing must reproduce the production behavior that changes a
+score. Two common differences are hostname-based indexing and multiplexed
+transport.
+
+If the application serves `noindex` on every noncanonical host, map the
+canonical hostname exclusively to loopback inside the container and start the
+same artifact in its production indexability mode. Keep the ordinary private
+candidate origin protected and verify that protection separately. The
+Lighthouse origin must still resolve only to private addresses. This proves the
+real indexable branch without publishing a crawlable candidate or ignoring an
+SEO failure.
+
+If the provider's local runtime speaks only HTTP/1.1 but production uses
+HTTP/2 or HTTP/3, an HTTP/1.1 Lighthouse result may measure connection
+serialization that production does not have. Put a loopback-only HTTP/2 proxy
+in front of the local runtime, preserve the original Host header, and require a
+machine-readable report proving that the browser negotiated HTTP/2. A proxy
+that records no HTTP/2 requests, an upstream failure, or a public listener
+invalidates the run.
+
+Transport fidelity cannot weaken throttling, replace the exact artifact, hide a
+scored audit, or authorize best-of-N retries. It makes one private measurement
+represent the production request path.
 
 ## Scope client scripts to the feature
 

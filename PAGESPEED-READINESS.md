@@ -105,6 +105,35 @@ Every valid PageSpeed result remains controlling. A category below 100 is a
 failed gate. Warmup verification does not authorize score retries, selective
 result deletion, or promotion of a different candidate.
 
+## Private Lighthouse production projection
+
+A protected candidate intentionally cannot score 100 for SEO when it carries
+`noindex`. Do not ignore that audit, remove the 100 requirement, or expose an
+indexable public candidate. A private Lighthouse runner may instead exercise
+the production branch of the exact artifact when all of these conditions hold:
+
+1. The canonical hostname resolves exclusively to loopback or private
+   addresses inside the isolated runner.
+2. The runtime listener is not exposed publicly.
+3. The exact artifact runs without the private noindex override.
+4. The normal protected-origin gate separately proves both noindex metadata and
+   a noindex response header.
+5. Lighthouse still requires 100 for all four categories.
+6. Production verification later proves the same indexable behavior on the
+   canonical public hostname.
+
+Private transport also needs production fidelity. When the local provider
+runtime offers only HTTP/1.1 and the production edge uses HTTP/2 or HTTP/3,
+place a loopback-only HTTP/2 TLS proxy in front of the runtime. Preserve the
+canonical Host header and require evidence that the browser negotiated
+HTTP/2. Do not accept a report based only on the proxy process starting.
+
+The route's local fixtures must include every fitted image or runtime resource
+declared by the measured HTML, in addition to any archive-wide sample. A
+missing fixture that activates an emergency legacy fallback is a harness
+finding. Preserve the failed report, correct the bounded fixture, and repeat
+only the affected measurement before the final complete matrix.
+
 ## Provider and Matrix Preflight
 
 Before starting a multi-route, multi-strategy, or repeated-round matrix, run
