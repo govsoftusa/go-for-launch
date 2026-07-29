@@ -193,6 +193,88 @@ solves for free.
 tested because it was questioned. A policy that changes what a crawler sees
 should be derived from measurement, not from a shape in the data.
 
+### Finding 9: Routine publishing was coupled to application releases
+
+**Symptom.** Publishing a small content delta started repeated full application
+builds, artifact uploads, archive crawls, and release-gate cycles. The direct
+article correction remained pending while unrelated renderer experiments
+expanded the scope.
+
+**Root cause.** The migration proved the application release path but did not
+define an operational publishing path. Content mutations and application
+changes were treated as the same candidate lifecycle.
+
+**Fix.** Add a separate editorial publishing lane for CMS records and media.
+Upsert content through the supported CMS API using stable source identifiers,
+invalidate only the affected route graph, and verify the direct route plus its
+home, taxonomy, author, search, feed, and sitemap dependencies. Do not build or
+upload the Astro application when its files and runtime configuration are
+unchanged.
+
+**Safety boundary.** A renderer, schema, component, dependency, routing,
+cache-code, security, or infrastructure change remains an application release
+and requires the complete exact-candidate gate. Hybrid tasks are split into a
+reversible content correction and a separately authorized application change.
+
+### Finding 10: A valid source-media URL did not prove publication readiness
+
+**Symptom.** A newly published article selected a small image as its lead even
+though the body referenced a suitable high-resolution photograph. The selected
+asset loaded successfully but appeared blurry at the rendered size.
+
+**Root cause.** Availability, CMS media identity, object-storage presence,
+intrinsic dimensions, editorial suitability, and delivery cost were collapsed
+into one media check.
+
+**Fix.** Reconcile the source reference to a CMS media record and object key,
+verify dimensions and content type, then select a reviewed article image and
+serve it through a responsive same-origin derivative. Check that the same lead
+is not repeated at the start of the article body.
+
+**Archive lesson.** An audit can detect undersized, duplicated, or missing lead
+images, but it must produce a human review queue. The largest article image is
+not automatically the correct lead because archives contain old theme crops,
+posters, logos, and unrelated inline images.
+
+### Finding 11: Performance must be conserved in the editorial lane
+
+**Symptom.** Replacing a blurry lead with the original full-resolution image
+fixed sharpness but increased transfer size substantially. A later global image
+experiment increased unresolved runtime media references by more than half.
+
+**Root cause.** Image quality was tested independently from transfer cost, and
+a local content defect was used to justify a global delivery-policy change.
+
+**Fix.** Classify editorial changes by performance risk. For changes that affect
+first-viewport or listing media, preserve a targeted browser trace that records
+the LCP resource, selected responsive source, transfer bytes, layout stability,
+and application identity. Use fitted derivatives instead of shipping the full
+original when possible.
+
+**Gate lesson.** Targeted conservation checks keep publishing fast without
+weakening application releases. Any application change still requires the full
+mobile, desktop, WebKit, native Safari, and 100-point PageSpeed gate.
+
+### Finding 12: Exact identity and stable evidence prevented false conclusions
+
+**Symptom.** One attempted application release uploaded an older build
+directory after the source identity changed. Edge locations briefly returned
+mixed application identities. A stitched full-page screenshot also appeared to
+show a layout problem that stable viewport measurements could not reproduce.
+
+**Root cause.** Build freshness, deployment identity, convergence, and capture
+reliability were assumed rather than proven.
+
+**Fix.** For application releases, clean and rebuild the exact source revision,
+verify the deployed identity, wait for identity convergence, and then run the
+complete gate. Prefer stable viewport evidence when full-page stitching is
+unreliable. Preserve PageSpeed provider errors as external blockers rather than
+relabeling them as site passes or failures.
+
+**Publishing lesson.** None of these application-candidate operations belong in
+a qualifying editorial publish. Keeping the lanes separate removes unnecessary
+failure modes.
+
 
 ## Architecture Decisions
 
@@ -205,6 +287,8 @@ should be derived from measurement, not from a shape in the data.
 | Media left on existing object storage | Avoids re-uploading roughly 12,000 objects and invalidating every indexed image URL |
 | Vendored theme stylesheet with a separate overrides file | Keeps a pixel-exact port auditable against the original |
 | Tag archives kept indexed regardless of post count; only empty ones suppressed | Traffic data contradicted the thin-content assumption. See Finding 8. |
+| CMS-only updates use an editorial publishing lane | Routine publication must not rebuild or redeploy the application |
+| Application and content corrections are split in hybrid tasks | Keeps rollback, scope, and release evidence unambiguous |
 
 ## Reusable Checks Added
 
@@ -220,6 +304,12 @@ should be derived from measurement, not from a shape in the data.
 - Pull traffic data for any page family before proposing an indexation change to
   it, rather than inferring value from post count or page shape.
 - Probe a deterministic sample of articles rather than all of them.
+- Classify production mutations before acting and reject application changes
+  from the editorial publishing lane.
+- Verify the changed content route and every named dependent surface without
+  rebuilding the Astro application.
+- Reconcile media identity, object storage, dimensions, responsive delivery,
+  editorial suitability, and duplicate-lead behavior separately.
 
 ## Still Open
 

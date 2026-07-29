@@ -44,6 +44,39 @@ This checklist is mandatory before production. Any unchecked required item block
 - [ ] Any change after candidate freeze created a new candidate and repeated the complete mandatory suite.
 - [ ] Follow-up work is recorded separately and is not presented as part of the completed task.
 
+## Editorial publishing and dynamic content
+
+Complete this section instead of the application release sections only when the
+classification gate proves that the change is limited to CMS records and media.
+Any application change returns the task to the complete checklist. It does not
+waive any mobile, desktop, Safari, or 100/100 requirement for an application
+release.
+
+- [ ] `EDITORIAL-PUBLISHING-AND-DYNAMIC-CONTENT.md` was read before the production mutation.
+- [ ] `templates/editorial-publish-record.md` and `templates/editorial-publish.config.mjs` were copied into the target project and completed.
+- [ ] The change is limited to supported CMS record and media mutations.
+- [ ] Application source, dependencies, configuration, infrastructure, routing, cache implementation, templates, schemas, and built artifacts remain unchanged.
+- [ ] The current production application identity matches a previously verified candidate.
+- [ ] The mutation uses the supported CMS UI or API and has a documented rollback.
+- [ ] Direct database access is false. Any break-glass exception has explicit approval, a backup, least-privilege scope, exact affected-row evidence, rollback, and parity validation.
+- [ ] Delta import uses a stable source identifier and checksum, and a repeated import is an idempotent no-op.
+- [ ] Media identifiers, object keys, delivery URLs, intrinsic dimensions, content types, provenance, rights, and intended use were reconciled.
+- [ ] Featured-image selection received editorial review and was not chosen automatically by file size or inventory order.
+- [ ] The affected route graph names direct routes, home, archives, authors, related content, search, feeds, and sitemaps.
+- [ ] CMS query cache, object cache, Worker Cache API, CDN HTML cache, CDN asset cache, and browser cache were considered as separate layers.
+- [ ] Only the required content keys and dependent routes were invalidated.
+- [ ] Changed canonical routes pass GET and HEAD with the expected status and current application identity.
+- [ ] Canonical, index policy, title, deck, author, date, taxonomy, body, publication state, and media match the intended record.
+- [ ] The featured image is sharp at rendered size, responsive, within byte budget, and not duplicated accidentally at the start of the body.
+- [ ] Home, archive, author, search, feed, related-content, and sitemap surfaces agree with the CMS state.
+- [ ] Existing interactive forms retain the approved anti-spam boundary.
+- [ ] Medium and high performance-risk publishes have a targeted browser trace for affected first-viewport routes.
+- [ ] High performance-risk publishes have a passing targeted PageSpeed result when the provider is available. A valid score below the project requirement follows the rollback policy.
+- [ ] `scripts/verify-editorial-publish.mjs` passes against the completed record.
+- [ ] Any renderer, schema, component, dependency, configuration, routing, cache-code, security-boundary, or infrastructure finding was separated into an application release.
+- [ ] No Astro build, application candidate, artifact upload, or full-site cache purge was performed for the qualifying editorial publish.
+- [ ] The publish record preserves symptoms, root cause, failed experiments, targeted checks, performance evidence, decision, and rollback status.
+
 ## Stanford Rule content quality
 
 - [ ] `STANFORD-RULE-CONTENT-QUALITY.md` was read before public content was written or revised.

@@ -6,6 +6,51 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### Editorial Publishing Without Application Rebuilds
+
+#### Symptom
+
+- Routine publication and featured-image corrections triggered full Astro
+  builds, artifact uploads, archive crawls, and repeated application release
+  gates even though application code had not changed.
+- A content defect expanded into global renderer experiments, increasing risk
+  and delaying a small editorial correction.
+- A source image that returned successfully was assumed to exist in the
+  publication media store, and a small selected image produced a blurry lead.
+
+#### Root Cause
+
+- The toolkit treated every production mutation as an application candidate
+  change and had no formal editorial publishing lane.
+- Content corrections, application defects, cache invalidation, and media
+  reconciliation were not classified separately before work began.
+- Cache layers and dependent routes were not recorded as an explicit route
+  graph.
+
+#### Hard Rules and Implementation
+
+- Added `EDITORIAL-PUBLISHING-AND-DYNAMIC-CONTENT.md` to classify CMS-only
+  changes, define targeted validation, preserve performance, and escalate
+  application changes.
+- Added reusable editorial publish record and configuration templates.
+- Added `scripts/verify-editorial-publish.mjs` and tests. The verifier rejects
+  application-file changes, application builds, direct database writes,
+  incomplete route checks, stale dependencies, changed security boundaries,
+  and missing risk-based performance evidence.
+- Added delta-import, media-reconciliation, targeted invalidation, duplicate
+  hero, responsive-image, route-graph, and archive-review-queue rules.
+- Kept the application release gate unchanged. Application changes still
+  require the complete exact-candidate suite, native iOS Safari, mobile and
+  desktop coverage, and PageSpeed 100 in all four categories.
+
+#### Test Evidence
+
+- The editorial verifier accepts a complete CMS-only record.
+- It rejects application changes, builds, incomplete dependent-route evidence,
+  changed security boundaries, and a missing high-risk PageSpeed result.
+- Documentation, case-study normalization, and the complete repository test
+  suite pass.
+
 ### Large Publication Production Cutover Controls
 
 #### Symptom

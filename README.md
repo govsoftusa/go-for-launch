@@ -8,7 +8,7 @@ Go for Launch was started and is sponsored by [GovSoft](https://www.govsoft.com)
 
 ## What Go for Launch Covers
 
-The toolbox serves seventeen purposes:
+The toolbox serves eighteen purposes:
 
 1. **Converting existing sites to Astro.** Complete workflows for rebuilding websites in Astro without losing content, design fidelity, responsive behavior, SEO, accessibility, performance, or browser reliability. The Webflow and WordPress workflows are proven in production, and the platform-neutral framework extends to Squarespace, Wix, Drupal, static HTML, and custom content management systems as alpha guidance.
 2. **Keeping existing Astro sites current.** A maintenance process for updating Astro sites already in production to the latest compatible Astro version and dependency set, with every upgrade passing the same release gates as a new migration. See [AUTOMATION-INTEGRATION.md](AUTOMATION-INTEGRATION.md).
@@ -27,6 +27,7 @@ The toolbox serves seventeen purposes:
 15. **Stanford Rule content quality.** Define the audience and task for every page, check final HTML for machine-like filler, inflated language, excessive sentence and paragraph length, repetitive openings, inaccessible reading density, and cross-route copy similarity, then require a hash-bound editorial review from a senior psychology professor perspective. See [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md).
 16. **Bounded delivery without weaker gates.** Define the task envelope, classify findings, prototype subjective work, stop repeated remediation, preserve checkpoints, freeze exact candidates, and separate follow-up work while retaining every mandatory mobile, desktop, WebKit, native Safari, and PageSpeed release requirement. See [Execution Control and Bounded Delivery](EXECUTION-CONTROL.md).
 17. **Verified PageSpeed document readiness.** When a dynamic site intentionally warms HTML before PageSpeed, issue a real browser-document request, prove the exact candidate and reusable cache state, and preserve that report without weakening cold-path tests or the 100 requirement. See [PageSpeed Document Readiness](PAGESPEED-READINESS.md).
+18. **CMS publishing without application rebuilds.** Classify CMS record and media changes into a dedicated editorial lane, validate the changed route graph and conserve performance without rebuilding Astro, and escalate any renderer or infrastructure change to the unchanged full application release gate. See [Editorial Publishing and Dynamic Content](EDITORIAL-PUBLISHING-AND-DYNAMIC-CONTENT.md).
 
 ## Why This Exists
 
@@ -52,34 +53,35 @@ This repository documents the process used to close those gaps while replacing l
 5. [Webflow to Astro Migration Guide](WEBFLOW-TO-ASTRO-MIGRATION.md)
 6. [Platform-Agnostic Migration Framework](PLATFORM-MIGRATION-FRAMEWORK.md)
 7. [WordPress to EmDash on Astro Migration Guide](WORDPRESS-TO-EMDASH-MIGRATION.md)
-8. [Pre-Migration Source Compromise Audit](SOURCE-COMPROMISE-AUDIT.md)
-9. [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md)
-10. [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md)
-11. [Production Release Policy](PRODUCTION-RELEASE-POLICY.md)
-12. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
-13. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
-14. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
-15. [Cloudflare Production Observability](CLOUDFLARE-OBSERVABILITY.md)
-16. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
-17. [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md)
-18. [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md)
-19. [Astro Assets Implementation and Verification](ASTRO-ASSETS.md)
-20. [Internationalization, Canonicals, and Hreflang](INTERNATIONALIZATION-AND-HREFLANG.md)
-21. [Redirect Verification](REDIRECT-VERIFICATION.md)
-22. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
-23. [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md)
-24. [Visual Composition Testing](VISUAL-COMPOSITION-TESTING.md)
-25. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
-26. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
-27. [Interface Quality and Page Differentiation Gate](INTERFACE-QUALITY-AND-PAGE-DIFFERENTIATION.md)
-28. [Case Study Normalization Policy](CASE-STUDY-NORMALIZATION.md)
-29. [Render Sharpness Gate](RENDER-SHARPNESS.md)
-30. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
-31. [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md)
-32. [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md)
-33. [Contributing Guide](CONTRIBUTING.md)
-34. [Roadmap](ROADMAP.md)
-35. [PageSpeed Document Readiness](PAGESPEED-READINESS.md)
+8. [Editorial Publishing and Dynamic Content](EDITORIAL-PUBLISHING-AND-DYNAMIC-CONTENT.md)
+9. [Pre-Migration Source Compromise Audit](SOURCE-COMPROMISE-AUDIT.md)
+10. [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md)
+11. [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md)
+12. [Production Release Policy](PRODUCTION-RELEASE-POLICY.md)
+13. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
+14. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
+15. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
+16. [Cloudflare Production Observability](CLOUDFLARE-OBSERVABILITY.md)
+17. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
+18. [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md)
+19. [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md)
+20. [Astro Assets Implementation and Verification](ASTRO-ASSETS.md)
+21. [Internationalization, Canonicals, and Hreflang](INTERNATIONALIZATION-AND-HREFLANG.md)
+22. [Redirect Verification](REDIRECT-VERIFICATION.md)
+23. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
+24. [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md)
+25. [Visual Composition Testing](VISUAL-COMPOSITION-TESTING.md)
+26. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
+27. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
+28. [Interface Quality and Page Differentiation Gate](INTERFACE-QUALITY-AND-PAGE-DIFFERENTIATION.md)
+29. [Case Study Normalization Policy](CASE-STUDY-NORMALIZATION.md)
+30. [Render Sharpness Gate](RENDER-SHARPNESS.md)
+31. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
+32. [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md)
+33. [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md)
+34. [Contributing Guide](CONTRIBUTING.md)
+35. [Roadmap](ROADMAP.md)
+36. [PageSpeed Document Readiness](PAGESPEED-READINESS.md)
 
 ## Repository Structure
 
@@ -88,6 +90,7 @@ This repository documents the process used to close those gaps while replacing l
 ├── README.md
 ├── CHANGELOG.md
 ├── PROJECT-ONBOARDING.md
+├── EDITORIAL-PUBLISHING-AND-DYNAMIC-CONTENT.md
 ├── EXECUTION-CONTROL.md
 ├── PROJECT-EXTENSIONS.md
 ├── CASE-STUDY-NORMALIZATION.md
@@ -182,6 +185,8 @@ This repository documents the process used to close those gaps while replacing l
     ├── project-onboarding.md
     ├── execution-control-record.md
     ├── execution-control.config.mjs
+    ├── editorial-publish-record.md
+    ├── editorial-publish.config.mjs
     └── migration-acceptance-record.md
 ```
 

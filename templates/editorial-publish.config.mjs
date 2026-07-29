@@ -1,0 +1,71 @@
+export default {
+  schemaVersion: 1,
+  classification: "editorial-publish",
+  currentApplicationIdentity: "replace-with-current-verified-identity",
+  mutation: {
+    method: "cms-api",
+    directDatabase: false,
+    rollback: "replace-with-cms-rollback-procedure",
+    applicationChanges: [],
+    applicationBuildRun: false,
+  },
+  entries: [
+    {
+      sourceId: "source-entry-123",
+      cmsId: "cms-entry-123",
+      canonicalRoute: "/example-entry/",
+      operation: "update",
+      sourceChecksum: "replace-with-source-checksum",
+    },
+  ],
+  invalidation: {
+    layers: ["cms-query-cache", "object-cache", "cdn-html-cache"],
+    routes: [
+      "/example-entry/",
+      "/",
+      "/category/example/",
+      "/author/example/",
+      "/feed/",
+      "/sitemap.xml",
+    ],
+  },
+  routeChecks: [
+    {
+      route: "/example-entry/",
+      getStatus: 200,
+      headStatus: 200,
+      applicationIdentity: "replace-with-current-verified-identity",
+      canonicalVerified: true,
+      indexPolicyVerified: true,
+      contentVerified: true,
+      mediaVerified: true,
+      duplicateHeroAbsent: true,
+      cacheVerified: true,
+      evidence: "replace-with-evidence-path",
+    },
+  ],
+  dependencies: {
+    home: { applicable: true, verified: true, evidence: "replace-with-evidence-path" },
+    archives: { applicable: true, verified: true, evidence: "replace-with-evidence-path" },
+    authors: { applicable: true, verified: true, evidence: "replace-with-evidence-path" },
+    search: { applicable: true, verified: true, evidence: "replace-with-evidence-path" },
+    feeds: { applicable: true, verified: true, evidence: "replace-with-evidence-path" },
+    sitemaps: { applicable: true, verified: true, evidence: "replace-with-evidence-path" },
+  },
+  security: {
+    interactiveBoundaryChanged: false,
+    antiSpamBoundaryVerified: true,
+    evidence: "replace-with-evidence-path",
+  },
+  performance: {
+    risk: "high",
+    targetedBrowserCheck: "passed",
+    targetedPageSpeed: "passed",
+    evidence: "replace-with-evidence-path",
+  },
+  result: {
+    published: true,
+    recordedAt: "2026-01-01T00:00:00Z",
+    evidence: "replace-with-evidence-path",
+  },
+};
