@@ -262,8 +262,13 @@ if (unapproved.status === 0 || !unapproved.stderr.includes("missing or stale")) 
 }
 const approval = review(["--approve"]);
 if (approval.status !== 0) throw new Error(`Open Graph visual approval failed:\n${approval.stdout}${approval.stderr}`);
+const reviewSentinel = join(root, "review", "check-must-not-rewrite.txt");
+await writeFile(reviewSentinel, "preserve");
 const approved = review(["--check"]);
 if (approved.status !== 0) throw new Error(`Approved Open Graph images did not pass review:\n${approved.stdout}${approved.stderr}`);
+if ((await readFile(reviewSentinel, "utf8")) !== "preserve") {
+  throw new Error("Read-only Open Graph approval verification rewrote the review directory.");
+}
 
 const changedConfig = {
   ...baseConfig,

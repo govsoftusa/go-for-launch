@@ -516,6 +516,11 @@ environment input for stable secrets, build at a canonical path when paths are
 embedded, and compare two clean builds before declaring the artifact
 reproducible. Never commit or print the secret.
 
+Read-only approval verification must not regenerate visual review artifacts.
+It must validate the approved output bytes, input fingerprints, dimensions,
+format, opacity, size limits, and approval manifest in place. Contact sheets
+belong to explicit review and approval actions, not every release check.
+
 ## Frozen candidate evidence manifest
 
 Before production promotion, run

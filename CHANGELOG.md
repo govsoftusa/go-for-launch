@@ -43,6 +43,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
   build secrets must use supported private environment inputs, while embedded
   paths require a canonical workspace. Secrets must never enter source,
   console output, or evidence.
+- Made Open Graph approval checks read-only for review artifacts. The check
+  still validates every approved image, input fingerprint, output hash,
+  dimension, format, opacity, byte limit, and approval record, but it no longer
+  regenerates contact sheets that were already reviewed.
 
 #### Test Evidence
 

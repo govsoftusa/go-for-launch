@@ -106,35 +106,37 @@ for (const card of activeCards) {
 }
 
 records.sort((left, right) => left.name.localeCompare(right.name));
-await rm(reviewDirectory, { recursive: true, force: true });
-await mkdir(reviewDirectory, { recursive: true });
+if (!checkOnly) {
+  await rm(reviewDirectory, { recursive: true, force: true });
+  await mkdir(reviewDirectory, { recursive: true });
 
-for (let offset = 0; offset < records.length; offset += cardsPerSheet) {
-  const batch = records.slice(offset, offset + cardsPerSheet);
-  const sheetWidth = sheetPadding * 2 + columns * cellWidth;
-  const sheetHeight = sheetPadding * 2 + rows * cellHeight;
-  const composites = [];
+  for (let offset = 0; offset < records.length; offset += cardsPerSheet) {
+    const batch = records.slice(offset, offset + cardsPerSheet);
+    const sheetWidth = sheetPadding * 2 + columns * cellWidth;
+    const sheetHeight = sheetPadding * 2 + rows * cellHeight;
+    const composites = [];
 
-  for (const [index, record] of batch.entries()) {
-    const column = index % columns;
-    const row = Math.floor(index / columns);
-    const left = sheetPadding + column * cellWidth;
-    const top = sheetPadding + row * cellHeight;
-    const thumbnail = await sharp(record.imagePath).resize(thumbnailWidth, thumbnailHeight).png().toBuffer();
-    const label = Buffer.from(`
-      <svg width="${thumbnailWidth}" height="42" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100%" height="100%" fill="#ffffff"/>
-        <text x="4" y="26" fill="#10211c" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">${escapeXml(record.name)}</text>
-      </svg>`);
-    composites.push({ input: thumbnail, left, top });
-    composites.push({ input: label, left, top: top + thumbnailHeight });
+    for (const [index, record] of batch.entries()) {
+      const column = index % columns;
+      const row = Math.floor(index / columns);
+      const left = sheetPadding + column * cellWidth;
+      const top = sheetPadding + row * cellHeight;
+      const thumbnail = await sharp(record.imagePath).resize(thumbnailWidth, thumbnailHeight).png().toBuffer();
+      const label = Buffer.from(`
+        <svg width="${thumbnailWidth}" height="42" xmlns="http://www.w3.org/2000/svg">
+          <rect width="100%" height="100%" fill="#ffffff"/>
+          <text x="4" y="26" fill="#10211c" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">${escapeXml(record.name)}</text>
+        </svg>`);
+      composites.push({ input: thumbnail, left, top });
+      composites.push({ input: label, left, top: top + thumbnailHeight });
+    }
+
+    const sheetNumber = String(Math.floor(offset / cardsPerSheet) + 1).padStart(2, "0");
+    await sharp({ create: { width: sheetWidth, height: sheetHeight, channels: 3, background: "#e7ece9" } })
+      .composite(composites)
+      .jpeg({ quality: 90, mozjpeg: true })
+      .toFile(resolve(reviewDirectory, `open-graph-review-${sheetNumber}.jpg`));
   }
-
-  const sheetNumber = String(Math.floor(offset / cardsPerSheet) + 1).padStart(2, "0");
-  await sharp({ create: { width: sheetWidth, height: sheetHeight, channels: 3, background: "#e7ece9" } })
-    .composite(composites)
-    .jpeg({ quality: 90, mozjpeg: true })
-    .toFile(resolve(reviewDirectory, `open-graph-review-${sheetNumber}.jpg`));
 }
 
 const manifest = {
@@ -201,7 +203,7 @@ if (failures.length > 0) {
     error(`Open Graph visual approval is missing or stale. Review ${reviewDirectory}, then run the visual review command with --approve.`);
     process.exitCode = 1;
   } else {
-    log(`Verified visual approval for ${records.length} Open Graph ${prototype ? "prototype" : "images"}.`);
+    log(`Verified visual approval for ${records.length} Open Graph ${prototype ? "prototype" : "images"} without regenerating review sheets.`);
   }
 } else {
   log(`Created ${Math.ceil(records.length / cardsPerSheet)} Open Graph review sheet(s) in ${reviewDirectory}.`);
