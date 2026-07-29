@@ -6,6 +6,59 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### Large Publication Production Cutover Controls
+
+#### Symptom
+
+- A protected candidate and public canonical host shared one Worker service.
+  The outer cache returned a public document on the protected host before
+  Worker middleware could add its robots and cache policy.
+- The apex passed HEAD redirect checks while a cached GET root returned the
+  canonical homepage with status 200.
+- A public PageSpeed matrix contained provider-error slots with no Lighthouse
+  result, while every real score still had to remain immutable and equal 100.
+- The existing publication case study stopped at an earlier blocked state and
+  did not record the final successful cutover.
+
+#### Root Cause
+
+- Host-aware application code was expected to enforce policy even when
+  Cloudflare answered from an outer cache first.
+- Control-plane success and one correct response were treated as weaker
+  evidence than repeated multi-region convergence.
+- Redirect verification did not explicitly require GET and HEAD first hops.
+- PageSpeed policy distinguished provider access from site scores but did not
+  define a safe supplement contract for missing external-error slots.
+
+#### Hard Rules and Implementation
+
+- Require separate protected and public Worker services when an outer cache can
+  precede middleware, with explicit bindings, secrets, preview-host, and
+  scheduled-work state.
+- Require a third minimal apex redirect service for cached public applications.
+  It has no application bindings or scheduled work, preserves path and query,
+  sends `Cache-Control: no-store`, and exposes a nonsecret marker.
+- Verify apex GET and HEAD for root, path, and query-bearing paths.
+- Permit public edge document readiness only when edge hit, candidate,
+  application marker, canonical, indexing, and cache policy all agree.
+  Protected staging still requires its application cache signal.
+- Permit targeted PageSpeed supplements only for preserved provider-error
+  slots. Never replace a scored result.
+- Require one source record for every separately deployed runtime.
+- Updated the anonymized WordPress to EmDash case study with the rounded
+  archive scale, remote Podman evidence, forms, search, native Safari, Open
+  Graph correction, convergence, final 100-point matrix, apex isolation, and
+  evidence reconciliation.
+
+#### Test Evidence
+
+- The complete repository test suite passes.
+- Case-study normalization and documentation verification pass.
+- Every required PageSpeed score remains 100 for Performance, Accessibility,
+  Best Practices, and SEO on mobile and desktop.
+- The new guidance preserves failed convergence and provider reports instead
+  of relabeling or overwriting them.
+
 ### Editorial Artwork Provenance for Social-Card Prototypes
 
 #### Symptom

@@ -298,8 +298,13 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] The production candidate was built before staging and Simulator testing.
 - [ ] The exact tested candidate is deployed to staging.
 - [ ] Staging returns the candidate identifier expected by the release gate.
+- [ ] Protected candidate hosts and public production hosts use separate Worker services when an outer cache can answer before middleware.
+- [ ] Each isolated service has the intended bindings and secrets, public preview state, and scheduled-work state, with no duplicate cron or queue consumer.
 - [ ] PageSpeed audited the expected staging candidate rather than an error, stale, or access-denied page.
 - [ ] If the PageSpeed runner warms HTML, `scripts/verify-pagespeed-warmup.mjs` passes for every audited URL and its report is bound into release evidence.
+- [ ] Protected staging proves application cache state, while any public edge-hit allowance also proves exact candidate, application marker, canonical URL, public indexing, and public cache policy.
+- [ ] Every PageSpeed provider error remains preserved and blocked until a matching supplemental result fills only that external-error slot.
+- [ ] No supplemental PageSpeed result replaces a scored result, and every completed matrix result has all four categories equal to 100.
 - [ ] All eight required PageSpeed category checks equal 100.
 - [ ] No production push occurs before the Simulator and PageSpeed gates pass.
 - [ ] Production deployment completes successfully.
@@ -317,6 +322,9 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Ahrefs API v3 Site Audit was checked when approved access exists, and the report records pass, fail, or an allowed skipped state.
 - [ ] Apex and alternate-host redirects behave correctly.
 - [ ] The apex is attached only after the canonical canary passes route consistency twice.
+- [ ] A cached public application uses a dedicated minimal apex redirect service with no application data bindings or scheduled work.
+- [ ] Apex GET and HEAD first hops pass for the root, a representative path, and a query-bearing path.
+- [ ] The apex redirect preserves the exact path and query, sends a permanent status and `Cache-Control: no-store`, and never returns the canonical document body with status 200.
 - [ ] Opposite trailing-slash forms return one HTTP 301 or 308 to the exact canonical URL.
 - [ ] Redirect probes preserve paths and query strings unless an approved map intentionally changes the path.
 - [ ] Localized canonical, hreflang, language selector, and sitemap behavior passes on public hosts.
@@ -327,6 +335,7 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Any required Cloudflare threshold or baseline regression passes under the reviewed enforcement mode.
 - [ ] Generated build output is cleaned without reverting source changes.
 - [ ] Final evidence records versions, test counts, scores, and remaining risks.
+- [ ] Final evidence contains a source record for every separately deployed application, form, scheduled, and redirect runtime.
 - [ ] Final evidence records the render sharpness result, report path, native-resolution review, and intentional exceptions.
 - [ ] Final evidence records sitemap counts and Search Console verification and submission status.
 - [ ] Final evidence records the AEO query baseline, reviewed pages, sources, and measurement plan when answer-focused content changed.

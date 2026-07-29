@@ -148,6 +148,29 @@ application repeatedly, preserve the inconsistent responses as evidence, and
 stop the release. Do not cycle new candidates to address an unproven routing
 problem.
 
+### Cloudflare service and cache-namespace isolation
+
+Protected candidate hosts and public production hosts must not share one Worker
+service when Cloudflare's outer cache can return HTML before Worker middleware.
+Use separate services and Custom Domains for protected validation and public
+production. Reuse only the exact tested data bindings, attach secrets to each
+service through the approved secret flow, disable unneeded public preview
+subdomains, and prevent duplicate cron or queue consumers.
+
+Application cache keys, `noindex` middleware, and host-aware redirects do not
+protect a request that is satisfied before Worker code runs. A purge is a
+recovery action, not proof of durable host-policy isolation.
+
+Use a third minimal service for an apex-to-canonical redirect when the public
+application uses document caching. The redirect service must have no
+application data bindings or scheduled work, preserve the complete path and
+query, send a permanent redirect and `Cache-Control: no-store`, and expose a
+stable nonsecret marker for verification.
+
+Verify both GET and HEAD first hops for the apex root, a representative path,
+and a query-bearing path. Require the exact canonical destination and reject
+any apex response that serves the canonical document body with status 200.
+
 ### Protected staging PageSpeed rule
 
 A staging archive must not be made indexable merely to satisfy Lighthouse
@@ -441,9 +464,34 @@ document navigations. Response time alone does not prove a cache hit. When the
 application cache does not expose trustworthy state, instrument a safe
 diagnostic header or do not claim that the route was warmed.
 
+Protected staging with an outer-cache bypass must still prove the configured
+application cache state. On a public canonical host, a Cloudflare edge hit may
+serve before an application cache diagnostic is added. In that case, accept
+public document readiness only when the edge reports a hit and the response
+also proves the exact candidate, application marker, canonical URL, public
+indexing state, and reviewed public cache policy. This public-host allowance
+must never be used for a protected hostname.
+
 Warmup evidence never replaces purged cold-document, first-request-after-deploy,
 bounded burst, WebKit, native Safari, real-user, or PageSpeed evidence. It
 never authorizes retrying or discarding a genuine category score below 100.
+
+### PageSpeed provider errors and supplemental results
+
+A provider response with no Lighthouse result is missing evidence, not a site
+score. Preserve the raw provider error and leave the required matrix slot
+blocked. A targeted supplement may fill only a slot already classified as an
+external provider error.
+
+The supplement must match the frozen candidate, audited URL, strategy,
+configuration, warmup contract, and expected document. It must contain no
+Lighthouse runtime warning and every category must equal 100. Preserve hashes
+for the original matrix and each supplement.
+
+Never replace a scored result with a supplement. A valid category score below
+100 remains a failed gate even if a later request passes. The merger must
+reject duplicate slots, changed candidates, changed configurations, and
+attempts to overwrite any existing score.
 
 ## Candidate Identity
 
@@ -464,6 +512,12 @@ revision. Runtime drift includes tracked changes, staged changes, untracked
 files, and ignored files. A local metadata file or generated asset inside a
 configured source path is part of the deployment input even when Git status
 does not show it, so it must block the release.
+
+Every separately deployed runtime requires its own source record. An
+application Worker, form Worker, scheduled Worker, and apex redirect Worker
+cannot share one source assertion unless the record explicitly hashes every
+deployed source and configuration path. Adding a service after the first
+reconciliation invalidates the evidence package until that runtime is bound.
 
 PageSpeed automation must preserve every scored run. It must not overwrite a
 failed score with a later passing score or retry a genuine category score below

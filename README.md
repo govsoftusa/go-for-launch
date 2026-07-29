@@ -153,6 +153,7 @@ This repository documents the process used to close those gaps while replacing l
 │   ├── filtered-header-mobile-safari-menu.md
 │   ├── multi-page-interface-quality.md
 │   ├── wordpress-emdash-cloudflare-release-hardening.md
+│   ├── release-gate-throughput-on-a-large-archive.md
 │   ├── association-header-announcement-hierarchy.md
 │   └── association-navigation-render-sharpness.md
 └── templates/
@@ -216,6 +217,9 @@ This repository documents the process used to close those gaps while replacing l
 28. Prove that every claimed PageSpeed document warmup follows the browser navigation path and reaches observable reusable cache state.
 29. Curate and hash-bind representative social-card artwork with route relevance, rights, third-party-mark, and synthetic-artwork review before bulk generation.
 30. Preflight PageSpeed provider access, preserve the first valid failed score, and diagnose filmstrip, network, and LCP evidence before another attempt.
+31. Isolate protected, public, and apex redirect services when an outer cache can answer before Worker middleware.
+32. Verify apex redirects with GET and HEAD, including root, path, and query, before release signoff.
+33. Fill only empty external-provider PageSpeed slots with exact-candidate supplements, never replace a scored result.
 
 ## Evidence Model
 
@@ -280,7 +284,7 @@ GovSoft and Go for Launch are independent of the Astro open-source project, The 
 
 ## Project Status and Platform Maturity
 
-Webflow and WordPress are the only source platforms this toolbox has been used on in real production migrations so far. Both are backed by the implementation case studies in `case-studies/`.
+Webflow and WordPress are the only source platforms this toolbox has been used on in real production migrations so far. Both are backed by the implementation case studies in `case-studies/`. The completed large-publication cutover, cache-isolation findings, forms, Safari, social-card, and 100-point PageSpeed evidence are documented in [WordPress to EmDash Cloudflare Release Hardening](case-studies/wordpress-emdash-cloudflare-release-hardening.md).
 
 Guidance for every other platform, including Squarespace, Wix, Drupal, static HTML, and custom content management systems, is an alpha implementation. It is derived from the platform-neutral framework but has not yet been exercised end to end on a production migration. Expect gaps, verify each step against the actual source platform, and treat the mandatory production gate as the safety net. Production-tested corrections and case studies for these platforms are the most valuable contributions this project can receive.
 

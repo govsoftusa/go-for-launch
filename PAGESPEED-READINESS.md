@@ -43,6 +43,20 @@ header. Configure the header that proves the layer the project intends to
 exercise. For an application-owned KV HTML cache, `CF-Cache-Status` alone does
 not prove that application cache was used.
 
+Protected staging with an edge-cache bypass must prove its configured
+application cache state. A public canonical host may instead prove a reusable
+Cloudflare edge hit when the outer cache returns before the application adds
+its diagnostic header. That public exception requires all of the following:
+
+- An edge cache hit.
+- The exact expected candidate identity.
+- The expected application marker.
+- The exact canonical URL and final hostname.
+- Public indexing state.
+- The reviewed public cache policy.
+
+Never apply the public edge-hit exception to a protected candidate hostname.
+
 If the deployed site does not expose trustworthy cache state, add a safe
 diagnostic response header or do not claim that the route was warmed. Do not
 infer a hit from response time alone.
@@ -103,6 +117,16 @@ It is not a site score and it does not justify editing the candidate. Use the
 project's approved secret-manager path for an API credential when anonymous
 quota is unavailable. Never print or preserve the secret value in commands,
 logs, or evidence.
+
+If a required matrix slot receives no Lighthouse result after its bounded
+provider attempts, preserve the raw error. A targeted supplement may fill only
+that external-error slot. It must match the candidate, URL, strategy,
+configuration, document-readiness contract, and expected document. It must
+contain no runtime warning and must score 100 in all four categories.
+
+Hash the raw matrix and every supplement. The merge must reject any attempt to
+replace an existing scored result, including a result below 100. A genuine
+score remains controlling.
 
 After a successful provider probe:
 

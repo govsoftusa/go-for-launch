@@ -32,19 +32,42 @@ The source was a long-running publication with:
 The target used Astro, EmDash, Cloudflare Workers, D1, KV, object storage, and
 Cloudflare edge caching.
 
+The normalized production inventory was large enough that sampling alone could
+not establish release confidence:
+
+| Surface | Normalized scale |
+|---|---:|
+| Migrated posts | Roughly 3,600 |
+| Expected public routes | Roughly 12,400 |
+| Indexable pages | Roughly 12,100 |
+| Runtime image references | Nearly 18,000 |
+| Interface checks in the final full-route sweep | More than 120,000 |
+| Public PageSpeed results | Two dozen |
+
+These values are rounded to prevent correlation with the source publication.
+They remain useful because they show why exact-candidate evidence, bounded
+recovery, deterministic generation, and machine-readable reconciliation were
+necessary.
+
 ## Release Decision
 
-The candidate became substantially faster and passed representative technical
-checks, but production remained blocked.
+Several intermediate candidates correctly remained blocked. The final frozen
+candidate passed the complete protected-staging suite, clean remote Podman
+build, route convergence, all-route interface checks, live forms, native
+Safari, and protected PageSpeed requirements before the canonical hostname
+changed.
 
-The release process correctly separated technical remediation from production
-authorization. A temporary candidate hostname served the new Worker while the
-canonical and apex hostnames continued to serve the existing site. No
-production route, DNS record, or redirect changed because several mandatory
-full-scope and human-approval gates were incomplete.
+Production promotion then remained provisional until the same candidate passed
+two canonical-host convergence intervals, live SEO, smoke, forms, Chromium,
+WebKit, native Safari, and a public PageSpeed matrix with Performance,
+Accessibility, Best Practices, and SEO all equal to 100. The apex moved last,
+after a dedicated redirect service passed first-hop GET and HEAD verification.
 
-This was a successful release-gate outcome. A healthy candidate does not
-authorize a cutover when the release contract remains unmet.
+The release succeeded without lowering a score, shrinking a required route
+surface, making staging indexable, replacing public evidence with staging
+evidence, or discarding failed reports. The decisive change was not a waiver.
+It was an isolated production topology plus a more disciplined evidence
+sequence.
 
 ## Candidate Identity and Isolation
 
@@ -67,6 +90,63 @@ first asserted that identity before evaluating the page.
 Never infer candidate identity from a deployment timestamp or a successful HTTP
 response. Require an explicit identity value in the response and release
 record. Promote only the exact candidate that passed.
+
+## Clean Remote Build Before Cloud Deployment
+
+The frozen source revision was exported to an approved remote Linux host and
+built in a fresh rootless Podman container before any candidate asset or Worker
+was uploaded.
+
+The clean environment ran:
+
+- Locked dependency installation.
+- Astro type checking.
+- Source compromise and malware checks.
+- WordPress local-date permalink verification.
+- Complete route inventory verification.
+- Edge and Worker redirect verification.
+- Public form and Turnstile inventory verification.
+- The production Astro and Cloudflare Worker build.
+
+This separated repository state, local caches, and Mac-specific behavior from
+the deployable candidate. It did not replace WebKit or native Safari. The same
+source revision still had to pass those gates on a qualified Mac.
+
+### Reusable rule
+
+Use an isolated build host to prove reproducibility before deployment. Record
+the source revision, container image family, dependency lock, build result, and
+artifact identity. Never treat remote Linux browser results as native Safari
+evidence.
+
+## Legacy Routing and Content Scope
+
+WordPress remained the routing authority for ambiguous legacy URLs even after
+EmDash became the content runtime. The migration recorded whether each
+historical route was a post, page, taxonomy, redirect, or intentional drop
+instead of inferring intent from its current body.
+
+One empty legacy page whose slug duplicated the site's home concept redirected
+to the root. Other page redirects remained explicit. Historical posts retained
+their local publication-date permalink behavior.
+
+The project's enhanced editorial content review applied to pages, not the
+migrated post archive. That scope was recorded as a project rule rather than
+silently running page-only acceptance criteria against thousands of legacy
+opinions. Technical SEO, sitemap, interface, image, browser, and performance
+gates still covered indexable posts.
+
+The legal surface was rebuilt as a hub with privacy and terms routes. Its
+operator statement accurately described a volunteer publication whose
+contributors expressed their own views without centralized editorial
+oversight. The migration did not invent an editorial review promise that the
+organization did not provide.
+
+### Reusable rule
+
+Keep content-policy scope separate from route and technical coverage. A
+reviewed page-only editorial rule does not authorize excluding posts from
+sitemap, canonical, interface, Safari, or PageSpeed-representative testing.
 
 ## Performance Investigation
 
@@ -254,6 +334,51 @@ production convergence. Attach one public hostname as a canary, wait the
 reviewed propagation interval, and require repeated identity agreement before
 PageSpeed, forms, crawlers, or apex attachment. Roll back on any mixed identity.
 
+### Protected and public hosts shared an outer cache namespace
+
+The first Custom Domain canary placed protected staging and public production
+on the same Worker service. A public root document entered Cloudflare's outer
+cache. The next clean protected request received that public document before
+application middleware ran.
+
+The request pattern proved the layer at fault:
+
+- Unique protected URLs reached the Worker and returned both HTML and response
+  `noindex` controls.
+- Clean protected URLs returned an aged edge hit with public cache policy and
+  no staging robots controls.
+- Repeated zone, URL, and application-tag purges did not remove the preexisting
+  shared object.
+- The protected application cache was correctly partitioned, but it never ran
+  for the bad response.
+
+The public canary was detached and the prior canonical route was restored. The
+same frozen build was then deployed to separate Worker services:
+
+| Service role | Host class | Indexing | Scheduled work |
+|---|---|---|---|
+| Protected candidate | Candidate and origin canary | `noindex` | None |
+| Public production | Canonical `www` | Indexable | None |
+| Existing scheduler | No public release host | Not applicable | Existing cron only |
+
+The candidate and production services reused the tested data bindings, disabled
+their public preview subdomains, and received their own secret bindings through
+the approved secret flow. A secret attached to one Worker service was never
+assumed to exist on another.
+
+After isolation, protected requests consistently returned the protected robots
+and cache policy, while public requests consistently returned the public
+policy. A failed first regional convergence report was retained during DNS
+propagation. Two later reports passed after separate quiet intervals.
+
+### Reusable rule
+
+Do not share a Cloudflare Worker service between protected and public hosts
+when an outer cache can serve a document before Worker code. Application cache
+keys and middleware cannot repair a response they never receive. A cache purge
+may aid recovery, but it is not a substitute for service and cache-namespace
+isolation.
+
 ### Unsafe method caching
 
 A POST to the temporary hostname received cached GET content. That bypassed the
@@ -280,10 +405,11 @@ After enabling HTML caching, test GET, HEAD, POST, cache purge, content
 invalidation, and deployment replacement independently. A fast GET does not
 prove safe form handling.
 
-## Turnstile on Every Public Form
+## Turnstile on Every Public Write Form
 
 Client-side widgets alone were not accepted as protection. Every public form
-had to cross a shared server-side verification boundary.
+that could create a record or side effect had to cross a shared server-side
+verification boundary. Read-only GET search remained outside that boundary.
 
 ### Implementation contract
 
@@ -299,30 +425,21 @@ had to cross a shared server-side verification boundary.
 - Fail closed when the secret, token, verification response, action, or
   hostname is missing or invalid.
 - Return HTTP 403 for a rejected submission.
-- Perform no search, email, write, redirect, or side effect before validation.
+- Perform no email, write, redirect, or other side effect before validation.
 - Keep EmDash form defaults set to Turnstile so future CMS-created forms inherit
   protection.
 
 ### Search forms
 
-Search had originally used GET. A Turnstile token is single-use and should not
-be placed in a query string, log, history entry, or shareable URL.
+Search originally used a normal bookmarkable GET. A broad interpretation of
+"protect every form" changed it to a token-gated POST and later reduced the
+header field to a link. That introduced a spam-verification failure into a
+read-only task and degraded the publication navigation.
 
-The safe pattern was:
-
-1. Submit the search form with POST.
-2. Validate Turnstile on the server.
-3. Redirect with HTTP 303 to a clean GET search URL containing only the search
-   query.
-
-This preserved bookmarkable results without exposing the token.
-
-The first hardened implementation still had two usability defects. The header
-replaced its search field with a link, and a rejected verification returned a
-plain text document with no route back into the publication. The corrected
-pattern kept an inline header search, deferred the challenge until input, held
-submission until a token existed, and redirected a failed check to a styled
-same-origin error state.
+The final contract restored a real inline GET search field at every viewport.
+It does not load Turnstile, does not create a record, and does not expose a
+single-use token in a query string. Turnstile remains mandatory for comments
+and the interest form because those routes write data.
 
 The CMS search API had also changed its response field from a resolved result
 list to an item inventory. The page silently read the obsolete field and
@@ -346,11 +463,11 @@ candidate Worker did not copy the prior candidate's Turnstile secret. The
 deployment sequence therefore attached the existing secret to each candidate
 before any positive form test, without printing it.
 
-### Closed-program interest forms
+### Closed advertising interest form
 
-One public program was not accepting new business. Its prior page implied an
+The publication was not accepting advertising. Its prior page implied an
 active offer, so it was replaced with a direct closed-status notice and an
-optional one-update form.
+optional form for one future availability update.
 
 The form:
 
@@ -380,7 +497,9 @@ chain.
 
 ### Reusable rule
 
-Turnstile is complete only when both the browser and server contract pass.
+Turnstile is complete only when both the browser and server contract pass for
+every write form. Do not insert a challenge into a safe read-only GET merely
+because it is represented by a `form` element.
 Verify a successful interactive submission and a direct missing-token POST.
 Repeat both against the candidate hostname through the real edge.
 
@@ -397,6 +516,12 @@ The rail was replaced with a native `details` disclosure using real links and
 no JavaScript dependency. The final design retained keyboard, touch, and
 no-script behavior.
 
+Native Safari then exposed a separate search defect. Focusing a mobile input
+whose text was smaller than 16 CSS pixels caused page zoom, clipped the header,
+and made the control appear deformed. The input was raised to a 16 CSS pixel
+equivalent and a regression check now rejects an explicit smaller navigation
+search size.
+
 ### Verification
 
 - Chromium and WebKit covered expanded desktop, compact desktop, tablet,
@@ -406,6 +531,9 @@ no-script behavior.
 - Playwright WebKit exercised open, close, and navigation behavior.
 - Native iOS Safari repeated the representative interaction against the live
   candidate.
+- Native iOS Safari focused and typed into search without page zoom, followed a
+  menu destination, scrolled a long archive to its footer, and returned to the
+  top without clipping or scroll lock.
 
 ### Reusable rule
 
@@ -533,6 +661,52 @@ If a synthetic performance workflow claims to warm HTML, verify the request
 contract and the cache state. A pair of successful generic fetches and a lower
 response time do not prove that a browser navigation can reuse the document.
 
+### Public edge hits can precede application cache diagnostics
+
+The protected candidate could require an application cache-state header because
+its outer cache was bypassed. On the public canonical host, Cloudflare could
+serve a valid edge hit before the application added that diagnostic header.
+Requiring the application header there would incorrectly reject the exact
+visitor path the warmup intended to prove.
+
+The public readiness rule therefore accepted a reusable document only when all
+of these independent facts agreed:
+
+- The canonical URL and exact candidate identity matched.
+- The application marker was present.
+- The response was publicly indexable.
+- The public CDN cache policy matched the release contract.
+- Cloudflare reported an edge hit.
+
+This allowance applied only to the public canonical host. Protected staging
+still had to prove its application-level cache state because its edge cache was
+required to bypass documents.
+
+### Provider failures and targeted supplements
+
+The final public matrix required three rounds, four representative routes, and
+mobile plus desktop, for two dozen scored results. Two provider requests
+returned no Lighthouse result. They were external-error slots, not scores of
+zero and not passing evidence.
+
+The raw report remained immutable. A targeted supplement merger could fill
+only a slot already classified as an external provider error. It required:
+
+- The same candidate, route, strategy, configuration, and warmup contract.
+- A valid Lighthouse document with no runtime warning.
+- Performance, Accessibility, Best Practices, and SEO all equal to 100.
+- Hashes for the original report and every supplement.
+- Refusal to replace any existing scored result, whether passing or failing.
+
+The completed matrix contained all required results at 100. No average was
+used, no failed score was overwritten, and no threshold changed.
+
+### Reusable rule
+
+Distinguish provider absence from a measured site failure, but leave both
+release states blocked until required evidence exists. A supplement may repair
+an empty external-error slot only. It must never replace a genuine score.
+
 ## CDN-Injected Bot Detection and Local Snapshots
 
 Cloudflare bot protection appended a request-specific JavaScript probe after
@@ -586,14 +760,27 @@ an authoritative wordmark, but the social-card pipeline ignored both.
 - Regenerated contact sheets for the complete route inventory and required a
   new approval.
 
+Before bulk regeneration, three representative prototypes were required:
+
+1. Publication identity using a curated, rights-reviewed real photograph.
+2. A long article headline using its actual editorial lead image.
+3. A typographic fallback using approved brand assets and no synthetic art.
+
+The prototypes were reviewed in an authenticated real share composer without
+publishing. Bulk approval then bound the complete card inventory to both input
+and output hashes. Changed cards received contact-sheet review, and every card
+had to remain below the project's byte limit.
+
 ### Reusable rule
 
 Technical approval cannot rescue an off-brand template. Preview representative
 cards in a real messaging client early, before producing the full inventory.
 If a stakeholder rejects the visual system, treat that as approval
-invalidation, not a request to relabel the existing output.
+invalidation, not a request to relabel the existing output. Do not use
+synthetic placeholder art when real editorial imagery or a designed
+typographic fallback is available.
 
-## Gate Findings That Correctly Blocked Production
+## Intermediate Findings That Correctly Blocked Production
 
 ### A prior PageSpeed pass was not current evidence
 
@@ -607,33 +794,47 @@ Representative page archetypes passed browser and viewport checks, but the
 release policy required every indexable route. A sample could identify defects
 and guide fixes, but it could not close a full-route gate.
 
-### Render-sharpness scope needed review
+### Render-sharpness scope required an explicit decision
 
 Representative public pages passed. A whole-output scan also inspected
 administrative dependency CSS that public pages did not load. The correct next
 step was a reviewed scope decision or upstream fix, not silently ignoring the
 finding.
 
-### Open Graph evidence was incomplete
+### Open Graph evidence was incomplete and visually wrong
 
 The migrated publication reused historical imagery and lacked a complete set
 of unique, hash-bound, visually approved social cards for every indexable page.
+The first technically complete set was also rejected as off-brand. Production
+remained blocked until the visual system, representative prototypes, contact
+sheets, and final hash-bound approval all passed.
 
-### Editorial evidence was incomplete
+### Native Safari found a defect that emulation missed
 
-The archive lacked current route-level audience, task, content-quality, and
-hash-bound editorial approval records required by the project release policy.
+The mobile search field passed headless browser checks but triggered Safari
+focus zoom on the pinned iPhone Simulator. That candidate remained blocked
+until the size correction and native retest passed.
 
-### The rollback origin was unsafe
+### Cloudflare convergence was incomplete
 
-The legacy WordPress origin had evidence of compromise. Keeping it as a
-rollback target required separate remediation and verification.
+A deployment and Custom Domain update succeeded at the control plane while one
+region still failed DNS or served the prior application. The failed reports
+remained failed. Production testing began only after repeated multi-region
+identity checks agreed twice.
+
+### Cache architecture violated host policy
+
+Protected and public hosts returned the right application result on unique
+URLs, but clean URLs crossed policies through the shared outer cache. Purging
+could not establish a durable boundary. Production remained blocked until the
+host classes used isolated Worker services.
 
 ### Reusable rule
 
 Do not convert a missing approval into a technical waiver. Do not reduce a gate
-because a migration has many routes. Record the missing evidence, preserve the
-candidate, and leave production unchanged.
+because a migration has many routes. Record the missing evidence, preserve each
+failed report, fix the responsible layer, and leave production unchanged until
+the exact candidate passes.
 
 ## Failed or Misleading Approaches
 
@@ -647,12 +848,17 @@ candidate, and leave production unchanged.
   content. Use method-aware application and edge rules.
 - Adding Turnstile only in the browser allowed direct requests to bypass the
   widget. Use a shared server-side Siteverify gate.
-- Keeping search as token-bearing GET exposed a single-use token in the URL.
-  Use POST validation followed by a clean 303 GET.
+- Putting Turnstile in read-only search created a spam-verification failure and
+  threatened to expose a single-use token in navigation state. Keep safe search
+  as a plain GET and reserve Turnstile for write forms.
 - Trusting deployment completion to clear cache allowed stale candidate HTML.
   Wait for route convergence, purge the HTML cache tag, and retest clean URLs.
 - Treating a hostname purge as equivalent to a Worker Cache API tag purge left
   old HTML in place.
+- Sharing one Worker service between protected and public hosts allowed the
+  outer cache to cross robots and cache policy boundaries before middleware.
+- Trusting HEAD for the apex missed a cached GET root document that never
+  reached redirect middleware.
 - Awaiting media derivative discovery inside each card serialized independent
   object-storage requests and made a cold archive look like a database problem.
 - Accepting zero-page analysis reports let staging `noindex` hide the exact
@@ -665,34 +871,85 @@ candidate, and leave production unchanged.
   untested. Use a complete route inventory and final-output gates.
 - Disabling a security feature to simplify tests changed the deployed security
   posture. Use exact snapshot sanitization plus live edge tests.
+- Treating an external PageSpeed provider error as a failed site score confused
+  absence of evidence with measured performance. Preserve the empty slot and
+  fill only that slot with a matching targeted result.
+- Running the complete suite after every speculative change consumed hours
+  without isolating the controlling path. Use targeted checks during
+  remediation, then freeze and run the full mandatory suite once.
+
+## Apex Redirect Required a Third Service
+
+The first apex attachment reused the public application service. Initial HEAD
+requests returned the expected permanent redirect. The structured GET verifier
+then found a split result: uncached paths redirected, but the apex root returned
+the cached canonical homepage with status 200.
+
+The application middleware contained the right redirect. Cloudflare served the
+cached root before that middleware executed. This was the same cache-namespace
+failure class as the protected and public collision.
+
+The durable correction was a third minimal Worker service:
+
+- It served only the apex Custom Domain.
+- It had no data, media, queue, or scheduled-work bindings.
+- Its public preview subdomain was disabled.
+- It returned a permanent first-hop redirect.
+- It preserved the complete path and query.
+- It sent `Cache-Control: no-store`.
+- It exposed a stable redirect marker for verification.
+
+The Worker passed local and remote Podman behavior tests plus a deployment dry
+run before the apex mapping changed. Production verification then repeated GET
+and HEAD for the root, a representative path, and a query-bearing path across
+multiple rounds. Every response had to redirect directly to the canonical
+host, preserve path and query, and retain the canonical application's exact
+candidate identity on the destination.
+
+### Reusable rule
+
+Give an apex redirect its own service and cache namespace. Verify first-hop GET
+and HEAD behavior. A HEAD-only pass cannot prove that a cached GET root will
+redirect.
 
 ## Reusable Release Sequence
 
 1. Fetch the toolkit upstream and verify the selected revision.
-2. Preserve the project state and record the source revision.
-3. Build the exact production candidate.
-4. Deploy it only to an isolated candidate hostname and attach required secrets.
-5. Wait for route convergence, purge the HTML cache tag, then assert candidate
-   identity on clean URLs, canonical output, robots behavior, and HTTPS.
-6. Establish cold, warm, and concurrent server-performance evidence.
-7. Verify media bytes, responsive selection, compression, and cache headers.
-8. Run route parity, redirects, sitemap, site health, semantic SEO, content
+2. Freeze one project revision and record its complete runtime inputs.
+3. Export that revision to a fresh remote Podman checkout and pass dependency,
+   type, compromise, route, redirect, form, and build checks.
+4. Deploy only the exact tested output to an isolated protected service and
+   attach required secrets without exposing their values.
+5. Wait for route convergence, purge only the documented cache layers, then
+   assert candidate identity on clean URLs, canonical output, robots behavior,
+   and HTTPS.
+6. Run the smallest targeted check for the last known failure before spending
+   time on the full matrix.
+7. Establish cold, warm, and concurrent server-performance evidence.
+8. Verify media bytes, responsive selection, compression, and cache headers.
+9. Run route parity, redirects, sitemap, site health, semantic SEO, content
    quality, render sharpness, interface, side navigation, design, and visual
    composition gates as applicable.
-9. Inventory every public form and test browser plus direct-request Turnstile
-   behavior through the real edge.
-10. Verify method-aware cache rules, purge behavior, and content invalidation.
-11. Run Chromium, Playwright WebKit, and native iOS Safari checks.
-12. Run protected-staging PageSpeed mobile and desktop against the exact
+10. Inventory every public write form and test browser plus direct-request
+    Turnstile behavior through the real edge. Test read-only GET search
+    separately.
+11. Verify method-aware cache rules, purge behavior, and content invalidation.
+12. Run Chromium, Playwright WebKit, and native iOS Safari checks.
+13. Run protected-staging PageSpeed mobile and desktop against the exact
     candidate.
-13. Confirm all required human approvals are current and hash-bound.
-14. Stop if any hard gate fails.
-15. After a complete staging pass, provisionally promote the exact candidate
-    and configure the apex-to-canonical redirect.
-16. Require four PageSpeed scores of 100 on the canonical production host or
-    roll back immediately.
-17. Repeat live browser, form, cache, crawler, and observability checks on the
-    production host.
+14. Confirm all required human approvals are current and hash-bound.
+15. Stop if any hard gate fails. Preserve the failed report.
+16. Deploy the same build to a separate public service with no duplicate cron.
+17. Attach only the canonical hostname, then require two multi-region
+    convergence passes separated by quiet intervals.
+18. Run public SEO, smoke, forms, search, Chromium, WebKit, native Safari, and
+    the complete PageSpeed matrix. Every category in every result must equal
+    100.
+19. Deploy the minimal redirect Worker to a third service, attach the apex, and
+    verify first-hop GET and HEAD behavior for root, path, and query.
+20. Repeat route convergence and a post-apex public PageSpeed check.
+21. Reconcile every artifact, source runtime, toolkit revision, candidate
+    assertion, and failed report before release signoff.
 
 ## Evidence to Preserve
 
@@ -706,15 +963,52 @@ candidate, and leave production unchanged.
 - Turnstile form inventory and positive plus negative submission evidence.
 - Synthetic form-record cleanup evidence when a positive test writes data.
 - Cache-rule expression and edge response evidence for each HTTP method.
+- Protected, public, and apex service topology with bindings and scheduled-work
+  separation.
+- Failed and passing multi-region convergence reports.
 - Playwright WebKit and native Safari results.
 - Open Graph manifests and hash-bound visual approval.
 - Content-quality reports and hash-bound editorial approval.
-- Production cutover decision, including explicit blockers.
+- Raw PageSpeed reports, allowed external-error supplements, and their hashes.
+- GET and HEAD apex redirect reports with path and query preservation.
+- Production cutover and rollback decisions, including explicit blockers.
+
+## Final Production Evidence
+
+The final normalized evidence package established:
+
+- A clean remote Podman build for the frozen source.
+- More than 120,000 interface checks across the complete indexable route set.
+- Nearly 18,000 runtime image references verified.
+- Two separate zero-finding canonical convergence reports across the remote
+  build location and seven external regions.
+- Public smoke and live SEO across representative route families.
+- Chromium and WebKit form checks with no first-party browser errors.
+- GET search results without spam verification.
+- Comment and interest forms that initialized Turnstile.
+- Direct token-free writes that failed before storage.
+- Hash-bound native Safari captures for home, search, interest, and comments.
+- Two dozen public PageSpeed results, every category at 100.
+- Repeated apex first-hop redirects with exact path and query preservation.
+- A final evidence reconciliation containing almost forty artifacts, separate
+  source records for both deployed runtimes, the toolkit record, and no
+  findings.
+
+The final indexable-host allowlist contained only the canonical host and the
+redirecting apex. Candidate, release, and provider preview hosts remained
+nonindexable.
 
 ## Outcome
 
-The work produced a faster, safer release candidate and exposed several defects
-that local builds and representative smoke tests did not reveal. The most
-important result was procedural: the production gate held. The existing site
-remained in place while the exact missing evidence was documented for a later
-release.
+The frozen candidate reached production and the apex redirected to the
+canonical host. The successful topology used one service for protected
+validation, one for the public application, one minimal service for the apex
+redirect, and the existing scheduler without duplicate cron.
+
+EmDash and Astro were capable of serving the large publication. The prolonged
+work came from legacy routing ambiguity, cold data and media paths, visual
+approval gaps, native Safari behavior, Cloudflare cache and route convergence,
+and an inefficient sequence of full intermediate retests. The hard gates found
+real defects. The reusable improvement is to isolate the responsible layer,
+prove the smallest failing path, freeze one candidate, and then run the
+complete release contract without weakening it.
