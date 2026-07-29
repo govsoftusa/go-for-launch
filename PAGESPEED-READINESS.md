@@ -130,6 +130,13 @@ value can therefore leave the production projection noindex. Prove the
 protected response first, set the reviewed production-mode value explicitly,
 then prove the indexable response before launching Lighthouse.
 
+Use separate local runtime state for the protected candidate and the
+production projection whenever response or HTML caches are host-insensitive,
+their key contract is uncertain, or an earlier failed run may have polluted
+the state. Restore both from the same deterministic CMS fixture and populate
+both from the same bounded media fixture. Sharing content inputs is required.
+Sharing mutable response caches is not.
+
 Private transport also needs production fidelity. When the local provider
 runtime offers only HTTP/1.1 and the production edge uses HTTP/2 or HTTP/3,
 place a loopback-only HTTP/2 TLS proxy in front of the runtime. Preserve the

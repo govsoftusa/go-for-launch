@@ -172,6 +172,11 @@ reuse one local provider state. Do not assume that omitting a variable removes
 a previous command-line override. Verify the response header and robots
 metadata after each transition, before opening a browser.
 
+Protected and indexable processes should use separate local response-cache
+state. Restore both from the same deterministic CMS fixture, and populate both
+from the same bounded object fixture. This prevents a protected HTML response
+from becoming indexable test input without changing application data.
+
 If the provider's local runtime speaks only HTTP/1.1 but production uses
 HTTP/2 or HTTP/3, an HTTP/1.1 Lighthouse result may measure connection
 serialization that production does not have. Put a loopback-only HTTP/2 proxy
