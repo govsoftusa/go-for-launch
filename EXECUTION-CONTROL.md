@@ -171,6 +171,12 @@ artifact and the harness revision, rebuild from the same deployable inputs, and
 require the artifact hash to remain identical. If the artifact hash changes or
 the change classification is uncertain, create a new candidate.
 
+Artifact comparison builds must begin with a clean output boundary. Use a fresh
+checkout or quarantine the existing build output before rebuilding. Reusing a
+generated output directory can retain ordering or files from an earlier run and
+create a false artifact-identity failure. Preserve the old output and evidence
+until the clean rebuild proves the expected hash.
+
 Targeted tests may accelerate development. They cannot replace the final
 complete suite.
 
