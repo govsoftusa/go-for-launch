@@ -158,10 +158,18 @@ Use three testing levels:
 3. **Frozen candidate:** run the complete mandatory Go for Launch release suite
    against the exact final candidate.
 
-After the final source, content, dependency, configuration, infrastructure, or
-artifact change, the complete mandatory release suite must run against the new
-frozen candidate. Any later change creates a new candidate and requires the
-complete mandatory suite again before production.
+After the final deployable source, content, dependency, configuration,
+infrastructure, or artifact change, the complete mandatory release suite must
+run against the new frozen candidate. Any later deployable change creates a new
+candidate and requires the complete mandatory suite again before production.
+
+Verification harness changes are tracked separately. A harness, toolkit, test
+fixture, or evidence-collector change invalidates the evidence produced by the
+old harness and requires the applicable suite to restart. It does not rename an
+unchanged deployable artifact. Preserve separate hashes for the deployable
+artifact and the harness revision, rebuild from the same deployable inputs, and
+require the artifact hash to remain identical. If the artifact hash changes or
+the change classification is uncertain, create a new candidate.
 
 Targeted tests may accelerate development. They cannot replace the final
 complete suite.
@@ -204,7 +212,10 @@ release.
 Candidate freeze ends feature development. After freeze:
 
 - Make only changes required to resolve a mandatory failed gate.
-- Record every change and create a new candidate identity.
+- Classify every change as deployable or harness-only.
+- Create a new candidate identity for every deployable change.
+- Restart invalidated evidence after a harness-only change, while retaining the
+  candidate identity only when the deployable artifact hash is unchanged.
 - Return polish and nonblocking improvements to follow-up work.
 - Do not combine unrelated cleanup with release remediation.
 

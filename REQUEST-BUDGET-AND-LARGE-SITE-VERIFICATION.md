@@ -101,6 +101,13 @@ would exceed the request budget. Record the total reference count, selected
 count, and verified count separately. New editorial media still requires a
 targeted check in the editorial publishing lane.
 
+Generate the deterministic subset with the same parser that performs the
+verification. Emit a zero-request inventory first, populate local fixtures from
+that exact selected list, then run the live private check. A separate fixture
+parser can drift on historical filenames and silently test a different sample.
+When the runtime can redirect to an original asset, require a response header
+that proves the reviewed transform path served the image.
+
 Run browser geometry across every reviewed template and meaningful rendering
 variant. The representative inventory must still list every indexable route.
 Each route maps to a coverage class, and each coverage class must have a tested

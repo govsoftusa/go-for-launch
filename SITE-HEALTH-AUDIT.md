@@ -59,11 +59,26 @@ export default {
   runtimeImageConcurrency: 16,
   runtimeImageTimeoutMs: 15_000,
   runtimeImageAttempts: 3,
+  runtimeImageRequiredHeaders: {
+    "x-image-source": "verified-transform"
+  },
   runtimeImageProgressEvery: 1_000
 };
 ```
 
 The verifier sends a `HEAD` request for every distinct declared runtime image. Each response must succeed, declare an `image/*` content type, and stay within the applicable byte budget. Transport failures receive only the configured bounded attempts. HTTP failures and invalid responses still fail closed.
+
+When a runtime route can redirect to an unoptimized source, configure
+`runtimeImageRequiredHeaders`. The gate then proves that the reviewed transform
+or object path served the response. A small original file cannot pass merely
+because a redirect happened to stay within the byte limit.
+
+For a private runtime that needs deterministic local object fixtures, first run
+the verifier with `runtimeImageInventoryOnly: true`. The report records
+`runtimeImages.selectedPaths` without making runtime image requests. Populate
+the local fixture from that exact list, then run the normal verifier with
+inventory-only mode disabled. This prevents a fixture collector and the gate
+from selecting different samples.
 
 Keep ordinary static images in the exact release output. A runtime prefix must never be used to hide a missing built asset.
 

@@ -499,6 +499,15 @@ The staging response should expose or otherwise permit verification of a candida
 
 Production must receive the same candidate. If source, dependencies, generated assets, configuration, or build output changes, repeat the complete gate.
 
+The candidate identifier names the deployable artifact, not the test harness.
+Record a deterministic hash of the deployable output independently from the
+application commit, toolkit commit, fixture schema, and harness configuration.
+A harness-only correction invalidates earlier evidence and requires a new
+verification run, but it must retain the candidate identifier when a rebuild
+produces the same artifact hash. A changed artifact hash requires a new
+candidate. Never change the identifier merely because a test runner, local
+fixture, evidence formatter, or toolkit revision changed.
+
 ## Frozen candidate evidence manifest
 
 Before production promotion, run

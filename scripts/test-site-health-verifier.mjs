@@ -40,13 +40,17 @@ function verifyWithConfig(config) {
   return spawnSync(process.execPath, [verifier.pathname, `--config=${config}`], { encoding: "utf8" });
 }
 
-async function runtimeImageServer() {
+async function runtimeImageServer({ source = "fixture-transform" } = {}) {
   const serverScript = join(root, "runtime-image-server.mjs");
   await writeFile(serverScript, `
     import { createServer } from "node:http";
     const server = createServer((request, response) => {
       if (request.url?.startsWith("/runtime/")) {
-        response.writeHead(200, { "content-type": "image/avif", "content-length": "1000" });
+        response.writeHead(200, {
+          "content-type": "image/avif",
+          "content-length": "1000",
+          "x-image-source": ${JSON.stringify(source)}
+        });
         response.end(request.method === "HEAD" ? undefined : Buffer.alloc(1000));
         return;
       }
@@ -129,6 +133,7 @@ await writeFile(runtimeConfig, `export default ${JSON.stringify({
   sitemapUrl: `${site}/sitemap.xml`,
   runtimeImagePrefixes: ["/runtime/*"],
   runtimeImageBaseUrl: runtimeServer.url,
+  runtimeImageRequiredHeaders: { "x-image-source": "fixture-transform" },
   runtimeImageMaximumChecks: 1
 })};\n`);
 const runtimeResult = verifyWithConfig(runtimeConfig);
@@ -143,6 +148,59 @@ if (
   throw new Error("Runtime image report has incorrect counts.");
 }
 runtimeServer.child.kill();
+
+const runtimeInventoryConfig = join(root, "runtime-inventory.config.mjs");
+const runtimeInventoryReport = join(root, "runtime-inventory-report.json");
+await writeFile(runtimeInventoryConfig, `export default ${JSON.stringify({
+  outputDirectory: runtime,
+  site,
+  output: runtimeInventoryReport,
+  sitemapUrl: `${site}/sitemap.xml`,
+  runtimeImagePrefixes: ["/runtime/*"],
+  runtimeImageBaseUrl: "http://127.0.0.1:1",
+  runtimeImageInventoryOnly: true,
+  runtimeImageMaximumChecks: 2
+})};\n`);
+const runtimeInventoryResult = verifyWithConfig(runtimeInventoryConfig);
+if (runtimeInventoryResult.status !== 0) {
+  throw new Error(
+    `Runtime image inventory failed:\n${runtimeInventoryResult.stdout}${runtimeInventoryResult.stderr}`
+  );
+}
+const runtimeInventoryEvidence = JSON.parse(
+  await readFile(runtimeInventoryReport, "utf8")
+);
+if (
+  runtimeInventoryEvidence.counts.selectedRuntimeImages !== 2 ||
+  runtimeInventoryEvidence.counts.verifiedRuntimeImages !== 0 ||
+  runtimeInventoryEvidence.runtimeImages.selectedPaths.length !== 2
+) {
+  throw new Error("Runtime image inventory report has incorrect counts.");
+}
+
+const wrongHeaderServer = await runtimeImageServer({ source: "redirected-original" });
+const wrongHeaderConfig = join(root, "runtime-wrong-header.config.mjs");
+await writeFile(wrongHeaderConfig, `export default ${JSON.stringify({
+  outputDirectory: runtime,
+  site,
+  output: join(root, "runtime-wrong-header-report.json"),
+  sitemapUrl: `${site}/sitemap.xml`,
+  runtimeImagePrefixes: ["/runtime/*"],
+  runtimeImageBaseUrl: wrongHeaderServer.url,
+  runtimeImageRequiredHeaders: { "x-image-source": "fixture-transform" },
+  runtimeImageMaximumChecks: 1
+})};\n`);
+const wrongHeaderResult = verifyWithConfig(wrongHeaderConfig);
+const wrongHeaderCombined = `${wrongHeaderResult.stdout}${wrongHeaderResult.stderr}`;
+if (
+  wrongHeaderResult.status === 0 ||
+  !wrongHeaderCombined.includes(
+    "runtime image header x-image-source is redirected-original, expected fixture-transform"
+  )
+) {
+  throw new Error("Runtime image verification accepted an unexpected delivery source.");
+}
+wrongHeaderServer.child.kill();
 
 const invalid = await fixture("invalid");
 await writeFile(join(invalid, "assets", "large.png"), Buffer.alloc(100_001));

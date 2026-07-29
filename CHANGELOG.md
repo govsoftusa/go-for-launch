@@ -6,6 +6,46 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### Private Runtime Media Fixtures and Stable Candidate Identity
+
+#### Symptom
+
+- A private site-health run followed runtime-image redirects to original media.
+  Small originals passed while large originals failed, so the gate did not
+  consistently prove that the image transformation path worked.
+- A separate fixture parser split historical filenames at the first
+  extension-like segment and selected a slightly different sample than the
+  site-health parser.
+- Test harness corrections caused release identifiers to change even when the
+  deployable site artifact was unchanged.
+
+#### Root Cause
+
+- The local database fixture did not include the deterministic runtime media
+  sample, and the verifier checked only response status, type, and bytes.
+- Runtime inventory selection was duplicated between the verifier and the
+  fixture builder.
+- Artifact identity, source-control identity, and harness identity were treated
+  as one value.
+
+#### Hard Rules and Implementation
+
+- Added required runtime-image response headers so a redirected original cannot
+  satisfy a transformed-image gate.
+- Added zero-request runtime-image inventory mode. Private fixture preparation
+  now consumes the exact selected paths emitted by the authoritative verifier.
+- Required bounded, reusable local object fixtures with explicit request,
+  transfer, substitution, and cache provenance.
+- Defined candidate identity as the deployable artifact identity. Harness-only
+  changes invalidate evidence but retain the candidate identifier only when a
+  deterministic artifact hash remains unchanged.
+
+#### Test Evidence
+
+- Site-health tests reject an unexpected delivery-source header and accept
+  inventory generation without contacting the configured runtime origin.
+- Documentation, normalization, and the complete repository test suite pass.
+
 ### Editorial Publishing Without Application Rebuilds
 
 #### Symptom

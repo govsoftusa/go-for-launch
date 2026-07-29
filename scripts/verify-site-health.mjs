@@ -110,6 +110,16 @@ const runtimeImageConcurrency = positiveIntegerOption("--runtime-image-concurren
 const runtimeImageTimeoutMs = positiveIntegerOption("--runtime-image-timeout-ms", fileConfig.runtimeImageTimeoutMs ?? 15_000);
 const runtimeImageAttempts = positiveIntegerOption("--runtime-image-attempts", fileConfig.runtimeImageAttempts ?? 3);
 const runtimeImageProgressEvery = positiveIntegerOption("--runtime-image-progress-every", fileConfig.runtimeImageProgressEvery ?? 1_000);
+const runtimeImageInventoryOnly = booleanOption(
+  "--runtime-image-inventory-only",
+  fileConfig.runtimeImageInventoryOnly ?? false
+);
+const runtimeImageRequiredHeaders = Object.fromEntries(
+  Object.entries(fileConfig.runtimeImageRequiredHeaders || {}).map(([name, value]) => [
+    String(name).toLowerCase(),
+    String(value)
+  ])
+);
 const runtimeImageMaximumChecks = numberOption(
   "--runtime-image-maximum-checks",
   fileConfig.runtimeImageMaximumChecks ?? Number.MAX_SAFE_INTEGER
@@ -170,6 +180,15 @@ async function verifyRuntimeImage(pathname, owners) {
     failures.push(`${[...owners].join(", ")}: runtime image returned ${contentType || "no content type"}, ${pathname}`);
     return false;
   }
+  for (const [name, expected] of Object.entries(runtimeImageRequiredHeaders)) {
+    const actual = response.headers.get(name) || "";
+    if (actual !== expected) {
+      failures.push(
+        `${[...owners].join(", ")}: runtime image header ${name} is ${actual || "missing"}, expected ${expected}, ${pathname}`
+      );
+      return false;
+    }
+  }
   const contentLength = Number(response.headers.get("content-length"));
   const applicableMaximum = imageByteLimit(pathname, imageByteLimits, maximumImageBytes);
   if (
@@ -183,12 +202,12 @@ async function verifyRuntimeImage(pathname, owners) {
   return true;
 }
 
-async function verifyRuntimeImages() {
+function selectedRuntimeImageEntries() {
   const completeEntries = [...runtimeImageReferences.entries()].sort(([left], [right]) =>
     left.localeCompare(right)
   );
   const maximum = Math.max(0, Math.floor(runtimeImageMaximumChecks));
-  const entries =
+  return (
     completeEntries.length <= maximum
       ? completeEntries
       : Array.from({ length: maximum }, (_, index) => {
@@ -197,7 +216,14 @@ async function verifyRuntimeImages() {
               ? 0
               : Math.floor((index * (completeEntries.length - 1)) / (maximum - 1));
           return completeEntries[selectedIndex];
-        });
+        })
+  );
+}
+
+async function verifyRuntimeImages(entries) {
+  if (runtimeImageInventoryOnly) {
+    return { verified: 0, selected: entries.length };
+  }
   let next = 0;
   let completed = 0;
   let verified = 0;
@@ -347,7 +373,8 @@ for (const [pathname, owners] of imageReferences) {
   }
 }
 
-const runtimeImageVerification = await verifyRuntimeImages();
+const runtimeImageEntries = selectedRuntimeImageEntries();
+const runtimeImageVerification = await verifyRuntimeImages(runtimeImageEntries);
 
 const robotsPath = resolve(outputDirectory, "robots.txt");
 if (requireRobots && !existsSync(robotsPath)) {
@@ -370,6 +397,8 @@ const report = {
     runtimeImageConcurrency,
     runtimeImageTimeoutMs,
     runtimeImageAttempts,
+    runtimeImageRequiredHeaders,
+    runtimeImageInventoryOnly,
     runtimeImageMaximumChecks:
       runtimeImageMaximumChecks === Number.MAX_SAFE_INTEGER
         ? null
@@ -388,6 +417,9 @@ const report = {
     verifiedRuntimeImages: runtimeImageVerification.verified,
     errors: [...new Set(failures)].length
   },
+  runtimeImages: {
+    selectedPaths: runtimeImageEntries.map(([pathname]) => pathname)
+  },
   errors: [...new Set(failures)]
 };
 
@@ -399,5 +431,9 @@ if (report.errors.length > 0) {
   for (const failure of report.errors) error(`- ${failure}`);
   process.exitCode = 1;
 } else {
-  log(`Site health verification passed: ${indexablePages.length} indexable pages, ${imageReferences.size} local image references, ${runtimeImageVerification.verified} runtime image references, and no audit findings.`);
+  if (runtimeImageInventoryOnly) {
+    log(`Site health runtime image inventory prepared: ${runtimeImageEntries.length} deterministic paths and zero runtime requests.`);
+  } else {
+    log(`Site health verification passed: ${indexablePages.length} indexable pages, ${imageReferences.size} local image references, ${runtimeImageVerification.verified} runtime image references, and no audit findings.`);
+  }
 }
