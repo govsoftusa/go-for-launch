@@ -105,6 +105,11 @@ release.
 - [ ] Assign every indexable route to a page family and project-owned archetype with a reader purpose, content rhythm, visual identity, and distinctive selectors.
 - [ ] Capture legacy desktop, tablet, and mobile references.
 - [ ] Record the canonical hostname, staging target, and deployment contract.
+- [ ] The CMS stored authentication origin equals the canonical production origin and is not inherited from a retired preview host.
+- [ ] A bounded password-reset, invitation, or magic-link test uses the canonical production scheme and hostname.
+- [ ] A passkey registered on the canonical production origin completes one sign-out and sign-in cycle before preview-host access is retired.
+- [ ] An existing CMS record loads and saves in a clean browser, and the exact content API request is observed at the server.
+- [ ] Browser extensions or privacy rules that block CMS requests are diagnosed before a client-blocked editor is treated as a server or database defect.
 
 ## Project-Controlled Design-System Conformance
 

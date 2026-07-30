@@ -230,6 +230,44 @@ the media record's identity, keeping the URL alongside it. Without this the CMS
 treats every inline image as an opaque external string and editors cannot
 manage them after import.
 
+### Bind authentication to the canonical origin
+
+Treat the CMS authentication origin as migration data. Do not assume that
+changing the public site URL, canonical metadata, Worker route, or DNS record
+also changes the base URL used for authentication messages.
+
+Before retiring a candidate or provider preview hostname:
+
+1. Identify the CMS value used to compose password reset, invitation, and
+   magic-link URLs.
+2. Set that value to the canonical production origin through a supported CMS
+   setting or API.
+3. Request one bounded magic link and assert that its scheme and host equal the
+   canonical production origin.
+4. Register a new passkey from the canonical origin and complete one sign-out
+   and sign-in cycle.
+5. Keep the prior passkey and candidate access until the canonical credential
+   succeeds.
+
+Passkeys are bound to a WebAuthn relying-party identifier. Adding a canonical
+URL to a password manager item's website list does not migrate an existing
+passkey from a preview hostname. The passkey must be registered again from the
+canonical origin.
+
+If the CMS has no supported setter for an initial-setup authentication value,
+use the direct database lane only as a documented break-glass repair. Capture a
+point-in-time backup, guard the update by both key and expected old value,
+require exactly one changed row, read the value back, and preserve a precise
+rollback. This exception does not authorize unrelated database edits.
+
+Test content administration in a clean browser before calling the cutover
+complete. Privacy tools and content blockers can reject CMS paths that contain
+terms such as `api` or `content`. A loaded admin shell is not sufficient. Open
+an existing record, observe the exact content request at the server, save a
+reversible no-op or reviewed change, and confirm the public route. When the
+request never reaches the server, diagnose client filtering before changing
+the CMS, database, or application.
+
 ## Track 4: Bulk Import
 
 There is no headless bulk-import path in EmDash today. `scripts/emdash-import.mjs`

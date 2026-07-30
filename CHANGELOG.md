@@ -6,6 +6,48 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### Canonical CMS Authentication at Cutover
+
+#### Symptom
+
+- Email sign-in links continued to use a retired preview hostname after a
+  production cutover.
+- A passkey created on the preview hostname failed on the canonical production
+  hostname even after the canonical URL was added to the password manager
+  item.
+- The CMS admin shell loaded while a browser extension blocked the content API,
+  leaving an empty editor that resembled a database failure.
+
+#### Root Cause
+
+- The CMS stored a private authentication base URL separately from its public
+  site URL and canonical metadata.
+- WebAuthn passkeys remained bound to the relying-party identifier used during
+  registration. Password manager website aliases did not change that binding.
+- Admin-shell availability was treated as proof that every CMS API request
+  worked.
+
+#### Hard Rules and Implementation
+
+- Added a canonical authentication-origin cutover sequence to the
+  WordPress-to-EmDash migration guide.
+- Require one bounded magic-link host assertion and one canonical passkey
+  sign-out and sign-in cycle before retiring preview-host access.
+- Require old passkey access to remain until the canonical passkey succeeds.
+- Defined a guarded break-glass repair for initial-setup values that lack a
+  supported setter, including point-in-time recovery, exact row accounting,
+  read-back verification, and rollback.
+- Require an existing CMS record to load and save in a clean browser with the
+  exact content API request observed at the server.
+- Added checklist controls that distinguish client-side request filtering from
+  CMS, database, and application defects.
+
+#### Test Evidence
+
+- Documentation and case-study normalization checks pass.
+- No application release, performance threshold, mobile test, desktop test, or
+  PageSpeed requirement changed.
+
 ### Private Runtime Media Fixtures and Stable Candidate Identity
 
 #### Symptom
