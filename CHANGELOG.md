@@ -22,8 +22,9 @@
   all mobile, desktop, Safari, and PageSpeed application gates unchanged.
 - Strengthened the private CMS proof to send the challenge-protected request
   through compiled middleware instead of relying on request interception.
-  Added guarded loopback-only challenge stubbing, scoped-cookie transport
-  guidance for captured request helpers, and reversible users-console editing.
+  Added guarded loopback-only challenge stubbing, direct final-route transport
+  for captured request helpers and single-use tokens, and reversible
+  users-console editing.
 
 This file records reusable improvements to Go for Launch so maintainers can understand what changed, why it changed, how projects are affected, and which tests prove the behavior.
 

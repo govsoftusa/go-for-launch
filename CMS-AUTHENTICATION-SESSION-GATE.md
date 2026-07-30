@@ -87,9 +87,16 @@ Do not treat an intercepted browser request as equivalent server evidence.
 Interception can change request behavior, may omit security-sensitive headers
 from its inspection view, and prevents the compiled middleware from proving
 acceptance. When a dynamic admin bundle captures its request helper before a
-site extension can replace `window.fetch`, use a short-lived, narrowly scoped,
-same-site cookie as a transport fallback. The server must still verify the
-challenge action and hostname and expire the cookie after use.
+site extension can replace `window.fetch`, own the specific form submission
+boundary and send one protected request through the original browser fetch.
+Do not assume a later global fetch replacement or cookie fallback affects the
+captured helper.
+
+Send a one-time challenge token directly to the final framework route. Do not
+verify it before a method-preserving redirect and then verify it again at the
+redirect destination. The second verification can correctly fail because the
+token has already been consumed. The server must verify the challenge action
+and hostname exactly once before the protected operation.
 
 A fixed private challenge token is acceptable only when the compiled
 application requires both an explicit private-test runtime binding and a
