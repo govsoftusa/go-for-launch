@@ -67,10 +67,11 @@ valid route parameters or a preserved request body.
 Authentication bootstrap routes require a stricter check. Compare the exact
 slashless paths emitted by the CMS client with the authentication middleware's
 public route table. If the framework recognizes a public route by exact string,
-do not apply a blanket trailing-slash redirect that changes the path before the
-credential verifier runs. Require the passkey options and verification requests
-to reach their public handlers without a redirect to a path that requires an
-existing session.
+either serve that path directly or normalize only terminal slashes before the
+public-route lookup. A framework-required method-preserving redirect is valid
+only when its final path remains public and reaches the credential verifier.
+Require the passkey options and verification requests to reach their public
+handlers without encountering middleware that requires an existing session.
 
 When email login is protected by Turnstile or another browser challenge, open
 the actual dynamic email state in the compiled candidate. A static script tag,

@@ -10,8 +10,9 @@
 - Documented production-reachability fixture fingerprints that ignore direct,
   nested, and peer-only development-tool changes without hiding production
   dependency changes.
-- Added exact-route authentication checks that prevent global trailing-slash
-  middleware from moving passkey bootstrap requests behind session auth.
+- Added exact-route authentication checks that require passkey bootstrap
+  requests to remain public through any framework-required trailing-slash
+  normalization.
 - Added a dynamic email-login challenge proof requiring a visible widget,
   pre-verification submit blocking, post-verification enablement, token
   attachment, and separate fail-closed server validation.

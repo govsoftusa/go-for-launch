@@ -302,8 +302,10 @@ Do not extend that redirect mechanically to exact public authentication
 endpoints. EmDash recognizes passkey options and verification routes by exact
 path. Adding a trailing slash can move the login request from the public route
 table into authenticated middleware, which rejects the credential assertion
-because the session does not exist yet. Preserve the exact client-emitted
-authentication path and prove that it reaches the verifier without redirecting.
+because the session does not exist yet. Either serve the exact client-emitted
+path or normalize terminal slashes before EmDash compares its exact public
+route table. Prove that the final handler remains public and reaches the
+verifier. Do not count the redirect itself as success.
 
 When a magic-link form is protected by Turnstile, test the dynamic email state
 rather than only the initial login document. The admin application may replace
