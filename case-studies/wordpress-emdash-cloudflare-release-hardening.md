@@ -168,6 +168,49 @@ the source revision, container image family, dependency lock, build result, and
 artifact identity. Never treat remote Linux browser results as native Safari
 evidence.
 
+## Content Fixture Fingerprints Must Follow Reachability
+
+### Symptom
+
+An authentication-only candidate unexpectedly missed the local CMS fixture
+cache and began importing thousands of unchanged records. The run was stopped
+before the import completed.
+
+### Root cause
+
+The fixture key attempted to remove development dependencies by filtering every
+lockfile package whose metadata carried a development marker. Optional packages
+nested under a development-only command-line tool did not all carry that
+marker. Updating the test tool therefore changed the fixture key even though
+the seed, content archive, importer, compatibility patches, CMS runtime, and
+application production dependencies were unchanged.
+
+### Fix
+
+The fingerprint now traverses the dependency graph from the root production
+dependencies and includes only reachable regular and optional dependencies.
+Peer tools are excluded unless they are also reachable from the root production
+set.
+
+Regression fixtures prove:
+
+- a direct development dependency change preserves the key;
+- a nested development-tool dependency change preserves the key;
+- a peer supplied only as a development tool preserves the key;
+- a direct production dependency change invalidates the key;
+- a transitive production dependency change invalidates the key.
+
+The prior local fixture was adopted under the new key only after every content
+input and the reachable production graph were proven identical. No content
+records were reimported.
+
+### Reusable rule
+
+Do not infer production reachability from per-package development flags in a
+lockfile. Traverse from the root production dependency set. When a cache-key
+algorithm changes, adopt an old fixture only after proving every schema,
+content, importer, patch, and reachable production input is identical.
+
 ## Legacy Routing and Content Scope
 
 WordPress remained the routing authority for ambiguous legacy URLs even after

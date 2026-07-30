@@ -7,6 +7,9 @@
   adapter option collisions, immediate identity, admin collection loading,
   existing editors, disposable draft lifecycle, and secret-safe cleanup.
 - Documented an anonymized credential-success and session-failure case study.
+- Documented production-reachability fixture fingerprints that ignore direct,
+  nested, and peer-only development-tool changes without hiding production
+  dependency changes.
 
 This file records reusable improvements to Go for Launch so maintainers can understand what changed, why it changed, how projects are affected, and which tests prove the behavior.
 
