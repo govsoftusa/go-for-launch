@@ -466,7 +466,9 @@ and the intentional-differences document:
   release-time network dependency. Use a locked font package, a
   source-controlled font file, or an approved system stack. Apply the same
   rule to CMS admin fonts injected by an integration, not only to the public
-  theme.
+  theme. If a font package is consumed only while producing self-contained
+  output, classify it as a build dependency so it does not invalidate runtime
+  data fixtures.
 - Replace the framework's JavaScript menu toggle with a native disclosure.
 - Restore focus visibility, which older themes commonly suppress.
 - Honour `prefers-reduced-motion`.
