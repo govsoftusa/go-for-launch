@@ -28,6 +28,7 @@ The toolbox serves eighteen purposes:
 16. **Bounded delivery without weaker gates.** Define the task envelope, classify findings, prototype subjective work, stop repeated remediation, preserve checkpoints, freeze exact candidates, and separate follow-up work while retaining every mandatory mobile, desktop, WebKit, native Safari, and PageSpeed release requirement. See [Execution Control and Bounded Delivery](EXECUTION-CONTROL.md).
 17. **Verified PageSpeed document readiness.** When a dynamic site intentionally warms HTML before PageSpeed, issue a real browser-document request, prove the exact candidate and reusable cache state, and preserve that report without weakening cold-path tests or the 100 requirement. See [PageSpeed Document Readiness](PAGESPEED-READINESS.md).
 18. **CMS publishing without application rebuilds.** Classify CMS record and media changes into a dedicated editorial lane, validate the changed route graph and conserve performance without rebuilding Astro, and escalate any renderer or infrastructure change to the unchanged full application release gate. See [Editorial Publishing and Dynamic Content](EDITORIAL-PUBLISHING-AND-DYNAMIC-CONTENT.md).
+19. **CMS authentication and session continuity.** Prove the credential assertion, immediate authenticated identity, real collection lists, existing editors, and a disposable draft lifecycle against the compiled private candidate. See [CMS Authentication and Session Gate](CMS-AUTHENTICATION-SESSION-GATE.md).
 
 ## Why This Exists
 

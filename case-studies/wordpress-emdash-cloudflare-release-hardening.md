@@ -91,6 +91,55 @@ Never infer candidate identity from a deployment timestamp or a successful HTTP
 response. Require an explicit identity value in the response and release
 record. Promote only the exact candidate that passed.
 
+## CMS Credential Success Without Session Continuity
+
+### Symptom
+
+The canonical CMS accepted a valid passkey assertion, then returned an
+anonymous result when the admin application immediately requested the current
+user. Repeating the credential ceremony did not make the session reliable.
+
+### Root cause
+
+The framework adapter stored authentication sessions in an eventually
+consistent cache. The verification response wrote a new session, but the next
+request could miss that key. The framework treated the miss as an invalid
+session identifier, so a temporary consistency delay broke continuity for the
+new cookie.
+
+A second focused test found that the deployment adapter reserved the generic
+custom-driver option named `binding`. It replaced the intended database binding
+with the cache namespace object. Using a project-specific option name preserved
+the intended binding.
+
+### Fix
+
+Authentication sessions moved to a primary-backed relational store.
+Publication objects and rendered HTML stayed in cache storage. An idempotent
+migration created the session table, and the deployment workflow recorded a
+point-in-time recovery bookmark before applying it.
+
+The private compiled-candidate proof now:
+
+- completes one local-only credential assertion;
+- requires an immediate authenticated identity response;
+- opens the real admin base path;
+- renders posts and pages from their exact collection responses;
+- opens existing editors;
+- creates, edits, reloads, and deletes disposable local drafts;
+- rejects redirect responses as final API evidence;
+- removes tokens and records in final cleanup.
+
+The proof records statuses and normalized fixture facts. It never records raw
+tokens, cookies, personal addresses, or private content.
+
+### Reusable rule
+
+Authentication success is a state transition, not a response code. Test the
+entire credential-to-session-to-editor path on the compiled private candidate.
+Do not use eventually consistent cache storage as the sole session source of
+truth when the application immediately reads a newly written session.
+
 ## Clean Remote Build Before Cloud Deployment
 
 The frozen source revision was exported to an approved remote Linux host and

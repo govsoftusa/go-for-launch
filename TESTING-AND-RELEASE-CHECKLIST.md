@@ -108,11 +108,19 @@ release.
 - [ ] The CMS stored authentication origin equals the canonical production origin and is not inherited from a retired preview host.
 - [ ] A bounded password-reset, invitation, or magic-link test uses the canonical production scheme and hostname.
 - [ ] A passkey registered on the canonical production origin completes one sign-out and sign-in cycle before preview-host access is retired.
+- [ ] The session source of truth provides the consistency required for an immediate authentication write followed by an identity read.
+- [ ] Custom session driver option names were checked against deployment-adapter reserved and overwritten options.
+- [ ] The compiled private candidate completes the credential assertion and an immediate authenticated identity request with the expected role.
+- [ ] The real CMS admin base path loads, not an assumed shortcut or public application route.
 - [ ] An existing CMS record loads and saves in a clean browser, and the exact content API request is observed at the server.
 - [ ] Browser extensions or privacy rules that block CMS requests are diagnosed before a client-blocked editor is treated as a server or database defect.
 - [ ] If public routes enforce trailing slashes, the slashless CMS API URLs used by the admin reach handlers with populated collection and item parameters.
 - [ ] API slash normalization preserves GET, POST, and PUT semantics, including one disposable local write with its request body intact.
 - [ ] CMS list, existing-item, authors, trash, save, and publish requests pass in the private candidate environment.
+- [ ] Every required editorial collection renders a real fixture title in the admin console.
+- [ ] A disposable local draft can be created, edited, reloaded, moved to trash, and permanently deleted.
+- [ ] Redirect responses are not counted as final API success, and the final handler receives preserved route parameters, method, and body.
+- [ ] Authentication evidence excludes raw tokens, cookies, personal addresses, private bodies, and token-bearing URLs.
 
 ## Project-Controlled Design-System Conformance
 

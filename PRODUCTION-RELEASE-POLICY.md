@@ -64,6 +64,7 @@ verify viewport-specific network resources and confirm preloads match measured L
 run desktop and mobile browser tests
 run Playwright WebKit with an iPhone profile
 test the built candidate in native iOS Safari through Xcode Simulator
+run the CMS authentication and session proof when the application has a write-capable control surface
 capture an advisory Cloudflare production RUM baseline when approved access exists
 deploy the exact candidate to staging
 verify staging serves the expected candidate
@@ -84,6 +85,26 @@ query Cloudflare edge errors immediately and compare RUM after sufficient produc
 ```
 
 Do not rebuild between the successful staging audit and production promotion unless the new output repeats the complete gate.
+
+### CMS authentication and session continuity
+
+For every authenticated CMS or administrative console, follow
+[CMS Authentication and Session Gate](CMS-AUTHENTICATION-SESSION-GATE.md).
+A credential ceremony is only the first transition. The exact compiled
+candidate must also prove an immediate authenticated identity response, the
+real admin base path, required collection lists, existing record editors, and a
+disposable draft create, edit, reload, and cleanup lifecycle.
+
+The authentication session source of truth must satisfy the consistency
+required by an immediate write followed by a read. Do not treat an eventually
+consistent object cache as a strongly consistent session store. Record adapter
+reserved option names and verify the compiled configuration, because a valid
+custom driver can still receive the wrong binding when an adapter rewrites its
+options.
+
+This functional gate adds no exception to the complete mobile, desktop,
+WebKit, native Safari, accessibility, security, SEO, or 100 PageSpeed
+requirements.
 
 ### Exact artifact packaging
 

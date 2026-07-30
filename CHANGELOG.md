@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Added a mandatory CMS authentication and session-continuity gate.
+- Added a reusable session evidence record covering storage consistency,
+  adapter option collisions, immediate identity, admin collection loading,
+  existing editors, disposable draft lifecycle, and secret-safe cleanup.
+- Documented an anonymized credential-success and session-failure case study.
+
 This file records reusable improvements to Go for Launch so maintainers can understand what changed, why it changed, how projects are affected, and which tests prove the behavior.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).

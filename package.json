@@ -64,8 +64,8 @@
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
-    "@playwright/test": "1.62.0",
-    "astro": "^7.1.5",
+    "@playwright/test": "1.62.1",
+    "astro": "^7.1.6",
     "typescript": "^6.0.3"
   },
   "license": "MIT"

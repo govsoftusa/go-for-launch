@@ -249,6 +249,23 @@ Before retiring a candidate or provider preview hostname:
 5. Keep the prior passkey and candidate access until the canonical credential
    succeeds.
 
+Credential success is not session success. Immediately after the passkey or
+magic-link verification, request the authenticated identity endpoint and
+require the expected role. Then load the real collection lists and editors.
+Follow [CMS Authentication and Session Gate](CMS-AUTHENTICATION-SESSION-GATE.md)
+and preserve the completed session record with the candidate evidence.
+
+Review the session store separately from publication caches. A login handoff is
+an immediate write followed by a read. Eventually consistent storage can make a
+valid credential appear to fail when the next request cannot see the new
+session. If the framework replaces a session identifier after a storage miss,
+that temporary miss can permanently break continuity for the issued cookie.
+
+When a custom Astro session driver is used with a deployment adapter, inspect
+the compiled driver configuration. Do not assume that a generic option such as
+`binding` survives adapter normalization. Use an unreserved project-specific
+option name when the adapter reserves or rewrites the generic name.
+
 Passkeys are bound to a WebAuthn relying-party identifier. Adding a canonical
 URL to a password manager item's website list does not migrate an existing
 passkey from a preview hostname. The passkey must be registered again from the
