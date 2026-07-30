@@ -31,8 +31,9 @@
 - Required browser proof that an integration font opt-out also removes any
   runtime font component that expects the disabled family.
 - Documented private runtime bindings that appear in a provider startup table
-  but are absent from the compiled worker environment. Security-sensitive
-  test modes now require a temporary configuration and behavioral HTTP proof.
+  but are absent from the compiled worker environment, including when a
+  temporary configuration declares them. Private test modes now prefer
+  transport isolation, host behavior, and behavioral HTTP proof.
 
 This file records reusable improvements to Go for Launch so maintainers can understand what changed, why it changed, how projects are affected, and which tests prove the behavior.
 

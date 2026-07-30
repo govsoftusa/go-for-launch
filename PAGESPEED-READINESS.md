@@ -131,13 +131,12 @@ protected response first, set the reviewed production-mode value explicitly,
 then prove the indexable response before launching Lighthouse.
 
 Do not trust the runtime startup table alone. A provider CLI can list a
-command-line variable while the compiled worker environment does not receive
-the value. For security-sensitive private-test modes, generate a
-permission-restricted temporary provider configuration containing the explicit
-binding, start the runtime from that configuration, prove the resulting
-behavior through an HTTP request, and delete the configuration when the
-runtime stops. Never add the private-test binding to the deployable production
-configuration.
+development binding while the compiled worker environment does not receive
+it, even when a temporary configuration declares it. Prefer transport
+isolation and hostname behavior over a synthetic mode binding. A narrowly
+scoped offline challenge exception must require both a loopback request host
+and an explicit private-proof request marker. The public canonical hostname
+must be unable to satisfy that boundary.
 
 Start the provider runtime directly when it must run in the background.
 Backgrounding a package runner can leave the actual server as an unowned child.
