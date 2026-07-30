@@ -90,6 +90,35 @@ approval, a point-in-time backup or export, a precise rollback statement,
 least-privilege access, a record of every affected row, and post-write API and
 rendered-page parity checks.
 
+## Publication Lifecycle Contract
+
+A runtime CMS must define cache behavior for every content state transition,
+not only the first publish. Prove these cases before relying on the editorial
+lane:
+
+| Transition | Public HTML invalidation |
+|---|---|
+| First publish | Required after the published record is durable |
+| Direct edit of live content | Required after the live record is durable |
+| Save of a staged revision | Forbidden until the revision is published |
+| Publish of a staged revision | Required after the revision becomes live |
+| Draft save | Forbidden because no public record changed |
+| Scheduled-content save | Forbidden until the scheduled publish occurs |
+| Scheduled publish | Required after the record becomes live |
+| Unpublish | Required after the public record is withdrawn |
+| Restore | Required after the public record is restored |
+
+Do not infer these behaviors from hook names. Exercise each transition with a
+record whose public output can be distinguished before and after the action.
+Confirm that draft and staged-revision saves leave the current public document
+unchanged. Confirm that direct live edits and later revision publishes replace
+the public document without an application build.
+
+The first-publish path and the published-edit path are different operational
+contracts. A CMS can pass one while leaving the other stale. Treat lifecycle
+coverage as a prerequisite for routine publishing, not as an optional cache
+optimization.
+
 ## Invalidate the Route Graph
 
 Invalidate only the content record and public surfaces that depend on it. For a
@@ -214,8 +243,14 @@ Record these recurring failure classes:
   blocker rather than relabeled as a site pass;
 - an editorial task expanded into repeated full builds even though no
   application change was needed.
+- a staged revision was saved but not published, leaving the live route
+  unchanged even though the editor showed the corrected data;
+- an artifact copy retained files that the new build no longer produced,
+  creating a mixed release directory that did not represent any candidate.
 
 For application releases, clean and rebuild the exact source revision before
-upload, verify deployed identity, wait for identity convergence, and run the
-complete gate. For editorial publishes, keep the application candidate
-unchanged and verify the targeted route graph.
+upload. Copy the verified artifact with replacement semantics so files absent
+from the source are deleted from the destination. Verify deployed identity,
+wait for identity convergence, and run the complete gate. For editorial
+publishes, keep the application candidate unchanged and verify the targeted
+route graph.

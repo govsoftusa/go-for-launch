@@ -369,6 +369,47 @@ identical. The optimization changes only fixture preparation. It does not
 carry forward browser, performance, route, security, or exact-candidate
 evidence.
 
+## Finding 13: Saved revisions and copied artifacts were mistaken for final state
+
+A featured-image correction was saved in a revision-enabled CMS editor. The
+editor displayed the corrected image, but the public route still served the
+previous live record because the staged revision had not been published. A
+separate release handoff copied a verified build over an older local artifact
+directory without removing files that no longer existed in the new source.
+The deployment guard rejected the resulting mixed directory before upload.
+
+Both failures came from treating an additive operation as proof of replacement.
+A save does not necessarily replace the live CMS record. A recursive copy does
+not necessarily replace the destination artifact.
+
+### Reusable rule
+
+Define and verify replacement semantics at both boundaries.
+
+For CMS content:
+
+1. Distinguish first publish, direct live edit, staged-revision save,
+   revision publish, draft save, scheduled save, scheduled publish, unpublish,
+   and restore.
+2. Do not invalidate public HTML for a draft or staged-revision save.
+3. Invalidate affected public HTML after a direct live edit or any transition
+   that changes the live record.
+4. Verify the canonical public route after the final state transition, not
+   merely after the editor reports a successful save.
+5. Preserve the application candidate identity throughout a CMS-only change.
+
+For build artifacts:
+
+1. Copy from the verified source with deletion enabled or into a new empty
+   destination.
+2. Recompute the destination manifest and hash after transfer.
+3. Reject extra destination files, missing source files, or a hash mismatch.
+4. Upload the exact verified directory once, without a rebuild.
+
+These checks do not replace the full release suite. They ensure the directory
+entering that suite and the CMS record entering the editorial gate each
+represent one complete, final state.
+
 ## Reusable Checks to Add
 
 - Per-gate evidence carry-forward keyed by declared input hashes.

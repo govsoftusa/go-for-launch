@@ -6,6 +6,44 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### CMS Lifecycle and Artifact Replacement Semantics
+
+#### Symptom
+
+- A corrected image was visible in a revision-enabled editor while the public
+  article still served the previous live record.
+- A copied release directory retained files that were absent from the new
+  verified build.
+
+#### Root Cause
+
+- A staged-revision save was treated as if it published the revision.
+- An additive directory copy was treated as if it replaced the destination.
+- The editorial contract covered publishing generally but did not enumerate
+  every state transition that can change, or intentionally preserve, public
+  output.
+
+#### Hard Rules and Implementation
+
+- Added an explicit lifecycle matrix for first publish, direct live edit,
+  staged-revision save, revision publish, draft save, scheduled save,
+  scheduled publish, unpublish, and restore.
+- Require draft and staged-revision saves to preserve public HTML.
+- Require direct live edits and live-state transitions to invalidate affected
+  public HTML after the durable content change.
+- Require canonical-route verification after the final content transition,
+  not merely after an editor save succeeds.
+- Require artifact transfers to use deletion-enabled synchronization or a new
+  empty destination.
+- Require a destination manifest and hash to reject retained, missing, or
+  changed files before upload.
+
+#### Test Evidence
+
+- Documentation and case-study normalization checks pass.
+- No performance score, mobile coverage, desktop coverage, PageSpeed
+  requirement, or mandatory application release gate changed.
+
 ### Canonical CMS Authentication at Cutover
 
 #### Symptom
