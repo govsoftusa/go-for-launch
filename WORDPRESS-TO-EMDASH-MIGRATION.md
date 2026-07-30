@@ -268,6 +268,19 @@ reversible no-op or reviewed change, and confirm the public route. When the
 request never reaches the server, diagnose client filtering before changing
 the CMS, database, or application.
 
+When the publication uses a global trailing-slash policy, test the exact
+slashless API URLs emitted by the CMS admin. Do not normalize those URLs by
+calling middleware continuation with a substituted request unless the
+framework explicitly guarantees a fresh route match and repopulated dynamic
+parameters. A changed request URL can retain stale route parameters and pass
+undefined collection or item identifiers into the CMS.
+
+Prefer a method-preserving temporary redirect when the framework needs a new
+request to resolve the canonical slashed endpoint. Verify list, existing-item,
+create, save, publish, authors, and trash endpoints. Include at least one POST
+or PUT with a disposable local record so the test proves that the redirect
+preserves both the method and body.
+
 ## Track 4: Bulk Import
 
 There is no headless bulk-import path in EmDash today. `scripts/emdash-import.mjs`

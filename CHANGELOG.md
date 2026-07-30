@@ -15,8 +15,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - A passkey created on the preview hostname failed on the canonical production
   hostname even after the canonical URL was added to the password manager
   item.
-- The CMS admin shell loaded while a browser extension blocked the content API,
-  leaving an empty editor that resembled a database failure.
+- The CMS admin shell loaded while existing records appeared as blank drafts.
+- A clean browser reproduced the failure, disproving the initial extension
+  hypothesis.
+- Global trailing-slash middleware changed the request URL without recomputing
+  framework route parameters, so the CMS received undefined identifiers.
 
 #### Root Cause
 
@@ -26,6 +29,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
   registration. Password manager website aliases did not change that binding.
 - Admin-shell availability was treated as proof that every CMS API request
   worked.
+- Internal URL substitution was assumed to perform a new route match.
 
 #### Hard Rules and Implementation
 
@@ -41,6 +45,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
   exact content API request observed at the server.
 - Added checklist controls that distinguish client-side request filtering from
   CMS, database, and application defects.
+- Require exact slashless admin API requests to preserve populated collection
+  and item parameters when a site enforces trailing slashes.
+- Require method-preserving normalization to pass list, existing-item, authors,
+  trash, save, and publish checks in the private candidate environment.
 
 #### Test Evidence
 

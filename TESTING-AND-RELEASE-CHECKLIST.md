@@ -110,6 +110,9 @@ release.
 - [ ] A passkey registered on the canonical production origin completes one sign-out and sign-in cycle before preview-host access is retired.
 - [ ] An existing CMS record loads and saves in a clean browser, and the exact content API request is observed at the server.
 - [ ] Browser extensions or privacy rules that block CMS requests are diagnosed before a client-blocked editor is treated as a server or database defect.
+- [ ] If public routes enforce trailing slashes, the slashless CMS API URLs used by the admin reach handlers with populated collection and item parameters.
+- [ ] API slash normalization preserves GET, POST, and PUT semantics, including one disposable local write with its request body intact.
+- [ ] CMS list, existing-item, authors, trash, save, and publish requests pass in the private candidate environment.
 
 ## Project-Controlled Design-System Conformance
 
