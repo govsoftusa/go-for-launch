@@ -336,6 +336,39 @@ content through the editorial lane when safe, then fix the shared renderer in
 a separately frozen application release. Do not turn every future post into an
 application migration.
 
+## Finding 12: A test dependency invalidated the complete CMS fixture
+
+A private candidate found no reusable CMS fixture even though the publication
+seed, content archive, importer, compatibility patch, and production
+dependencies were unchanged. The cache key hashed the complete package lock.
+Adding a parser used only by a release check therefore triggered thousands of
+content API writes and nearly an hour of unnecessary local work.
+
+The broad key was conservative but did not describe the state represented by
+the fixture. A CMS data fixture depends on its seed, imported records, importer
+behavior, compatibility patches, and production dependency graph. It does not
+depend on a test-only browser, parser, type package, or report generator.
+
+### Reusable rule
+
+Build the CMS fixture key from the inputs that can change the stored schema or
+records:
+
+1. Hash the complete seed and content archive.
+2. Hash the importer and every CMS compatibility patch.
+3. Normalize the package lock to the production dependency graph.
+4. Exclude packages marked as development-only.
+5. Test the key function with two mutations. A development dependency change
+   must preserve the key, and a production dependency change must invalidate
+   it.
+6. Write a fixture only after the complete import and verification pass.
+
+Do not reuse an older fixture merely because it exists. Before a one-time cache
+alias or migration, prove that every schema and record input above is
+identical. The optimization changes only fixture preparation. It does not
+carry forward browser, performance, route, security, or exact-candidate
+evidence.
+
 ## Reusable Checks to Add
 
 - Per-gate evidence carry-forward keyed by declared input hashes.

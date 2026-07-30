@@ -56,6 +56,39 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - No application release, performance threshold, mobile test, desktop test, or
   PageSpeed requirement changed.
 
+### CMS Fixture Keys Ignore Test-Only Dependency Churn
+
+#### Symptom
+
+- A complete private CMS fixture rebuild started even though publication data,
+  importer behavior, compatibility patches, and production dependencies had
+  not changed.
+- The only package-lock difference was a development-only parser used by a
+  release check.
+
+#### Root Cause
+
+- The fixture key hashed the complete package lock rather than the production
+  dependency graph represented by the stored CMS state.
+
+#### Hard Rules and Implementation
+
+- Key CMS fixtures by seed, complete content archive, importer, compatibility
+  patches, and normalized production dependencies.
+- Exclude packages explicitly marked development-only from the dependency
+  fingerprint.
+- Require a unit check proving development dependency changes preserve the
+  fingerprint and production dependency changes invalidate it.
+- Permit a one-time cache alias only after every schema and content input is
+  proven identical.
+- Keep exact-candidate browser, performance, mobile, desktop, security, and
+  PageSpeed gates independent from fixture reuse.
+
+#### Test Evidence
+
+- Documentation and case-study normalization checks pass.
+- No score threshold or mandatory release gate changed.
+
 ### Private Runtime Media Fixtures and Stable Candidate Identity
 
 #### Symptom
