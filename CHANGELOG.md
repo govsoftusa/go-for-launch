@@ -16,6 +16,14 @@
 - Added a dynamic email-login challenge proof requiring a visible widget,
   pre-verification submit blocking, post-verification enablement, token
   attachment, and separate fail-closed server validation.
+- Added an EmDash editorial-readiness plugin contract for bounded per-post SEO
+  and AEO checks. It separates objective publication blockers from editorial
+  advice, requires an authoritative server-side prepublication hook, and keeps
+  all mobile, desktop, Safari, and PageSpeed application gates unchanged.
+- Strengthened the private CMS proof to send the challenge-protected request
+  through compiled middleware instead of relying on request interception.
+  Added guarded loopback-only challenge stubbing, scoped-cookie transport
+  guidance for captured request helpers, and reversible users-console editing.
 
 This file records reusable improvements to Go for Launch so maintainers can understand what changed, why it changed, how projects are affected, and which tests prove the behavior.
 

@@ -70,6 +70,9 @@ release.
 - [ ] The featured image is sharp at rendered size, responsive, within byte budget, and not duplicated accidentally at the start of the body.
 - [ ] Home, archive, author, search, feed, related-content, and sitemap surfaces agree with the CMS state.
 - [ ] Existing interactive forms retain the approved anti-spam boundary.
+- [ ] Any CMS editorial-readiness plugin ran against the final post hash and policy version.
+- [ ] Objective publication blockers passed, while subjective SEO and AEO guidance remained advisory.
+- [ ] Every authoritative publication path invokes a server-side prepublication check. A client-only editor check is not treated as enforcement.
 - [ ] Medium and high performance-risk publishes have a targeted browser trace for affected first-viewport routes.
 - [ ] High performance-risk publishes have a passing targeted PageSpeed result when the provider is available. A valid score below the project requirement follows the rollback policy.
 - [ ] `scripts/verify-editorial-publish.mjs` passes against the completed record.

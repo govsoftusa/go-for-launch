@@ -77,10 +77,31 @@ When email login is protected by Turnstile or another browser challenge, open
 the actual dynamic email state in the compiled candidate. A static script tag,
 source scan, or fail-closed server response is not sufficient. The proof must
 observe a visible challenge, confirm that submission remains disabled until
-verification, and inspect the outgoing request to confirm that it carries the
-challenge token. Stub the external challenge client in the private browser
-environment so this proof does not consume production traffic or provider
-quota. Separately require the server to reject a missing or invalid token.
+verification, and send the real request through the compiled server boundary.
+Require the server to accept the fixed private proof and separately reject a
+missing or invalid token. Stub the external challenge client in the private
+browser environment so this proof does not consume production traffic or
+provider quota.
+
+Do not treat an intercepted browser request as equivalent server evidence.
+Interception can change request behavior, may omit security-sensitive headers
+from its inspection view, and prevents the compiled middleware from proving
+acceptance. When a dynamic admin bundle captures its request helper before a
+site extension can replace `window.fetch`, use a short-lived, narrowly scoped,
+same-site cookie as a transport fallback. The server must still verify the
+challenge action and hostname and expire the cookie after use.
+
+A fixed private challenge token is acceptable only when the compiled
+application requires both an explicit private-test runtime binding and a
+loopback request hostname. The production environment must satisfy neither
+condition. Pin these restrictions in a source-level gate.
+
+User-management proof should load the real users console, open one disposable
+or current local administrator record, save one reversible non-privilege
+field, verify persistence through the management API, and restore the original
+value. Confirm that role and account-state controls render for an
+administrator. Do not demote or disable the only local administrator merely to
+exercise a control.
 
 ## Evidence boundaries
 
@@ -97,6 +118,7 @@ The machine-readable report may record:
 - create, edit, reload, and cleanup results.
 - exact authentication bootstrap paths and redirect status;
 - visible anti-spam challenge and token attachment results.
+- users-console response, reversible update, persistence, and restoration.
 
 It must not record:
 
