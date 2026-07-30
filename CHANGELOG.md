@@ -34,8 +34,10 @@
   but are absent from the compiled worker environment, including when a
   temporary configuration declares them. Private test modes now prefer
   transport isolation, host behavior, and behavioral HTTP proof.
-- Clarified that a CMS canonical origin can rewrite the framework request URL.
-  Loopback-only challenge proofs must inspect the raw transport host instead.
+- Clarified that a CMS canonical origin can rewrite the framework request URL
+  and `Host` header. Loopback-only challenge proofs must use the
+  provider-supplied connection address that becomes the real client address
+  in production.
 
 This file records reusable improvements to Go for Launch so maintainers can understand what changed, why it changed, how projects are affected, and which tests prove the behavior.
 

@@ -138,9 +138,10 @@ scoped offline challenge exception must require both a loopback request host
 and an explicit private-proof request marker. The public canonical hostname
 must be unable to satisfy that boundary. When the CMS configures a canonical
 site URL, the framework may normalize its request URL to that public origin
-even over a loopback connection. Bind the private exception to the raw
-transport `Host` header, not the normalized framework URL, and prove both
-conditions through the compiled server.
+even over a loopback connection, including rewriting the `Host` header. Bind
+the private exception to a provider-supplied connection address that is
+loopback in the isolated runtime and represents the real client in production.
+Prove the value and both boundary conditions through the compiled server.
 
 Start the provider runtime directly when it must run in the background.
 Backgrounding a package runner can leave the actual server as an unowned child.
