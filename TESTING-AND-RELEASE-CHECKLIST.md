@@ -232,6 +232,7 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] The production build does not download fonts from a live third-party provider.
 - [ ] Framework and CMS integrations cannot silently add release-time font downloads.
 - [ ] Build-only font packages do not invalidate runtime data fixtures.
+- [ ] A disabled integration font does not leave a runtime font component that fails rendering.
 - [ ] Inline logos and interface SVGs avoid accidental fractional view-box scaling.
 - [ ] The normal production build generates `/sitemap.xml` and runs the sitemap verifier.
 - [ ] Every indexable built canonical appears exactly once in the sitemap.

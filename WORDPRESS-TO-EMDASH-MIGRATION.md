@@ -468,7 +468,9 @@ and the intentional-differences document:
   rule to CMS admin fonts injected by an integration, not only to the public
   theme. If a font package is consumed only while producing self-contained
   output, classify it as a build dependency so it does not invalidate runtime
-  data fixtures.
+  data fixtures. Verify the rendered CMS console after disabling an
+  integration font. A documented opt-out is incomplete if its layout still
+  renders a font component that expects the removed family.
 - Replace the framework's JavaScript menu toggle with a native disclosure.
 - Restore focus visibility, which older themes commonly suppress.
 - Honour `prefers-reduced-motion`.

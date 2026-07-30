@@ -28,6 +28,8 @@
 - Added a deterministic font-build requirement. Public and CMS integration
   fonts must come from locked packages, source-controlled assets, or approved
   system stacks, so a live font provider cannot stop or alter a release.
+- Required browser proof that an integration font opt-out also removes any
+  runtime font component that expects the disabled family.
 
 This file records reusable improvements to Go for Launch so maintainers can understand what changed, why it changed, how projects are affected, and which tests prove the behavior.
 
