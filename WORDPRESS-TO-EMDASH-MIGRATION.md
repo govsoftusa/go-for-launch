@@ -461,6 +461,12 @@ Changes that are worth making anyway, all of which belong in the overrides file
 and the intentional-differences document:
 
 - Self-host the webfont the theme loaded from a third party.
+- Make the build itself independent of live font providers. A font that is
+  self-hosted only after Astro downloads it during each build is still a
+  release-time network dependency. Use a locked font package, a
+  source-controlled font file, or an approved system stack. Apply the same
+  rule to CMS admin fonts injected by an integration, not only to the public
+  theme.
 - Replace the framework's JavaScript menu toggle with a native disclosure.
 - Restore focus visibility, which older themes commonly suppress.
 - Honour `prefers-reduced-motion`.

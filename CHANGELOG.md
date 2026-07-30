@@ -25,6 +25,9 @@
   Added guarded loopback-only challenge stubbing, direct final-route transport
   for captured request helpers and single-use tokens, and reversible
   users-console editing.
+- Added a deterministic font-build requirement. Public and CMS integration
+  fonts must come from locked packages, source-controlled assets, or approved
+  system stacks, so a live font provider cannot stop or alter a release.
 
 This file records reusable improvements to Go for Launch so maintainers can understand what changed, why it changed, how projects are affected, and which tests prove the behavior.
 
