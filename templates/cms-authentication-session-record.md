@@ -15,6 +15,8 @@
 - Credential method:
 - Canonical relying-party origin:
 - Immediate identity endpoint:
+- Public authentication bootstrap paths:
+- Bootstrap redirect policy:
 - Required role or capability:
 - Session cookie policy:
 - Session expiry:
@@ -45,6 +47,10 @@
 | Check | Expected | Result | Evidence |
 |---|---|---|---|
 | Credential assertion | Success | | |
+| Passkey options path | Final 200 without private-route redirect | | |
+| Passkey verification path | Reaches the public verifier | | |
+| Email anti-spam challenge | Visible and submit gated | | |
+| Email challenge token | Attached to protected request | | |
 | Immediate identity | Authenticated | | |
 | Role or capability | Expected value | | |
 | Admin shell | Loaded | | |

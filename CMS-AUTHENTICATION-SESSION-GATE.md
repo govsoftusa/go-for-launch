@@ -64,6 +64,23 @@ be valid, but the gate must wait for the final collection or item response and
 require success. Do not count a 3xx response as proof that the handler received
 valid route parameters or a preserved request body.
 
+Authentication bootstrap routes require a stricter check. Compare the exact
+slashless paths emitted by the CMS client with the authentication middleware's
+public route table. If the framework recognizes a public route by exact string,
+do not apply a blanket trailing-slash redirect that changes the path before the
+credential verifier runs. Require the passkey options and verification requests
+to reach their public handlers without a redirect to a path that requires an
+existing session.
+
+When email login is protected by Turnstile or another browser challenge, open
+the actual dynamic email state in the compiled candidate. A static script tag,
+source scan, or fail-closed server response is not sufficient. The proof must
+observe a visible challenge, confirm that submission remains disabled until
+verification, and inspect the outgoing request to confirm that it carries the
+challenge token. Stub the external challenge client in the private browser
+environment so this proof does not consume production traffic or provider
+quota. Separately require the server to reject a missing or invalid token.
+
 ## Evidence boundaries
 
 The machine-readable report may record:
@@ -77,6 +94,8 @@ The machine-readable report may record:
 - visible fixture counts;
 - public fixture titles;
 - create, edit, reload, and cleanup results.
+- exact authentication bootstrap paths and redirect status;
+- visible anti-spam challenge and token attachment results.
 
 It must not record:
 
@@ -115,7 +134,9 @@ Use the first failing transition:
 | Transition | Likely class |
 |---|---|
 | Credential ceremony fails | relying-party, origin, browser, or credential configuration |
+| Credential request returns `Not authenticated` before verification | public route classification or URL normalization |
 | Verification succeeds, immediate identity fails | session write, consistency, cookie, or middleware |
+| Email form enforces a challenge that is not visible | dynamic form mounting, client readiness, content blocking, or script lifecycle |
 | Admin shell loads, collections fail | API routing, authorization, client blocking, or database |
 | Lists load, editor fails | item routing, schema, revision, or hydration |
 | Create works, edit fails | optimistic concurrency, method or body preservation, or permission |

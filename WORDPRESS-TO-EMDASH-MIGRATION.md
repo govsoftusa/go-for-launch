@@ -298,6 +298,20 @@ create, save, publish, authors, and trash endpoints. Include at least one POST
 or PUT with a disposable local record so the test proves that the redirect
 preserves both the method and body.
 
+Do not extend that redirect mechanically to exact public authentication
+endpoints. EmDash recognizes passkey options and verification routes by exact
+path. Adding a trailing slash can move the login request from the public route
+table into authenticated middleware, which rejects the credential assertion
+because the session does not exist yet. Preserve the exact client-emitted
+authentication path and prove that it reaches the verifier without redirecting.
+
+When a magic-link form is protected by Turnstile, test the dynamic email state
+rather than only the initial login document. The admin application may replace
+the form after the first script load. Require a visible widget, a disabled
+submit action before verification, an enabled action after verification, and a
+token-bearing request. Use an offline client stub in the private candidate and
+keep real server-side token verification fail closed.
+
 ## Track 4: Bulk Import
 
 There is no headless bulk-import path in EmDash today. `scripts/emdash-import.mjs`

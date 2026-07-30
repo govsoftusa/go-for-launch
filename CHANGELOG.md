@@ -10,6 +10,11 @@
 - Documented production-reachability fixture fingerprints that ignore direct,
   nested, and peer-only development-tool changes without hiding production
   dependency changes.
+- Added exact-route authentication checks that prevent global trailing-slash
+  middleware from moving passkey bootstrap requests behind session auth.
+- Added a dynamic email-login challenge proof requiring a visible widget,
+  pre-verification submit blocking, post-verification enablement, token
+  attachment, and separate fail-closed server validation.
 
 This file records reusable improvements to Go for Launch so maintainers can understand what changed, why it changed, how projects are affected, and which tests prove the behavior.
 

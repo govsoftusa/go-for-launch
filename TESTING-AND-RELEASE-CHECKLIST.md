@@ -115,7 +115,10 @@ release.
 - [ ] An existing CMS record loads and saves in a clean browser, and the exact content API request is observed at the server.
 - [ ] Browser extensions or privacy rules that block CMS requests are diagnosed before a client-blocked editor is treated as a server or database defect.
 - [ ] If public routes enforce trailing slashes, the slashless CMS API URLs used by the admin reach handlers with populated collection and item parameters.
+- [ ] Exact public authentication endpoints are excluded from blanket slash normalization and reach their verifier without requiring a preexisting session.
 - [ ] API slash normalization preserves GET, POST, and PUT semantics, including one disposable local write with its request body intact.
+- [ ] A dynamic email login state renders its anti-spam challenge, blocks submission before verification, enables submission after verification, and attaches the token to the outgoing request.
+- [ ] The private browser proof stubs the external challenge client while the server separately rejects missing and invalid tokens.
 - [ ] CMS list, existing-item, authors, trash, save, and publish requests pass in the private candidate environment.
 - [ ] Every required editorial collection renders a real fixture title in the admin console.
 - [ ] A disposable local draft can be created, edited, reloaded, moved to trash, and permanently deleted.
