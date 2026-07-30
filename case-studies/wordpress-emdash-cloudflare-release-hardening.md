@@ -877,6 +877,65 @@ the exact candidate passes.
 - Running the complete suite after every speculative change consumed hours
   without isolating the controlling path. Use targeted checks during
   remediation, then freeze and run the full mandatory suite once.
+- Combining a generated Worker entry with the source deployment configuration
+  and an unbundled upload omitted generated modules. Use the framework
+  deployment manifest and prove package closure locally.
+
+## Generated Worker Package Closure
+
+### Symptom
+
+The application build and exact-artifact checks passed, but the first
+production promotion request was rejected because a generated middleware
+module was missing. The local provider dry run had contained only the Worker
+entry file even though that entry imported hundreds of relative modules.
+
+### Root cause
+
+The promotion command combined three incompatible assumptions:
+
+- The executable entry came from the framework-generated server output.
+- Runtime settings came from the source deployment configuration.
+- An unbundled option assumed every required module was already declared.
+
+The framework adapter had written a complete deployment manifest beside the
+entry file. That manifest declared the entry, generated module rules, asset
+directory, routes, bindings, compatibility settings, and scheduled triggers.
+The source configuration did not describe the generated module graph.
+
+A successful application build did not prove that the provider transport
+package was complete. A successful entry-only dry run also did not prove that
+the entry could execute.
+
+### Fix
+
+The release helper now:
+
+1. Reads the framework-generated deployment manifest from the verified build
+   output.
+2. Uses the lockfile-installed provider CLI.
+3. Creates a local dry-run package without rebuilding the candidate.
+4. Walks every statically reachable relative import from the generated entry.
+5. Fails when any reachable module is absent from the dry-run package.
+6. Confirms the generated module, asset, route, binding, compatibility, and
+   trigger contracts before the first production request.
+7. Preserves or quarantines prior dry-run output instead of overwriting it
+   silently.
+
+The corrected dry run contained hundreds of executable modules and the
+reviewed static assets. The exact verified artifact did not change. Production
+promotion then used those same bytes.
+
+The first bounded canonical checks during propagation still saw the prior
+candidate. The apex redirects were already correct. A second quiet-interval
+check saw the new candidate consistently, so no cache purge was needed.
+
+### Reusable rule
+
+Treat provider packaging as a separate fail-closed gate between exact-artifact
+verification and production upload. Use the generated deployment manifest.
+Reject an entry-only package when the entry imports relative chunks. Packaging
+must transport the verified artifact, not rebuild or transform it.
 
 ## Apex Redirect Required a Third Service
 
@@ -918,43 +977,46 @@ redirect.
 2. Freeze one project revision and record its complete runtime inputs.
 3. Export that revision to a fresh remote Podman checkout and pass dependency,
    type, compromise, route, redirect, form, and build checks.
-4. Deploy only the exact tested output to an isolated protected service and
+4. Create a local provider dry-run package from the generated deployment
+   manifest and prove complete executable module closure.
+5. Deploy only the exact tested output to an isolated protected service and
    attach required secrets without exposing their values.
-5. Wait for route convergence, purge only the documented cache layers, then
+6. Wait for route convergence, purge only the documented cache layers, then
    assert candidate identity on clean URLs, canonical output, robots behavior,
    and HTTPS.
-6. Run the smallest targeted check for the last known failure before spending
+7. Run the smallest targeted check for the last known failure before spending
    time on the full matrix.
-7. Establish cold, warm, and concurrent server-performance evidence.
-8. Verify media bytes, responsive selection, compression, and cache headers.
-9. Run route parity, redirects, sitemap, site health, semantic SEO, content
+8. Establish cold, warm, and concurrent server-performance evidence.
+9. Verify media bytes, responsive selection, compression, and cache headers.
+10. Run route parity, redirects, sitemap, site health, semantic SEO, content
    quality, render sharpness, interface, side navigation, design, and visual
    composition gates as applicable.
-10. Inventory every public write form and test browser plus direct-request
+11. Inventory every public write form and test browser plus direct-request
     Turnstile behavior through the real edge. Test read-only GET search
     separately.
-11. Verify method-aware cache rules, purge behavior, and content invalidation.
-12. Run Chromium, Playwright WebKit, and native iOS Safari checks.
-13. Run protected-staging PageSpeed mobile and desktop against the exact
+12. Verify method-aware cache rules, purge behavior, and content invalidation.
+13. Run Chromium, Playwright WebKit, and native iOS Safari checks.
+14. Run protected-staging PageSpeed mobile and desktop against the exact
     candidate.
-14. Confirm all required human approvals are current and hash-bound.
-15. Stop if any hard gate fails. Preserve the failed report.
-16. Deploy the same build to a separate public service with no duplicate cron.
-17. Attach only the canonical hostname, then require two multi-region
+15. Confirm all required human approvals are current and hash-bound.
+16. Stop if any hard gate fails. Preserve the failed report.
+17. Deploy the same build to a separate public service with no duplicate cron.
+18. Attach only the canonical hostname, then require two multi-region
     convergence passes separated by quiet intervals.
-18. Run public SEO, smoke, forms, search, Chromium, WebKit, native Safari, and
+19. Run public SEO, smoke, forms, search, Chromium, WebKit, native Safari, and
     the complete PageSpeed matrix. Every category in every result must equal
     100.
-19. Deploy the minimal redirect Worker to a third service, attach the apex, and
+20. Deploy the minimal redirect Worker to a third service, attach the apex, and
     verify first-hop GET and HEAD behavior for root, path, and query.
-20. Repeat route convergence and a post-apex public PageSpeed check.
-21. Reconcile every artifact, source runtime, toolkit revision, candidate
+21. Repeat route convergence and a post-apex public PageSpeed check.
+22. Reconcile every artifact, source runtime, toolkit revision, candidate
     assertion, and failed report before release signoff.
 
 ## Evidence to Preserve
 
 - Toolkit and project source revisions.
 - Candidate identity and Worker deployment identity.
+- Provider dry-run package and executable module-closure report.
 - Build, typecheck, and security-scan output.
 - Route, redirect, sitemap, and crawler reports.
 - Cold, warm, burst, and PageSpeed results.

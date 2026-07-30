@@ -340,6 +340,10 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] No supplemental PageSpeed result replaces a scored result, and every completed matrix result has all four categories equal to 100.
 - [ ] All eight required PageSpeed category checks equal 100.
 - [ ] No production push occurs before the Simulator and PageSpeed gates pass.
+- [ ] The production upload uses the framework-generated deployment manifest beside the verified artifact.
+- [ ] A local provider dry run proves the complete executable module closure, generated module rules, assets, routes, bindings, compatibility settings, and scheduled triggers before any production request.
+- [ ] The dry-run package contains every statically reachable relative module. An entry-only package fails when the entry imports generated chunks.
+- [ ] Packaging does not rebuild or transform the frozen candidate.
 - [ ] Production deployment completes successfully.
 - [ ] Production begins with one canonical canary hostname while the apex and rollback hostname remain on the prior application.
 - [ ] The canary is given the reviewed route propagation interval before application gates begin.

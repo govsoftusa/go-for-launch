@@ -72,6 +72,8 @@ verify PageSpeed provider access with one scored probe before a full matrix
 run PageSpeed Insights on staging for mobile and desktop
 require four scores of 100 in both strategies, subject only to the protected staging rule below
 verify the hash-bound release evidence manifest for the frozen candidate
+create a local provider dry-run package from the framework-generated deployment manifest
+verify the dry-run package contains the complete executable module closure, assets, routes, and bindings
 provisionally deploy the same candidate to production
 require four PageSpeed scores of 100 on the canonical production hostname
 verify the canonical hostname
@@ -82,6 +84,32 @@ query Cloudflare edge errors immediately and compare RUM after sufficient produc
 ```
 
 Do not rebuild between the successful staging audit and production promotion unless the new output repeats the complete gate.
+
+### Exact artifact packaging
+
+Promotion must consume the deployment manifest generated beside the verified
+build output when the framework or adapter provides one. Do not combine a
+source configuration with a generated entry file and an unbundled upload
+option unless the source configuration itself declares every generated module.
+
+Create a local provider dry run before the first production request. The dry
+run must prove all of the following:
+
+- The executable entry is the one named by the generated manifest.
+- Every statically reachable relative module is present in the package.
+- Generated module rules are active.
+- The asset directory and binding match the verified build output.
+- Routes, runtime bindings, compatibility settings, and scheduled triggers
+  match the reviewed production contract.
+
+A dry run containing only the entry file is not valid when that entry imports
+relative chunks. A successful source build does not prove provider package
+closure. Missing module closure blocks promotion before any provider upload.
+
+The provider package step must not rebuild or transform the frozen candidate.
+Its output is a transport package for the exact verified artifact. If
+packaging changes executable bytes, assets, routing, or runtime configuration,
+freeze a new candidate and repeat the mandatory release suite.
 
 ### PageSpeed first-failure handling
 
