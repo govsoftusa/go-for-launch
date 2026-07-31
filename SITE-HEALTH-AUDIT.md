@@ -98,6 +98,13 @@ Link directly to the canonical route. Do not rely on a redirect to add or remove
 
 Every indexable page should have at least one meaningful incoming link from another indexable page. Sitemap inclusion alone does not make content discoverable to a visitor. Use `orphanAllowlist` only for deliberately isolated pages with written approval.
 
+Links marked `rel="ugc"` are excluded from internal navigation, redirect, and
+orphan calculations. A legacy comment or other user submission is not part of
+the publication's information architecture and must not be allowed to create
+or satisfy an incoming-link relationship. The application must still escape
+the submitted text and mark generated anchors with `rel="ugc"`. Editorial and
+template links remain fully gated.
+
 ## Robots and Public Crawl Verification
 
 The local gate proves that `robots.txt` exists in the candidate and advertises the expected sitemap. It cannot prove that Cloudflare, routing, cache state, authentication, or deployment configuration serves the file publicly.

@@ -75,7 +75,7 @@ await writeFile(join(valid, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${
 await page(valid, "/", html({
   route: "/",
   title: "Example Public Information",
-  body: '<h1>Home</h1><a href="/about/">About</a><a href="/encoded-%d1%8f/">Encoded route</a><img src="/assets/content.webp" alt="Public information" width="800" height="450">'
+  body: '<h1>Home</h1><a href="/about/">About</a><a href="/encoded-%d1%8f/">Encoded route</a><a href="/about" rel="nofollow ugc noopener">Legacy visitor link</a><img src="/assets/content.webp" alt="Public information" width="800" height="450">'
 }));
 await page(valid, "/about/", html({
   route: "/about/",

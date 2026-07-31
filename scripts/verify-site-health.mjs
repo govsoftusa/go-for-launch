@@ -251,6 +251,17 @@ for (const file of await collectHtmlFiles(outputDirectory)) {
 
   for (const element of document("a[href]")) {
     const href = document(element).attr("href") || "";
+    const rel = new Set(
+      (document(element).attr("rel") || "")
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(Boolean)
+    );
+    // User-generated links are not publication navigation and must not count
+    // as incoming links or block a release when an old comment names a legacy
+    // route. The application remains responsible for escaping and marking the
+    // comment link with rel=ugc.
+    if (rel.has("ugc")) continue;
     let url;
     try {
       url = new URL(href, new URL(route, site));
