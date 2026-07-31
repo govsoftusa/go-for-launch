@@ -223,6 +223,32 @@ the client script does not remove or weaken the security boundary.
 Use targeted checks during development. Do not repeatedly run the complete
 archive suite after each repair.
 
+Run every cheap, high-signal gate before an exhaustive archive operation. For
+a content migration, this includes managed-page snapshots, shortcode residue,
+content-quality rules, reviewed-copy hashes, form presence, and form security
+boundaries. A small page set must not be allowed to fail only after thousands
+of archive routes have already been rendered.
+
+The preflight must inspect the final HTML, not only the imported CMS record. A
+source importer can correctly preserve a legacy shortcode while the target
+theme incorrectly displays that shortcode as public text. The same preflight
+must require an actual replacement interface when a reviewed page promises a
+form, search control, download, or other interactive element. Preserving a
+content hash does not prove that the promised interface exists.
+
+Order the gates by cost and expected diagnostic value:
+
+1. Configuration and identity checks.
+2. Malware and source-integrity checks.
+3. Managed-page rendering, content hashes, and interactive-contract checks.
+4. Representative route and media checks.
+5. Exhaustive static archive verification.
+6. Bounded browser and Lighthouse matrices.
+
+If an early gate fails, stop before the archive crawl. Preserve its report,
+fix the specific contract, and rerun the small preflight. Do not use a full
+archive run as the development loop.
+
 The release sequence is:
 
 1. Prove a representative slice.
