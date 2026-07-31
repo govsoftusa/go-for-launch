@@ -101,6 +101,20 @@ would exceed the request budget. Record the total reference count, selected
 count, and verified count separately. New editorial media still requires a
 targeted check in the editorial publishing lane.
 
+A zero runtime-transform inventory can be valid when the application emits
+direct object-storage URLs. It is not permission to skip media fixture
+coverage. Parse the actual `img`, `source`, icon, and image-preload attributes
+from every measured browser route, map each direct delivery URL back to its
+object key, and require that exact key in the offline object mirror. Exclude
+Open Graph metadata from the browser-resource list unless the browser route
+actually requests it.
+
+Run this measured-route media preflight before an exhaustive archive snapshot.
+It must fail when a required object is missing, oversized, ambiguous, or
+outside the authoritative media origin. This prevents a valid migration from
+spending hours on route evidence before discovering that an older fixture
+assumed a transform route the application no longer emits.
+
 The deterministic archive sample must be combined with every runtime resource
 declared by the routes selected for Lighthouse, WebKit, and other browser
 gates. Sampling the archive alone can omit the exact images a browser
