@@ -230,6 +230,60 @@ the media record's identity, keeping the URL alongside it. Without this the CMS
 treats every inline image as an opaque external string and editors cannot
 manage them after import.
 
+### Preserve excerpt semantics without duplicating site metadata
+
+WordPress permits a published post to have an empty manual excerpt. An
+official WXR import can preserve that empty value correctly while still
+leaving the target renderer without a page-specific description. Do not fall
+through from an empty imported excerpt to a global site tagline. That produces
+valid HTML with the same description on thousands of otherwise distinct
+articles.
+
+Use this precedence order for article descriptions:
+
+1. A reviewed explicit SEO description.
+2. A nonempty imported manual excerpt.
+3. A deterministic plain-text excerpt derived from the imported Portable Text
+   body.
+
+The body fallback must ignore captions, navigation labels, embeds, and other
+nonprose blocks, normalize whitespace, and use a reviewed length boundary. Add
+a live representative check for an old article and a recent article whose
+source excerpts are empty. Require distinct descriptions that contain text
+from their respective bodies before starting a full archive snapshot.
+
+### Normalize encoded legacy paths before applying repairs
+
+Historical WordPress content can contain percent-encoded punctuation in an
+internal URL while a reviewed repair map stores the decoded path. A URL parser
+can preserve or re-encode that path, causing an otherwise correct repair entry
+to miss.
+
+For same-origin links, decode the pathname before applying a path repair map,
+then emit the repaired canonical path while preserving the original query and
+fragment. Treat invalid percent encoding as an explicit exception rather than
+silently changing it. Pin every repair family with a rendered-page assertion
+that proves both the source page output and the final canonical target.
+
+Do not apply publisher-navigation requirements to user-generated links.
+Rendered comments and submissions must be escaped and marked `rel="ugc"`.
+The site-health gate then excludes only those marked links from navigation,
+redirect, and orphan calculations. Editorial and template links remain fully
+gated.
+
+### Quarantine derived media with unknown provenance
+
+Object storage can contain additional thumbnails or social images produced by
+earlier migration attempts. File existence and larger dimensions do not make
+those objects authoritative. Build the media manifest from WordPress
+attachment identifiers, attachment metadata, the offload mapping, and the
+immutable source archive. Classify unmatched objects as derived support assets
+until their generator, source attachment, crop, and intended use are proven.
+
+Never let an unmatched object win featured-image selection merely because it
+is newer, larger, or has a convenient aspect ratio. Preserve it for review,
+but keep the source attachment relationship authoritative.
+
 ### Bind authentication to the canonical origin
 
 Treat the CMS authentication origin as migration data. Do not assume that
