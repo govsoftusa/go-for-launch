@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added provider account inventory and candidate retirement as release
+  closeout gates. Obsolete services, preview hosts, scheduled triggers, queues,
+  shared bindings, routes, and DNS must be reconciled against an explicit final
+  topology, with unrelated account workloads excluded from cleanup.
 - Added a mandatory CMS authentication and session-continuity gate.
 - Added a reusable session evidence record covering storage consistency,
   adapter option collisions, immediate identity, admin collection loading,

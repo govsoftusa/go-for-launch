@@ -276,6 +276,47 @@ timeout, interruption, or lost parent process, it terminates those children and
 verifies none remain. A run is not complete while an owned headless browser is
 still generating traffic.
 
+## Retire provider candidates and scheduled triggers
+
+A provider candidate is not retired merely because its hostname is no longer
+linked or its newest version is not receiving manual tests. A Worker, function,
+container, or service can retain a preview hostname, scheduled trigger, queue
+consumer, shared database binding, image binding, or cache binding after the
+release ends.
+
+Before creating any provider candidate, record its exact service name, owner,
+creation time, data bindings, public exposure, schedules, request budget, and
+mandatory retirement time. Missing ownership or retirement metadata blocks
+creation.
+
+At release closeout, inventory the provider account from the provider API and
+compare it with the approved topology. Do not rely on repository configuration
+alone. The inventory must cover:
+
+- application services and environments;
+- preview and provider development hostnames;
+- custom domains and zone routes;
+- scheduled triggers, queue consumers, and event subscriptions;
+- database, object storage, image, cache, and session bindings;
+- candidate, release, canary, and legacy production aliases;
+- DNS records that can still reach an obsolete service.
+
+Delete every retired service after proving it owns no approved route or custom
+domain. Deleting a service must not delete a shared production database,
+bucket, namespace, or unrelated account workload. Preserve the exact deletion
+set and the post-cleanup inventory as release evidence.
+
+The approved final topology must be explicit. For a provider-deployment-only
+project, that normally means one private development and candidate lane, one
+production application service, and only the minimal routing infrastructure
+needed for canonical redirects. Routing infrastructure is not a second
+application environment.
+
+A release does not close while an obsolete candidate retains a public preview
+host, schedule, queue, or shared production binding. Account analytics must be
+checked after cleanup to confirm that retired service names stop receiving
+traffic and scheduled invocations.
+
 ## Observability stop conditions
 
 Monitor the candidate and canonical hosts while any external suite runs. Stop
