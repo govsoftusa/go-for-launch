@@ -222,6 +222,23 @@ document identity and the node's position, and remapping `markDefs` references
 as you go. Then assert it: run the generator twice and compare checksums. The
 reference implementation does this and the two runs are byte-identical.
 
+### Remove noncontent subtrees before conversion
+
+Do not rely on an HTML-to-Portable-Text converter to discard `script`, `style`,
+or `template` elements. Some converters walk unknown elements and retain their
+text descendants. The result is valid Portable Text that visibly prints
+JavaScript or configuration payloads in an article.
+
+Count unsafe tags in the source, remove each complete noncontent subtree before
+conversion, then scan the serialized Portable Text for executable markers and
+CDATA. A nonzero source count is not automatically a migration failure, but a
+generated executable marker is. Review every source record that contained an
+unsafe tag.
+
+Follow
+[Legacy Rich Text Sanitization and Cache Repair](LEGACY-RICH-TEXT-SANITIZATION-AND-CACHE-REPAIR.md)
+for the import gate and bounded repair contract.
+
 ### Bind images to media records
 
 The HTML converter emits image blocks whose asset reference is the bare URL it

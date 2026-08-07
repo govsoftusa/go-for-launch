@@ -94,8 +94,17 @@ answer you want and it is common: many infections inject at render time through
 a filter rather than writing to the database, which means the content is clean
 even when the site is not.
 
-Record the result either way. It is the evidence that the migrated content is
-safe.
+Record the result either way. A nonzero count requires record-level review and
+a named disposition before conversion. Even legitimate legacy widgets can
+become visible JavaScript when a rich text converter preserves the text inside
+an unknown `script` element.
+
+After sanitization and conversion, scan the generated rich text output again.
+Source tag removal alone is not evidence that the migrated content is safe.
+Follow
+[Legacy Rich Text Sanitization and Cache Repair](LEGACY-RICH-TEXT-SANITIZATION-AND-CACHE-REPAIR.md)
+and fail the migration if executable markers, CDATA, or JavaScript-like text
+blocks survive in editorial output.
 
 ### 7. Accounts
 

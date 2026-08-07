@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Added a legacy rich text sanitization and cache repair gate. It requires
+  complete removal of noncontent HTML subtrees before structured conversion,
+  source and generated-output inventories, executable-text detection,
+  revision-preserving production correction, exact canonical cache proof, and
+  development fixture reconciliation.
+- Clarified that Worker entrypoint caching, framework route caching, Workers
+  Cache API, CDN caching, CMS object caching, and browser caching are separate
+  invalidation layers. A clean query variant no longer counts as proof that the
+  canonical URL is current.
 - Added provider account inventory and candidate retirement as release
   closeout gates. Obsolete services, preview hosts, scheduled triggers, queues,
   shared bindings, routes, and DNS must be reconciled against an explicit final

@@ -137,6 +137,14 @@ HTML edge cache, Worker Cache API, CDN asset cache, object cache, CMS query
 cache, and browser cache are separate layers. Record each layer touched. Do not
 assume that purging one layer invalidates the others.
 
+When provider-level Worker response caching is enabled, confirm whether it runs
+before the Worker and whether cache identity includes the deployed version.
+Verify the exact canonical URL after invalidation. A query-string miss does not
+prove the canonical route is current. If an invalidation reports success while
+the same cache age and stale body remain, stop repeating it and follow the
+bounded fallback in
+[Legacy Rich Text Sanitization and Cache Repair](LEGACY-RICH-TEXT-SANITIZATION-AND-CACHE-REPAIR.md).
+
 ## Targeted Editorial Gate
 
 After publishing, verify the changed entry on the canonical production host:
