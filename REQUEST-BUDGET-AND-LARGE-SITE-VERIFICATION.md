@@ -146,6 +146,24 @@ This preserves full route coverage and complete mobile and desktop template
 coverage while avoiding repeated execution of identical template code for
 thousands of content records.
 
+## Select the build mode before rendering
+
+Large static archives may use Astro incremental static builds when the current
+content and rendering dependency graph supports safe reuse. Follow
+[`INCREMENTAL-STATIC-BUILDS.md`](INCREMENTAL-STATIC-BUILDS.md) before every
+application build and record a `standard`, `incremental`, or `forced` decision.
+
+Incremental rendering can reduce local CPU time and candidate startup latency.
+It does not reduce the route inventory or any exhaustive static check. Every
+restored page must still be present in the new output and must pass canonical,
+sitemap, metadata, content, link, asset, crawler, and candidate-identity checks.
+
+Use the project measurements, not route count alone. A large site can receive
+no benefit when one shared data module invalidates every page. A smaller site
+can receive a useful benefit when rendering is expensive and most page inputs
+are independent. Preserve the selected mode, cache source, expected restored
+count, measured timing, parity evidence, and decision report with the candidate.
+
 ## Isolate local browser verification
 
 The interface verifier blocks external requests by default. Local HTML, CSS,

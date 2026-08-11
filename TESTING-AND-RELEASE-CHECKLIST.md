@@ -44,6 +44,19 @@ This checklist is mandatory before production. Any unchecked required item block
 - [ ] Any change after candidate freeze created a new candidate and repeated the complete mandatory suite.
 - [ ] Follow-up work is recorded separately and is not presented as part of the completed task.
 
+## Incremental static build decision
+
+- [ ] `INCREMENTAL-STATIC-BUILDS.md` was read before the application build.
+- [ ] `templates/incremental-build.config.mjs` was copied into the target project and updated for the planned candidate.
+- [ ] The agent inspected content, route generation, cache keys, cross-page dependencies, shared modules, volatile inputs, middleware, server islands, configuration, dependencies, and cache availability before selecting a mode.
+- [ ] The resolved Astro version and build concurrency came from current project evidence.
+- [ ] Total prerendered, `getStaticPaths`, keyed, and expected restored page counts were recorded.
+- [ ] The build selected `standard`, `incremental`, or `forced` exactly as the passing decision report recommends, or a safer mismatch has a current named and expiring override.
+- [ ] Incremental mode has a persistent project-isolated cache and passing full-render parity evidence with equal output hashes.
+- [ ] Incremental mode exceeds the project-owned minimum savings in seconds and percentage.
+- [ ] Middleware HTML changes, cache implementation changes, unknown rendering inputs, or failed parity selected forced mode.
+- [ ] The complete sitemap, static-output, browser, WebKit, native Safari, PageSpeed, evidence, staging, and production gates remain unchanged for restored pages.
+
 ## Editorial publishing and dynamic content
 
 Complete this section instead of the application release sections only when the

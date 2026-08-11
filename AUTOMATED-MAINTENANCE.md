@@ -79,6 +79,7 @@ Add or update `AGENTS.md` in the site root with:
 - Files or directories that must not be edited.
 - The policy for pre-existing human changes.
 - Exact stop conditions.
+- The prebuild standard, incremental, or forced decision command and cache ownership when Astro application builds are in scope.
 
 Keep secrets out of `AGENTS.md`, prompts, shell history, and artifacts. Document only the secret-manager item names or environment variable names required by the workflow.
 
@@ -104,7 +105,9 @@ Read every applicable AGENTS.md file and the Go for Launch production policy bef
 
 Check current compatible releases for Astro, its integrations, adapter, build tooling, TypeScript, test tooling, and deployment tooling. Never force an incompatible dependency tree. Make only targeted maintenance changes that are justified by current release information or a failing check.
 
-Run install, Astro diagnostics, project tests, production build, Chromium, and Playwright WebKit with an iPhone profile. The normal build command must generate the XML sitemap, compare every indexable built canonical with the sitemap, verify the exact sitemap URL in robots.txt, and run the semantic SEO gate with reviewed title, page-intent, content-depth, and citation rules. A missing or incomplete sitemap or semantic SEO report fails the build. Record desktop and mobile first-viewport requests, fail hidden responsive resource downloads, and confirm preloads match measured LCP resources. Test the built candidate in native iOS Safari with one recorded Simulator UDID when the environment is available. If native Safari is required but unavailable, stop before production.
+Before every Astro application build, read INCREMENTAL-STATIC-BUILDS.md and inspect the current content, getStaticPaths routes, cache keys, shared rendering dependencies, volatile inputs, middleware, cache availability, and measured benefit. Record and verify a standard, incremental, or forced decision before rendering. Incremental reuse is optional and requires a persistent isolated cache plus current full-render parity evidence. A missing or failed decision report blocks the build.
+
+Run install, Astro diagnostics, project tests, production build in the selected mode, Chromium, and Playwright WebKit with an iPhone profile. The normal build command must generate the XML sitemap, compare every indexable built canonical with the sitemap, verify the exact sitemap URL in robots.txt, and run the semantic SEO gate with reviewed title, page-intent, content-depth, and citation rules. A missing or incomplete sitemap or semantic SEO report fails the build. Record desktop and mobile first-viewport requests, fail hidden responsive resource downloads, and confirm preloads match measured LCP resources. Test the built candidate in native iOS Safari with one recorded Simulator UDID when the environment is available. If native Safari is required but unavailable, stop before production.
 
 For a Cloudflare-hosted canonical site, capture an advisory production RUM baseline when approved Account Analytics Read access exists. Deploy the exact built candidate to the documented staging target. Confirm staging serves that candidate. Validate required citation URLs from the release environment. Run Ahrefs Site Audit when approved API v3 access exists, and record pass, fail, or an allowed skipped state. Run PageSpeed Insights for mobile and desktop and require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
 
@@ -124,6 +127,7 @@ Stop before production when any of these is true:
 - Unrelated human changes cannot be separated safely.
 - The compatible dependency set cannot be resolved.
 - Diagnostics, tests, build, WebKit, or native Safari checks fail.
+- The incremental-build decision is missing, failed, stale, or disagrees with the selected build mode without a current named override.
 - The build omits sitemap verification, the sitemap is incomplete, or the robots declaration is wrong.
 - The build omits semantic SEO verification, lacks reviewed page-intent coverage, or reports a citation evidence failure.
 - Ahrefs access is required by project policy but unavailable, or the current audit reports a blocking issue.

@@ -132,6 +132,10 @@ For a PageSpeed blocker also record:
 - Frozen commit:
 - Build identity:
 - Freeze time:
+- Incremental-build decision report:
+- Selected build mode, `standard`, `incremental`, or `forced`:
+- Cache source and expected restored pages:
+- Full-render parity evidence when incremental:
 - Features and routes included:
 - Follow-up work excluded:
 - Complete mandatory suite command:

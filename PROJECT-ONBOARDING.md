@@ -43,6 +43,7 @@ Record which Go for Launch workflows are in scope:
 - Cloudflare deployment, forms, Turnstile, or Email Service.
 - Cloudflare production RUM and edge HTTP observability.
 - Scheduled maintenance through a desktop agent, API, CI runner, or operating-system scheduler.
+- Optional incremental static builds with a mandatory per-build decision record.
 - Optional design-system review.
 
 Every selected workflow must identify its required inputs. Services that support one workflow do not become universal project requirements.
@@ -141,6 +142,7 @@ Before implementation begins, the completed project record must contain:
 - The interface-quality command, route-family contract owner, and report location.
 - The current Go for Launch revision used by the project.
 - The execution-control record, config, passing phase report, task envelope, completion conditions, finding classifications, checkpoint history, and blocker decisions.
+- The incremental-build config and report location, cache directory and persistence owner, reviewed savings thresholds, and full-render parity evidence when application builds are in scope.
 - The authoritative brand reference, renderer contract, representative prototype set, real-client preview, and prototype approval artifact when social cards are selected.
 - The PageSpeed scored provider preflight, deterministic matrix order, and first-failure evidence location.
 

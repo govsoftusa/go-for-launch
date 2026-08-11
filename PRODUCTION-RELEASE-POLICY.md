@@ -36,6 +36,14 @@ change, freeze a new candidate and run the complete mandatory release suite
 against that exact candidate. Any later change creates another candidate and
 requires the complete mandatory suite again before production.
 
+Before every Astro application build, follow
+[`INCREMENTAL-STATIC-BUILDS.md`](INCREMENTAL-STATIC-BUILDS.md). Inspect the
+current content and rendering dependency graph, record whether the build must
+be `standard`, `incremental`, or `forced`, and run the machine-readable decision
+verifier, copying the reusable config into the project when it is missing.
+Incremental page reuse is optional. The prebuild assessment and correct mode
+selection are not.
+
 ## Policy
 
 A migrated Astro site must not be deployed or pushed to production until the exact production candidate passes the required build, browser, native iOS Safari, staging, and PageSpeed gates in this document.
@@ -49,6 +57,7 @@ fetch the Go for Launch upstream and confirm the checked-out revision is current
 install dependencies from the lockfile
 run Astro diagnostics
 run unit, server, form, and build-pipeline tests
+verify the incremental-build decision and select standard, incremental, or forced mode
 build the production candidate
 complete design and brand continuity review when visual work is in scope
 verify rendered text, logos, and interface icons pass the render sharpness gate
@@ -85,6 +94,29 @@ query Cloudflare edge errors immediately and compare RUM after sufficient produc
 ```
 
 Do not rebuild between the successful staging audit and production promotion unless the new output repeats the complete gate.
+
+### Incremental static build integrity
+
+An incrementally restored page is part of the current candidate only when it
+exists in the newly assembled output and passes every current final-output and
+release check. A cache hit is not independent evidence of correctness.
+
+Before selecting incremental mode, require a passing decision report tied to
+the planned candidate. The report must record the resolved Astro version,
+eligible routes, reviewed cache keys, cross-page dependencies, volatile inputs,
+cache location and persistence, expected restored pages, measured benefit, and
+current full-render parity evidence.
+
+Select a forced build after middleware that affects prerendered HTML changes,
+cache implementation or key logic changes, an unknown rendering input is
+discovered, parity fails, or the project policy requires a clean render. A
+standard build is correct when no safe reusable cache exists or measured
+savings do not justify incremental state.
+
+Incremental rendering never reduces sitemap, site-health, semantic SEO,
+content-quality, render-sharpness, interface, browser, WebKit, native Safari,
+PageSpeed, staging, production, or evidence coverage. Run those gates against
+the complete newly produced output regardless of how many pages were restored.
 
 ### CMS authentication and session continuity
 
@@ -622,6 +654,7 @@ Stop the production release when:
 
 - Astro diagnostics fail.
 - The production build fails.
+- The incremental-build decision report is missing, failed, stale, tied to another candidate, or its selected mode differs from the recommendation without a current named override.
 - The production build does not generate and validate a complete sitemap.
 - The sitemap and indexable built canonicals do not match exactly.
 - `robots.txt` does not advertise the canonical sitemap URL.

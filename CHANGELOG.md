@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added an optional Astro 7.2 incremental static build workflow with a mandatory
+  prebuild decision. Agents must inspect current content and rendering
+  dependencies before selecting standard, incremental, or forced mode. A new
+  verifier rejects unsafe reuse, missing persistent cache state, incomplete
+  cache-key review, stale parity evidence, and benefits below project-owned
+  thresholds without weakening any exact-candidate release gate.
 - Added a legacy rich text sanitization and cache repair gate. It requires
   complete removal of noncontent HTML subtrees before structured conversion,
   source and generated-output inventories, executable-text detection,

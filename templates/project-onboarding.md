@@ -36,6 +36,7 @@
 - [ ] Cloudflare forms, Turnstile, and Email Service
 - [ ] Cloudflare production RUM and edge HTTP observability
 - [ ] Scheduled agent maintenance
+- [ ] Optional incremental static builds
 - [ ] Optional design-system review
 
 ## External source decisions
@@ -205,6 +206,13 @@ Use `required`, `conditional`, `optional`, `not used`, or `blocked`. Complete on
 ## Deployment contract
 
 - Build command:
+- Incremental-build decision config:
+- Incremental-build decision verifier command:
+- Maximum age of each prebuild decision:
+- Build-mode switch for standard, incremental, and forced builds:
+- Persistent project-isolated cache directory and owner:
+- Minimum savings in seconds and percent:
+- Latest full-render parity evidence:
 - Sitemap verification command:
 - Full test command:
 - Interface quality verification command:
@@ -228,6 +236,7 @@ Use `required`, `conditional`, `optional`, `not used`, or `blocked`. Complete on
 - [ ] The machine-readable execution-control verifier passes for the current phase.
 - [ ] Time and attempt limits are treated as pause conditions, not as waivers for mandatory release gates.
 - [ ] The complete mandatory release suite will run against the exact frozen candidate after the final change.
+- [ ] Every Astro application build will receive a passing standard, incremental, or forced prebuild decision before rendering starts.
 
 Approved by:
 
