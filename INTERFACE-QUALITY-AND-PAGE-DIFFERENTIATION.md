@@ -33,9 +33,34 @@ An inline link can wrap across two lines. Its overall bounding rectangle include
 
 The interface gate compares every rectangle returned by `getClientRects()`. It also excludes controls inside a closed `details` region while retaining the visible `summary`. These rules avoid two false positives found during real responsive testing.
 
+## Font readiness confirmation
+
+The gate waits up to 15 seconds for `document.fonts.ready` before measuring
+geometry. A font-readiness timeout can identify a real missing or stalled font,
+but a long WebKit sweep can also leave one reused page with a stalled
+`FontFaceSet` promise after many thousands of successful navigations.
+
+The verifier does not accept a timeout silently. It discards the affected page
+and requires the same route to finish font loading on three consecutive fresh
+pages in the same engine and viewport. Any failed fresh-page confirmation
+remains a blocking `font-readiness-timeout`. When all three confirmations pass,
+the gate measures the last fresh page and records the initial timeout plus
+every confirmation in `fontReadinessRecoveries`.
+
+This confirmation rule does not retry a failed geometry assertion, lower a
+threshold, or remove a browser or viewport. It isolates browser-process state
+while preserving a fail-closed result for a persistent font problem.
+
 ## Route family and archetype contract
 
-Every indexable route must be covered when `requireIndexableCoverage` is enabled. Each route record declares:
+Every indexable route must be covered when `requireIndexableCoverage` is
+enabled. Small sites may browser-test every route. Large archives may use
+`coverageMode: "representatives"` while providing a `coverageInventory` that
+still contains every indexable route. Each inventory entry maps to a coverage
+class through `coverageKeyFields`, and every class must have a browser-tested
+representative with a `representativeReason`.
+
+Each route record declares:
 
 - `family`, the route family that may intentionally share one composition.
 - `archetype`, the project-owned page composition used by that family.
@@ -67,6 +92,17 @@ A unique marker is documentation, not proof. The verifier also creates a rendere
 Different route families must differ in at least the configured number of dimensions. The template requires two. This rejects a site where every page has the same layout and visual treatment with different text, while allowing one coherent brand system to connect the pages.
 
 Do not chase the score by adding arbitrary colors, images, or markup. The project must first define a useful route archetype, then implement the differences that support the page's purpose.
+
+The default `differentiationScope` is `all-pairs`. Large editorial archives may
+use `every-route-to-family-representative` to avoid a quadratic report. With
+representative coverage, the browser checks every template and meaningful
+rendering variant while exhaustive static gates continue to check every
+indexable route.
+
+The verifier serves the built output locally and blocks external network
+requests by default. It counts blocked attempts, completed external requests,
+reported transfer bytes, and external origins. A local interface run must not
+silently become traffic against a CDN or production host.
 
 ## Header and hero contracts
 
@@ -113,7 +149,8 @@ Both reports are required evidence. Neither report proves design quality or huma
 1. Copy [`templates/interface-quality.config.mjs`](templates/interface-quality.config.mjs) into the target project.
 2. Add `data-site-header` to the persistent site header.
 3. Add one `data-page-archetype` marker to each configured route.
-4. Define every indexable route, family, purpose, content rhythm, visual identity, and distinctive selector.
+4. Define the complete indexable inventory, its coverage classes, and either
+   every route contract or deterministic representative contracts.
 5. Add hero and clearance contracts only where the relationship exists.
 6. Run the verifier after the exact production build.
 7. Wire it into the normal build or unskippable release verification command.

@@ -16,6 +16,62 @@ This is the Go for Launch default for contact, support, request, and feedback fo
 
 Turnstile client rendering is not a security boundary. Cloudflare requires Siteverify on the server because tokens expire, can be invalid, and can be redeemed only once.
 
+## EmDash Sites
+
+When the application uses EmDash, prefer its published integrations over a
+parallel project-owned form stack.
+
+- Use `CommentForm` from `emdash/ui` for public comments.
+- Pass the public site key through the component's `turnstileSiteKey` property.
+- Supply the matching comment secret through the environment name documented
+  by the installed EmDash version.
+- Use `@emdash-cms/plugin-forms` for managed contact, interest, feedback, and
+  request forms.
+- Set each managed form's `spamProtection` to `turnstile` and keep the plugin's
+  default protection set to Turnstile so new forms fail safe.
+- Render the plugin's published Astro block component and import its published
+  styles export. Do not copy its client controller into project code.
+- Configure form definitions and plugin settings through authenticated EmDash
+  Admin or supported EmDash APIs. Do not write plugin tables directly.
+- Keep read-only search as a bookmarkable GET with no challenge.
+
+Do not add a second middleware verifier in front of native EmDash routes unless
+the installed EmDash release lacks server verification and no supported update
+exists. Two verifiers can disagree about token action, hostname, or redemption
+state, and Turnstile tokens are single-use.
+
+Cloudflare runtime bindings and bundler environment variables are separate
+contracts. Inspect the compiled private candidate and prove that the native
+server verifier still reads the runtime secret. A secret lookup folded to an
+empty string is a hard failure. If a configuration-level runtime binding bridge
+is required, keep it in framework configuration, compile no secret value, and
+do not patch the EmDash package.
+
+The managed forms plugin can have a different secret-storage contract from the
+core comment component. Follow the installed plugin documentation, restrict
+administrative access, and treat any database or backup containing plugin
+settings as secret-bearing. If organizational policy requires encrypted Worker
+bindings for every secret and the plugin has no binding option, stop and request
+an upstream extension rather than adding an undocumented database adapter.
+
+### EmDash acceptance checks
+
+1. Inventory final HTML and require zero project-owned public write forms.
+2. Require native comment and managed-form markup on the intended routes.
+3. Send a direct comment request with no token and require HTTP 403 before a
+   record is created.
+4. Send a direct managed-form request with no token and require HTTP 403 before
+   a record, email, or other side effect is created.
+5. Prove a normal GET search succeeds without Turnstile.
+6. Run Chromium and Playwright WebKit on the private candidate with all
+   external requests blocked. Require each protected form to declare the
+   official Cloudflare client and its site key.
+7. Use documented Cloudflare test keys for a bounded positive interaction
+   check. Remove any created record immediately and verify the count returns to
+   its starting value.
+8. Re-run the complete frozen-candidate release suite after the final source or
+   configuration change.
+
 ## Cloudflare Setup
 
 ### 1. Onboard the sender domain

@@ -41,6 +41,12 @@ function numberOption(name, fallback) {
   return value;
 }
 
+function positiveIntegerOption(name, fallback) {
+  const value = Number(option(name, String(fallback)));
+  if (!Number.isInteger(value) || value < 1) throw new Error(`${name} must be a positive integer`);
+  return value;
+}
+
 function normalizeRoute(pathname, trailingSlash) {
   let value = decodeURIComponent(pathname).replace(/\/+/g, "/");
   if (!value.startsWith("/")) value = `/${value}`;
@@ -98,10 +104,31 @@ const sitemapUrl = new URL(option("--sitemap-url", fileConfig.sitemapUrl || `${s
 const orphanAllowlist = fileConfig.orphanAllowlist || [];
 const largeImageAllowlist = fileConfig.largeImageAllowlist || [];
 const imageByteLimits = fileConfig.imageByteLimits || [];
+const runtimeImagePrefixes = fileConfig.runtimeImagePrefixes || [];
+const runtimeImageBaseUrl = new URL(option("--runtime-image-base-url", fileConfig.runtimeImageBaseUrl || site.origin));
+const runtimeImageConcurrency = positiveIntegerOption("--runtime-image-concurrency", fileConfig.runtimeImageConcurrency ?? 16);
+const runtimeImageTimeoutMs = positiveIntegerOption("--runtime-image-timeout-ms", fileConfig.runtimeImageTimeoutMs ?? 15_000);
+const runtimeImageAttempts = positiveIntegerOption("--runtime-image-attempts", fileConfig.runtimeImageAttempts ?? 3);
+const runtimeImageProgressEvery = positiveIntegerOption("--runtime-image-progress-every", fileConfig.runtimeImageProgressEvery ?? 1_000);
+const runtimeImageInventoryOnly = booleanOption(
+  "--runtime-image-inventory-only",
+  fileConfig.runtimeImageInventoryOnly ?? false
+);
+const runtimeImageRequiredHeaders = Object.fromEntries(
+  Object.entries(fileConfig.runtimeImageRequiredHeaders || {}).map(([name, value]) => [
+    String(name).toLowerCase(),
+    String(value)
+  ])
+);
+const runtimeImageMaximumChecks = numberOption(
+  "--runtime-image-maximum-checks",
+  fileConfig.runtimeImageMaximumChecks ?? Number.MAX_SAFE_INTEGER
+);
 const configuredRedirectRoutes = fileConfig.redirectRoutes || [];
 const imageExtensions = new Set((fileConfig.imageExtensions || [".avif", ".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"]).map((value) => value.toLowerCase()));
 const failures = [];
 const imageReferences = new Map();
+const runtimeImageReferences = new Map();
 const pages = new Map();
 
 function recordImage(candidate, baseUrl, owner) {
@@ -113,13 +140,110 @@ function recordImage(candidate, baseUrl, owner) {
     return;
   }
   if (url.origin !== site.origin || !imageExtensions.has(extname(url.pathname).toLowerCase())) return;
-  const owners = imageReferences.get(url.pathname) || new Set();
+  const references = matchesAllowlist(url.pathname, runtimeImagePrefixes)
+    ? runtimeImageReferences
+    : imageReferences;
+  const owners = references.get(url.pathname) || new Set();
   owners.add(owner);
-  imageReferences.set(url.pathname, owners);
+  references.set(url.pathname, owners);
+}
+
+async function verifyRuntimeImage(pathname, owners) {
+  const target = new URL(pathname, runtimeImageBaseUrl);
+  let response;
+  let requestFailure;
+  for (let attempt = 1; attempt <= runtimeImageAttempts; attempt += 1) {
+    try {
+      response = await fetch(target, {
+        method: "HEAD",
+        redirect: "follow",
+        signal: AbortSignal.timeout(runtimeImageTimeoutMs)
+      });
+      break;
+    } catch (cause) {
+      requestFailure = cause;
+      if (attempt < runtimeImageAttempts) {
+        await new Promise((resolveDelay) => setTimeout(resolveDelay, attempt * 250));
+      }
+    }
+  }
+  if (!response) {
+    failures.push(`${[...owners].join(", ")}: runtime image request failed after ${runtimeImageAttempts} attempts, ${pathname}: ${requestFailure.message}`);
+    return false;
+  }
+  if (!response.ok) {
+    failures.push(`${[...owners].join(", ")}: runtime image returned HTTP ${response.status}, ${pathname}`);
+    return false;
+  }
+  const contentType = (response.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+  if (!contentType.startsWith("image/")) {
+    failures.push(`${[...owners].join(", ")}: runtime image returned ${contentType || "no content type"}, ${pathname}`);
+    return false;
+  }
+  for (const [name, expected] of Object.entries(runtimeImageRequiredHeaders)) {
+    const actual = response.headers.get(name) || "";
+    if (actual !== expected) {
+      failures.push(
+        `${[...owners].join(", ")}: runtime image header ${name} is ${actual || "missing"}, expected ${expected}, ${pathname}`
+      );
+      return false;
+    }
+  }
+  const contentLength = Number(response.headers.get("content-length"));
+  const applicableMaximum = imageByteLimit(pathname, imageByteLimits, maximumImageBytes);
+  if (
+    Number.isFinite(contentLength) &&
+    contentLength > applicableMaximum &&
+    !matchesAllowlist(pathname, largeImageAllowlist)
+  ) {
+    failures.push(`${[...owners].join(", ")}: runtime image exceeds ${applicableMaximum} bytes, ${pathname} is ${contentLength} bytes`);
+    return false;
+  }
+  return true;
+}
+
+function selectedRuntimeImageEntries() {
+  const completeEntries = [...runtimeImageReferences.entries()].sort(([left], [right]) =>
+    left.localeCompare(right)
+  );
+  const maximum = Math.max(0, Math.floor(runtimeImageMaximumChecks));
+  return (
+    completeEntries.length <= maximum
+      ? completeEntries
+      : Array.from({ length: maximum }, (_, index) => {
+          const selectedIndex =
+            maximum === 1
+              ? 0
+              : Math.floor((index * (completeEntries.length - 1)) / (maximum - 1));
+          return completeEntries[selectedIndex];
+        })
+  );
+}
+
+async function verifyRuntimeImages(entries) {
+  if (runtimeImageInventoryOnly) {
+    return { verified: 0, selected: entries.length };
+  }
+  let next = 0;
+  let completed = 0;
+  let verified = 0;
+  async function worker() {
+    while (next < entries.length) {
+      const current = entries[next];
+      next += 1;
+      if (await verifyRuntimeImage(...current)) verified += 1;
+      completed += 1;
+      if (completed % runtimeImageProgressEvery === 0 || completed === entries.length) {
+        log(`Runtime image progress: ${completed}/${entries.length} checked, ${verified} verified.`);
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(runtimeImageConcurrency, entries.length) }, worker));
+  return { verified, selected: entries.length };
 }
 
 for (const file of await collectHtmlFiles(outputDirectory)) {
-  const route = routeFromHtmlFile(outputDirectory, file);
+  const route = normalizeRoute(routeFromHtmlFile(outputDirectory, file), trailingSlash);
   const html = await readFile(file, "utf8");
   const document = load(html);
   const isRedirect = document('meta[http-equiv="refresh" i]').length > 0;
@@ -127,6 +251,17 @@ for (const file of await collectHtmlFiles(outputDirectory)) {
 
   for (const element of document("a[href]")) {
     const href = document(element).attr("href") || "";
+    const rel = new Set(
+      (document(element).attr("rel") || "")
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(Boolean)
+    );
+    // User-generated links are not publication navigation and must not count
+    // as incoming links or block a release when an old comment names a legacy
+    // route. The application remains responsible for escaping and marking the
+    // comment link with rel=ugc.
+    if (rel.has("ugc")) continue;
     let url;
     try {
       url = new URL(href, new URL(route, site));
@@ -202,7 +337,17 @@ for (const page of indexablePages) {
   } catch {
     failures.push(`${page.route}: canonical is missing or invalid`);
   }
-  if (canonical && canonical.href !== new URL(page.route, site).href) failures.push(`${page.route}: canonical does not match the built route`);
+  if (
+    canonical &&
+    (
+      canonical.origin !== site.origin ||
+      normalizeRoute(canonical.pathname, trailingSlash) !== page.route ||
+      canonical.search ||
+      canonical.hash
+    )
+  ) {
+    failures.push(`${page.route}: canonical does not match the built route`);
+  }
 
   for (const { href, url } of page.links) {
     if (!isPagePath(url.pathname)) continue;
@@ -239,6 +384,9 @@ for (const [pathname, owners] of imageReferences) {
   }
 }
 
+const runtimeImageEntries = selectedRuntimeImageEntries();
+const runtimeImageVerification = await verifyRuntimeImages(runtimeImageEntries);
+
 const robotsPath = resolve(outputDirectory, "robots.txt");
 if (requireRobots && !existsSync(robotsPath)) {
   failures.push("robots.txt is missing from the built output");
@@ -255,6 +403,17 @@ const report = {
   thresholds: {
     maximumImageBytes,
     imageByteLimits,
+    runtimeImagePrefixes,
+    runtimeImageBaseUrl: runtimeImageBaseUrl.origin,
+    runtimeImageConcurrency,
+    runtimeImageTimeoutMs,
+    runtimeImageAttempts,
+    runtimeImageRequiredHeaders,
+    runtimeImageInventoryOnly,
+    runtimeImageMaximumChecks:
+      runtimeImageMaximumChecks === Number.MAX_SAFE_INTEGER
+        ? null
+        : runtimeImageMaximumChecks,
     maximumTitleLength,
     minimumDescriptionLength,
     maximumDescriptionLength
@@ -264,7 +423,13 @@ const report = {
     indexablePages: indexablePages.length,
     redirectRoutes: redirectRoutes.size,
     referencedLocalImages: imageReferences.size,
+    referencedRuntimeImages: runtimeImageReferences.size,
+    selectedRuntimeImages: runtimeImageVerification.selected,
+    verifiedRuntimeImages: runtimeImageVerification.verified,
     errors: [...new Set(failures)].length
+  },
+  runtimeImages: {
+    selectedPaths: runtimeImageEntries.map(([pathname]) => pathname)
   },
   errors: [...new Set(failures)]
 };
@@ -277,5 +442,9 @@ if (report.errors.length > 0) {
   for (const failure of report.errors) error(`- ${failure}`);
   process.exitCode = 1;
 } else {
-  log(`Site health verification passed: ${indexablePages.length} indexable pages, ${imageReferences.size} local image references, and no audit findings.`);
+  if (runtimeImageInventoryOnly) {
+    log(`Site health runtime image inventory prepared: ${runtimeImageEntries.length} deterministic paths and zero runtime requests.`);
+  } else {
+    log(`Site health verification passed: ${indexablePages.length} indexable pages, ${imageReferences.size} local image references, ${runtimeImageVerification.verified} runtime image references, and no audit findings.`);
+  }
 }

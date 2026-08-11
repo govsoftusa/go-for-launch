@@ -1,8 +1,11 @@
 export default {
   outputDirectory: "dist",
   report: "artifacts/interface-quality-report.json",
+  progressEvery: 1_000,
   screenshotDirectory: "artifacts/interface-quality",
   screenshots: "failures",
+  routeConcurrency: 1,
+  coverageMode: "every-route",
   requireIndexableCoverage: true,
   exemptRoutes: [],
   browsers: ["chromium", "webkit"],
@@ -18,13 +21,21 @@ export default {
   minimumDistinctiveDimensions: 2,
   differentiationBrowsers: ["chromium"],
   differentiationViewports: ["expanded", "mobile"],
+  differentiationScope: "all-pairs",
   failOnWarnings: false,
+  network: {
+    externalRequests: "block",
+    maximumCompletedExternalRequests: 0
+  },
   header: {
     selector: "[data-site-header]",
     maximumViewportHeightRatio: 0.2
   },
   controls: {
     selector: 'a[href], button, summary, input:not([type="hidden"]), textarea, select',
+    overlap: {
+      ignoreSelectors: []
+    },
     targetSize: {
       enabled: true,
       minimumWidth: 24,

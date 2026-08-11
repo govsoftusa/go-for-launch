@@ -208,12 +208,14 @@ for (const page of pages) {
   }
 
   const h1Overlap = overlap(title, h1, titlePolicy.ignoredTerms);
-  if (h1Overlap.length < titlePolicy.minimumH1Overlap) {
-    finding("error", "title-h1-mismatch", page.route, `Title and h1 share ${h1Overlap.length} meaningful terms, minimum is ${titlePolicy.minimumH1Overlap}.`);
+  const minimumH1Overlap = rule?.minimumH1Overlap ?? titlePolicy.minimumH1Overlap;
+  if (h1Overlap.length < minimumH1Overlap) {
+    finding("error", "title-h1-mismatch", page.route, `Title and h1 share ${h1Overlap.length} meaningful terms, minimum is ${minimumH1Overlap}.`);
   }
   const contentOverlap = overlap(title, content, titlePolicy.ignoredTerms);
-  if (contentOverlap.length < titlePolicy.minimumContentOverlap) {
-    finding("error", "title-content-mismatch", page.route, `Title and primary content share ${contentOverlap.length} meaningful terms, minimum is ${titlePolicy.minimumContentOverlap}.`);
+  const minimumContentOverlap = rule?.minimumContentOverlap ?? titlePolicy.minimumContentOverlap;
+  if (contentOverlap.length < minimumContentOverlap) {
+    finding("error", "title-content-mismatch", page.route, `Title and primary content share ${contentOverlap.length} meaningful terms, minimum is ${minimumContentOverlap}.`);
   }
 
   const canonical = document('link[rel="canonical" i]').first().attr("href") || "";

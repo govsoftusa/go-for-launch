@@ -33,6 +33,27 @@ The verifier reads every canonical page from the sitemap and checks:
 
 It uses `redirect: "manual"` so a browser or HTTP client cannot hide a redirect chain by following it automatically.
 
+## Apex Redirects on Cached Worker Applications
+
+When the canonical application uses Cloudflare document caching, put the apex
+redirect on a separate minimal Worker service and cache namespace. A
+host-aware redirect inside the application cannot run when an outer cache
+returns a previously stored canonical document first.
+
+The apex service should have no application data bindings or scheduled work,
+disable any unneeded public preview hostname, preserve the complete path and
+query, send `Cache-Control: no-store`, and expose a stable nonsecret marker.
+
+Verify the first hop with both GET and HEAD for:
+
+- The apex root.
+- A representative content path.
+- A query-bearing path.
+
+Require the exact permanent status and `Location` value. A HEAD redirect does
+not excuse a GET root that returns status 200 with the canonical document body.
+Preserve the GET and HEAD evidence separately.
+
 ## Why Public Verification Is Required
 
 Astro's `trailingSlash` setting controls development routing and on-demand rendered pages. Astro documents that prerendered pages depend on host behavior and cannot rely on Astro redirects for this case. Cloudflare, another CDN, or an origin server must implement the public redirect, and the final host must be tested.

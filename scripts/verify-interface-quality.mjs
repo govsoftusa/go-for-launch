@@ -33,6 +33,9 @@ const viewports = config.viewports || [
   { name: "minimum", width: 320, height: 720 }
 ];
 const engines = config.browsers || ["chromium", "webkit"];
+const progressEvery = Math.max(1, Number(config.progressEvery || 1_000));
+const totalChecks = routeRules.length * viewports.length * engines.length;
+let completedChecks = 0;
 const browserTypes = { chromium, webkit };
 const differentiationBrowsers = new Set(config.differentiationBrowsers || ["chromium"]);
 const differentiationViewports = new Set(config.differentiationViewports || ["expanded", "mobile"]);
@@ -41,6 +44,24 @@ const overlapTolerance = config.overlapTolerance ?? 1;
 const overflowTolerance = config.overflowTolerance ?? 1;
 const screenshotMode = config.screenshots || "failures";
 const failOnWarnings = config.failOnWarnings ?? false;
+const routeConcurrency = Math.max(1, Number.parseInt(config.routeConcurrency || "1", 10));
+const coverageMode = config.coverageMode || "every-route";
+const coverageInventory = config.coverageInventory || routeRules;
+const coverageKeyFields = config.coverageKeyFields || ["family", "archetype"];
+const networkPolicy = config.network?.externalRequests || "block";
+const maximumCompletedExternalRequests =
+  config.network?.maximumCompletedExternalRequests ?? 0;
+const configuredFontReadinessTimeoutMs = Number.parseInt(
+  config.fontReadinessTimeoutMs || "15000",
+  10
+);
+const fontReadinessTimeoutMs =
+  Number.isFinite(configuredFontReadinessTimeoutMs) &&
+  configuredFontReadinessTimeoutMs >= 10
+    ? configuredFontReadinessTimeoutMs
+    : 15_000;
+const fontReadinessFreshPageConfirmations = 3;
+const differentiationScope = config.differentiationScope || "all-pairs";
 const controlSelector = config.controls?.selector || 'a[href], button, summary, input:not([type="hidden"]), textarea, select';
 const targetSize = {
   enabled: config.controls?.targetSize?.enabled ?? true,
@@ -49,9 +70,18 @@ const targetSize = {
   severity: config.controls?.targetSize?.severity || "warning",
   ignoreSelectors: config.controls?.targetSize?.ignoreSelectors || []
 };
+const overlapIgnoreSelectors = config.controls?.overlap?.ignoreSelectors || [];
 
 const findings = [];
 const records = [];
+const fontReadinessRecoveries = [];
+const networkActivity = {
+  attemptedExternalRequests: 0,
+  blockedExternalRequests: 0,
+  completedExternalRequests: 0,
+  reportedExternalTransferBytes: 0,
+  externalOrigins: {},
+};
 const contentTypes = new Map([
   [".avif", "image/avif"],
   [".css", "text/css; charset=utf-8"],
@@ -94,6 +124,27 @@ if (!["error", "warning"].includes(targetSize.severity)) {
 if (!["all", "failures", "none"].includes(screenshotMode)) {
   throw new Error("screenshots must be all, failures, or none.");
 }
+if (!["all-pairs", "every-route-to-family-representative"].includes(differentiationScope)) {
+  throw new Error("differentiationScope must be all-pairs or every-route-to-family-representative.");
+}
+if (!["every-route", "representatives"].includes(coverageMode)) {
+  throw new Error("coverageMode must be every-route or representatives.");
+}
+if (!Array.isArray(coverageInventory) || coverageInventory.length === 0) {
+  throw new Error("coverageInventory must contain at least one route.");
+}
+if (!Array.isArray(coverageKeyFields) || coverageKeyFields.length === 0) {
+  throw new Error("coverageKeyFields must contain at least one field.");
+}
+if (!["block", "allow"].includes(networkPolicy)) {
+  throw new Error("network.externalRequests must be block or allow.");
+}
+if (
+  !Number.isInteger(maximumCompletedExternalRequests) ||
+  maximumCompletedExternalRequests < 0
+) {
+  throw new Error("network.maximumCompletedExternalRequests must be a nonnegative integer.");
+}
 
 const configuredPaths = new Set();
 for (const rule of routeRules) {
@@ -109,42 +160,102 @@ for (const rule of routeRules) {
   }
 }
 
-for (let firstIndex = 0; firstIndex < routeRules.length; firstIndex += 1) {
-  const first = routeRules[firstIndex];
-  for (let secondIndex = firstIndex + 1; secondIndex < routeRules.length; secondIndex += 1) {
-    const second = routeRules[secondIndex];
-    if (first.family !== second.family && first.archetype === second.archetype) {
-      addFinding("error", "archetype-reused-across-families", `${routePath(first)} and ${routePath(second)} use the same archetype across different route families.`, {
-        route: routePath(first),
-        relatedRoute: routePath(second),
-        archetype: first.archetype
-      });
-    }
+const archetypeOwners = new Map();
+for (const rule of routeRules) {
+  const owner = archetypeOwners.get(rule.archetype);
+  if (owner && owner.family !== rule.family) {
+    addFinding("error", "archetype-reused-across-families", `${routePath(owner)} and ${routePath(rule)} use the same archetype across different route families.`, {
+      route: routePath(owner),
+      relatedRoute: routePath(rule),
+      archetype: rule.archetype
+    });
+  } else if (!owner) {
+    archetypeOwners.set(rule.archetype, rule);
   }
 }
 
 const indexablePages = await readIndexablePages(root);
-if (config.requireIndexableCoverage ?? true) {
+if ((config.requireIndexableCoverage ?? true) && coverageMode === "every-route") {
   for (const page of indexablePages) {
     if (!configuredPaths.has(page.route) && !(config.exemptRoutes || []).includes(page.route)) {
       addFinding("error", "indexable-route-uncovered", `${page.route} is indexable but has no interface quality route contract.`, { route: page.route });
     }
   }
 }
+if ((config.requireIndexableCoverage ?? true) && coverageMode === "representatives") {
+  const inventoryPaths = new Set(coverageInventory.map((route) => routePath(route)));
+  for (const page of indexablePages) {
+    if (!inventoryPaths.has(page.route) && !(config.exemptRoutes || []).includes(page.route)) {
+      addFinding("error", "indexable-route-uninventoried", `${page.route} is indexable but is absent from the representative coverage inventory.`, { route: page.route });
+    }
+  }
+
+  const coverageKey = (record) =>
+    coverageKeyFields.map((field) => String(record?.[field] || "").trim()).join("\u001f");
+  const representativeKeys = new Set();
+  for (const rule of routeRules) {
+    if (!String(rule.representativeReason || "").trim()) {
+      addFinding(
+        "error",
+        "representative-reason-missing",
+        `${routePath(rule)} does not explain why it represents its coverage class.`,
+        { route: routePath(rule) },
+      );
+    }
+    for (const field of coverageKeyFields) {
+      if (!String(rule[field] || "").trim()) {
+        addFinding(
+          "error",
+          "representative-coverage-key-missing",
+          `${routePath(rule)} does not define coverage key ${field}.`,
+          { route: routePath(rule), field },
+        );
+      }
+    }
+    representativeKeys.add(coverageKey(rule));
+  }
+  for (const route of coverageInventory) {
+    for (const field of coverageKeyFields) {
+      if (!String(route?.[field] || "").trim()) {
+        addFinding(
+          "error",
+          "inventory-coverage-key-missing",
+          `${routePath(route)} does not define coverage key ${field}.`,
+          { route: routePath(route), field },
+        );
+      }
+    }
+    if (!representativeKeys.has(coverageKey(route))) {
+      addFinding(
+        "error",
+        "coverage-class-unrepresented",
+        `${routePath(route)} has no browser-tested representative for its coverage class.`,
+        { route: routePath(route) },
+      );
+    }
+  }
+}
 
 async function fileForRequest(requestPath) {
-  let pathname = decodeURIComponent(new URL(requestPath, "http://localhost").pathname);
-  if (pathname.endsWith("/")) pathname += "index.html";
-  let path = resolve(root, `.${pathname}`);
-  if (!path.startsWith(`${root}${sep}`) && path !== root) return null;
+  const encodedPathname = new URL(requestPath, "http://localhost").pathname;
+  let decodedPathname = encodedPathname;
   try {
-    if ((await stat(path)).isFile()) return path;
+    decodedPathname = decodeURIComponent(encodedPathname);
   } catch {}
-  if (!extname(pathname)) {
-    path = resolve(root, `.${pathname}/index.html`);
+
+  for (let pathname of new Set([encodedPathname, decodedPathname])) {
+    if (pathname.endsWith("/")) pathname += "index.html";
+    let path = resolve(root, `.${pathname}`);
+    if (!path.startsWith(`${root}${sep}`) && path !== root) continue;
     try {
       if ((await stat(path)).isFile()) return path;
     } catch {}
+    if (!extname(pathname)) {
+      path = resolve(root, `.${pathname}/index.html`);
+      try {
+        if ((await stat(path)).isFile()) return path;
+      } catch {}
+    }
   }
   return null;
 }
@@ -163,6 +274,37 @@ const server = createServer(async (request, response) => {
 await new Promise((resolveListening) => server.listen(0, "127.0.0.1", resolveListening));
 const address = server.address();
 const baseUrl = `http://127.0.0.1:${address.port}`;
+const localOrigin = new URL(baseUrl).origin;
+
+function recordExternalOrigin(url) {
+  const current = networkActivity.externalOrigins[url.origin] || 0;
+  networkActivity.externalOrigins[url.origin] = current + 1;
+}
+
+async function preparePageForAudit(page) {
+  return page.evaluate(async ({ timeoutMs }) => {
+    /*
+     * `content-visibility: auto` intentionally skips layout for offscreen
+     * content. Measuring every control before it has entered the viewport
+     * otherwise reports placeholder boxes as overlaps. Force eager layout for
+     * the audit only. This does not change geometry once content is visible.
+     */
+    const auditStyle = document.createElement("style");
+    auditStyle.dataset.interfaceAudit = "eager-layout";
+    auditStyle.textContent = "* { content-visibility: visible !important; }";
+    document.head.append(auditStyle);
+    const fontStatus = await Promise.race([
+      document.fonts.ready.then(() => "ready"),
+      new Promise((resolveFontStatus) => {
+        window.setTimeout(() => resolveFontStatus("timeout"), timeoutMs);
+      })
+    ]);
+    await new Promise((resolveFrame) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolveFrame));
+    });
+    return fontStatus;
+  }, { timeoutMs: fontReadinessTimeoutMs });
+}
 
 try {
   if (screenshotMode !== "none") await mkdir(screenshotDirectory, { recursive: true });
@@ -172,54 +314,148 @@ try {
     const browser = await browserType.launch();
     try {
       for (const viewport of viewports) {
-        const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
-        try {
-          for (const rule of routeRules) {
-            const route = routePath(rule);
-            const response = await page.goto(new URL(route, baseUrl).href, { waitUntil: "networkidle" });
-            if (!response || response.status() !== 200) {
-              addFinding("error", "route-render-failed", `${engine}/${viewport.name}${route} did not return HTTP 200.`, { engine, viewport: viewport.name, route });
-              continue;
-            }
-
-            const measurement = await page.evaluate(({ rule, controlSelector, targetSize, overlapTolerance, overflowTolerance, headerContract }) => {
-              const viewportWidth = document.documentElement.clientWidth;
-              const viewportHeight = window.innerHeight;
-              const rectValue = (rect) => ({ left: rect.left, top: rect.top, width: rect.width, height: rect.height, right: rect.right, bottom: rect.bottom });
-              const label = (element) => element.getAttribute("aria-label") || element.textContent?.trim().replace(/\s+/g, " ").slice(0, 80) || element.tagName.toLowerCase();
-              const visible = (element) => {
-                const closedDetails = element.closest("details:not([open])");
-                if (closedDetails) {
-                  const summary = closedDetails.querySelector(":scope > summary");
-                  if (!summary || (element !== summary && !summary.contains(element))) return false;
+        let nextRouteIndex = 0;
+        const workers = Array.from(
+          { length: Math.min(routeConcurrency, routeRules.length) },
+          async () => {
+            const context = await browser.newContext({
+              viewport: { width: viewport.width, height: viewport.height }
+            });
+            await context.route("**/*", async (route) => {
+              const requestUrl = new URL(route.request().url());
+              if (requestUrl.origin === localOrigin) {
+                await route.continue();
+                return;
+              }
+              networkActivity.attemptedExternalRequests += 1;
+              recordExternalOrigin(requestUrl);
+              if (networkPolicy === "block") {
+                networkActivity.blockedExternalRequests += 1;
+                await route.abort("blockedbyclient");
+                return;
+              }
+              await route.continue();
+            });
+            context.on("response", (response) => {
+              const responseUrl = new URL(response.url());
+              if (responseUrl.origin === localOrigin) return;
+              networkActivity.completedExternalRequests += 1;
+              const contentLength = Number(response.headers()["content-length"]);
+              if (Number.isFinite(contentLength) && contentLength > 0) {
+                networkActivity.reportedExternalTransferBytes += contentLength;
+              }
+            });
+            let page = await context.newPage();
+            try {
+              while (nextRouteIndex < routeRules.length) {
+                const ruleIndex = nextRouteIndex;
+                nextRouteIndex += 1;
+                const rule = routeRules[ruleIndex];
+                const route = routePath(rule);
+                const response = await page.goto(new URL(route, baseUrl).href, { waitUntil: "domcontentloaded" });
+                if (!response || response.status() !== 200) {
+                  addFinding("error", "route-render-failed", `${engine}/${viewport.name}${route} did not return HTTP 200.`, { engine, viewport: viewport.name, route });
+                  continue;
                 }
-                const style = getComputedStyle(element);
-                const rect = element.getBoundingClientRect();
-                const nativeVisible = typeof element.checkVisibility !== "function" || element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
-                return nativeVisible && rect.width > 0 && rect.height > 0 && style.display !== "none" && style.visibility !== "hidden" && Number(style.opacity) !== 0;
-              };
-              const controls = [...document.querySelectorAll(controlSelector)].filter(visible).map((element) => {
-                const style = getComputedStyle(element);
-                return {
-                  element,
-                  label: label(element),
-                  rect: rectValue(element.getBoundingClientRect()),
-                  fragments: [...element.getClientRects()].map(rectValue),
-                  display: style.display,
-                  overflowX: style.overflowX,
-                  overflowY: style.overflowY,
-                  clippedX: element.scrollWidth > element.clientWidth + overflowTolerance,
-                  clippedY: element.scrollHeight > element.clientHeight + overflowTolerance,
-                  ignoredTargetSize: targetSize.ignoreSelectors.some((selector) => element.matches(selector))
-                };
-              });
-              const issues = [];
-              const warn = [];
-              const overlaps = (first, second) => first.fragments.some((firstFragment) => second.fragments.some((secondFragment) => {
-                const overlapX = Math.min(firstFragment.right, secondFragment.right) - Math.max(firstFragment.left, secondFragment.left);
-                const overlapY = Math.min(firstFragment.bottom, secondFragment.bottom) - Math.max(firstFragment.top, secondFragment.top);
-                return overlapX > overlapTolerance && overlapY > overlapTolerance;
-              }));
+                let fontReadiness = await preparePageForAudit(page);
+                if (fontReadiness !== "ready") {
+                  const recovery = {
+                    engine,
+                    viewport: viewport.name,
+                    route,
+                    initialStatus: fontReadiness,
+                    requiredFreshPageConfirmations: fontReadinessFreshPageConfirmations,
+                    confirmations: []
+                  };
+                  let recoveryFailed = false;
+
+                  for (
+                    let confirmation = 1;
+                    confirmation <= fontReadinessFreshPageConfirmations;
+                    confirmation += 1
+                  ) {
+                    await page.close();
+                    page = await context.newPage();
+                    const retryResponse = await page.goto(new URL(route, baseUrl).href, {
+                      waitUntil: "domcontentloaded"
+                    });
+                    if (!retryResponse || retryResponse.status() !== 200) {
+                      recovery.confirmations.push({
+                        attempt: confirmation,
+                        status: "route-render-failed",
+                        httpStatus: retryResponse?.status() ?? null
+                      });
+                      addFinding(
+                        "error",
+                        "route-render-failed",
+                        `${engine}/${viewport.name}${route} did not return HTTP 200 during fresh-page font confirmation ${confirmation}.`,
+                        { engine, viewport: viewport.name, route, confirmation }
+                      );
+                      recoveryFailed = true;
+                      break;
+                    }
+
+                    fontReadiness = await preparePageForAudit(page);
+                    recovery.confirmations.push({
+                      attempt: confirmation,
+                      status: fontReadiness
+                    });
+                    if (fontReadiness !== "ready") {
+                      addFinding(
+                        "error",
+                        "font-readiness-timeout",
+                        `${engine}/${viewport.name}${route} did not finish loading fonts within ${fontReadinessTimeoutMs} milliseconds on fresh-page confirmation ${confirmation}.`,
+                        { engine, viewport: viewport.name, route, confirmation }
+                      );
+                      recoveryFailed = true;
+                      break;
+                    }
+                  }
+
+                  recovery.status = recoveryFailed ? "failed" : "recovered";
+                  fontReadinessRecoveries.push(recovery);
+                  if (recoveryFailed) continue;
+                }
+
+                const measurement = await page.evaluate(({ rule, controlSelector, targetSize, overlapIgnoreSelectors, overlapTolerance, overflowTolerance, headerContract }) => {
+                  const viewportWidth = document.documentElement.clientWidth;
+                  const viewportHeight = window.innerHeight;
+                  const rectValue = (rect) => ({ left: rect.left, top: rect.top, width: rect.width, height: rect.height, right: rect.right, bottom: rect.bottom });
+                  const label = (element) => element.getAttribute("aria-label") || element.textContent?.trim().replace(/\s+/g, " ").slice(0, 80) || element.tagName.toLowerCase();
+                  const visible = (element) => {
+                    const closedDetails = element.closest("details:not([open])");
+                    if (closedDetails) {
+                      const summary = closedDetails.querySelector(":scope > summary");
+                      if (!summary || (element !== summary && !summary.contains(element))) return false;
+                    }
+                    const style = getComputedStyle(element);
+                    const rect = element.getBoundingClientRect();
+                    const nativeVisible = typeof element.checkVisibility !== "function" || element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
+                    return nativeVisible && rect.width > 0 && rect.height > 0 && style.display !== "none" && style.visibility !== "hidden" && Number(style.opacity) !== 0;
+                  };
+                  const controls = [...document.querySelectorAll(controlSelector)].filter(visible).map((element) => {
+                    const style = getComputedStyle(element);
+                    return {
+                      element,
+                      label: label(element),
+                      rect: rectValue(element.getBoundingClientRect()),
+                      fragments: [...element.getClientRects()].map(rectValue),
+                      display: style.display,
+                      overflowX: style.overflowX,
+                      overflowY: style.overflowY,
+                      clippedX: element.scrollWidth > element.clientWidth + overflowTolerance,
+                      clippedY: element.scrollHeight > element.clientHeight + overflowTolerance,
+                      ignoredTargetSize: targetSize.ignoreSelectors.some((selector) => element.matches(selector)),
+                      ignoredOverlap: overlapIgnoreSelectors.some((selector) => element.matches(selector))
+                    };
+                  });
+                  const issues = [];
+                  const warn = [];
+                  const overlaps = (first, second) => first.fragments.some((firstFragment) => second.fragments.some((secondFragment) => {
+                    const overlapX = Math.min(firstFragment.right, secondFragment.right) - Math.max(firstFragment.left, secondFragment.left);
+                    const overlapY = Math.min(firstFragment.bottom, secondFragment.bottom) - Math.max(firstFragment.top, secondFragment.top);
+                    return overlapX > overlapTolerance && overlapY > overlapTolerance;
+                  }));
 
               const horizontalOverflow = Math.max(document.documentElement.scrollWidth, document.body?.scrollWidth || 0) - viewportWidth;
               if (horizontalOverflow > overflowTolerance) issues.push({ code: "horizontal-overflow", message: `Document exceeds the viewport by ${Math.round(horizontalOverflow)} pixels.` });
@@ -239,8 +475,10 @@ try {
 
               for (let firstIndex = 0; firstIndex < controls.length; firstIndex += 1) {
                 const first = controls[firstIndex];
+                if (first.ignoredOverlap) continue;
                 for (let secondIndex = firstIndex + 1; secondIndex < controls.length; secondIndex += 1) {
                   const second = controls[secondIndex];
+                  if (second.ignoredOverlap) continue;
                   if (first.element.contains(second.element) || second.element.contains(first.element)) continue;
                   if (overlaps(first, second)) issues.push({ code: "controls-overlap", message: `${first.label} overlaps ${second.label}.` });
                 }
@@ -338,29 +576,38 @@ try {
                 }
               };
 
-              return { issues, warnings: warn, horizontalOverflow, controlCount: controls.length, fingerprint };
-            }, {
-              rule,
-              controlSelector,
-              targetSize,
-              overlapTolerance,
-              overflowTolerance,
-              headerContract: config.header || null
-            });
+                  return { issues, warnings: warn, horizontalOverflow, controlCount: controls.length, fingerprint };
+                }, {
+                  rule,
+                  controlSelector,
+                  targetSize,
+                  overlapIgnoreSelectors,
+                  overlapTolerance,
+                  overflowTolerance,
+                  headerContract: config.header || null
+                });
 
-            const record = { engine, viewport, route, family: rule.family, archetype: rule.archetype, ...measurement };
-            records.push(record);
-            for (const issue of measurement.issues) addFinding("error", issue.code, `${engine}/${viewport.name}${route}: ${issue.message}`, { engine, viewport: viewport.name, route });
-            for (const warning of measurement.warnings) addFinding("warning", warning.code, `${engine}/${viewport.name}${route}: ${warning.message}`, { engine, viewport: viewport.name, route });
+                const record = { engine, viewport, route, family: rule.family, archetype: rule.archetype, ...measurement };
+                records.push(record);
+                completedChecks += 1;
+                if (completedChecks % progressEvery === 0 || completedChecks === totalChecks) {
+                  const percent = totalChecks === 0 ? 100 : (completedChecks / totalChecks) * 100;
+                  console.log(`Interface quality progress: ${completedChecks}/${totalChecks} checks (${percent.toFixed(1)}%).`);
+                }
+                for (const issue of measurement.issues) addFinding("error", issue.code, `${engine}/${viewport.name}${route}: ${issue.message}`, { engine, viewport: viewport.name, route });
+                for (const warning of measurement.warnings) addFinding("warning", warning.code, `${engine}/${viewport.name}${route}: ${warning.message}`, { engine, viewport: viewport.name, route });
 
-            const shouldCapture = screenshotMode === "all" || (screenshotMode === "failures" && (measurement.issues.length > 0 || measurement.warnings.length > 0));
-            if (shouldCapture) {
-              await page.screenshot({ path: resolve(screenshotDirectory, `${cleanArtifactName(route)}-${engine}-${cleanArtifactName(viewport.name)}.png`), fullPage: true });
+                const shouldCapture = screenshotMode === "all" || (screenshotMode === "failures" && (measurement.issues.length > 0 || measurement.warnings.length > 0));
+                if (shouldCapture) {
+                  await page.screenshot({ path: resolve(screenshotDirectory, `${cleanArtifactName(route)}-${engine}-${cleanArtifactName(viewport.name)}.png`), fullPage: true });
+                }
+              }
+            } finally {
+              await context.close();
             }
-          }
-        } finally {
-          await page.close();
-        }
+          },
+        );
+        await Promise.all(workers);
       }
     } finally {
       await browser.close();
@@ -370,14 +617,34 @@ try {
   await new Promise((resolveClosed) => server.close(resolveClosed));
 }
 
+if (networkActivity.completedExternalRequests > maximumCompletedExternalRequests) {
+  addFinding(
+    "error",
+    "external-request-budget-exceeded",
+    `Browser verification completed ${networkActivity.completedExternalRequests} external requests, maximum is ${maximumCompletedExternalRequests}.`,
+    {
+      completedExternalRequests: networkActivity.completedExternalRequests,
+      maximumCompletedExternalRequests,
+    },
+  );
+}
+
 const differentiation = [];
 for (const engine of differentiationBrowsers) {
   for (const viewport of differentiationViewports) {
     const candidates = records.filter((record) => record.engine === engine && record.viewport.name === viewport);
-    for (let firstIndex = 0; firstIndex < candidates.length; firstIndex += 1) {
-      const first = candidates[firstIndex];
-      for (let secondIndex = firstIndex + 1; secondIndex < candidates.length; secondIndex += 1) {
-        const second = candidates[secondIndex];
+    const representatives = [...new Map(candidates.map((record) => [record.family, record])).values()];
+    const firstCandidates =
+      differentiationScope === "every-route-to-family-representative"
+        ? candidates
+        : candidates;
+    for (let firstIndex = 0; firstIndex < firstCandidates.length; firstIndex += 1) {
+      const first = firstCandidates[firstIndex];
+      const secondCandidates =
+        differentiationScope === "every-route-to-family-representative"
+          ? representatives
+          : candidates.slice(firstIndex + 1);
+      for (const second of secondCandidates) {
         if (first.family === second.family) continue;
         const differences = fingerprintDifferences(first.fingerprint, second.fingerprint);
         const item = { engine, viewport, firstRoute: first.route, secondRoute: second.route, firstFamily: first.family, secondFamily: second.family, differences };
@@ -392,9 +659,11 @@ for (const engine of differentiationBrowsers) {
 
 const counts = {
   routes: routeRules.length,
+  inventoryRoutes: coverageInventory.length,
   viewports: viewports.length,
   browsers: engines.length,
   checks: records.length,
+  fontReadinessRecoveries: fontReadinessRecoveries.length,
   errors: findings.filter((item) => item.severity === "error").length,
   warnings: findings.filter((item) => item.severity === "warning").length
 };
@@ -406,8 +675,16 @@ const report = {
   viewports,
   engines,
   minimumDistinctiveDimensions,
+  coverageMode,
+  coverageKeyFields,
+  network: {
+    policy: networkPolicy,
+    maximumCompletedExternalRequests,
+    ...networkActivity,
+  },
   counts,
   records,
+  fontReadinessRecoveries,
   differentiation,
   findings
 };

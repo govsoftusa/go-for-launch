@@ -10,6 +10,40 @@ Native Safari through the Xcode iOS Simulator requires a qualified macOS environ
 
 The Stanford Rule content quality gate is mandatory. Every route must name its intended audience and primary task, pass the configured final-output checks, and have a current hash-bound editorial approval using the senior psychology professor perspective. Compare openings, closings, and full copy across content families so unrelated pages do not repeat one generic argument. The Stanford Rule is a Go for Launch standard, not a Stanford University policy or an AI-authorship detector.
 
+## Execution controls and non-waiver rule
+
+Before implementation begins, complete
+[`templates/execution-control-record.md`](templates/execution-control-record.md)
+as directed by [Execution Control and Bounded Delivery](EXECUTION-CONTROL.md).
+Use it to bound scope, prototype subjective work, record checkpoint evidence,
+and stop repeated remediation when it is no longer producing new information.
+
+Run `scripts/verify-execution-control.mjs` at every phase checkpoint and before
+declaring the candidate production ready. The machine-readable control report
+must pass. This verifies that process limits and candidate evidence are
+complete. It does not replace any build, browser, device, PageSpeed, security,
+accessibility, or live-production gate.
+
+Execution controls govern how work proceeds, not what production must pass. A
+time limit, attempt limit, scope limit, deferral, owner decision, delivery
+deadline, or prior test result cannot waive, downgrade, or bypass a mandatory
+release gate. Reaching a control threshold changes the task status to blocked.
+It does not change a failed result to passed and does not authorize production.
+
+Targeted tests may be used during implementation for faster feedback. After the
+final source, content, dependency, configuration, infrastructure, or artifact
+change, freeze a new candidate and run the complete mandatory release suite
+against that exact candidate. Any later change creates another candidate and
+requires the complete mandatory suite again before production.
+
+Before every Astro application build, follow
+[`INCREMENTAL-STATIC-BUILDS.md`](INCREMENTAL-STATIC-BUILDS.md). Inspect the
+current content and rendering dependency graph, record whether the build must
+be `standard`, `incremental`, or `forced`, and run the machine-readable decision
+verifier, copying the reusable config into the project when it is missing.
+Incremental page reuse is optional. The prebuild assessment and correct mode
+selection are not.
+
 ## Policy
 
 A migrated Astro site must not be deployed or pushed to production until the exact production candidate passes the required build, browser, native iOS Safari, staging, and PageSpeed gates in this document.
@@ -23,6 +57,7 @@ fetch the Go for Launch upstream and confirm the checked-out revision is current
 install dependencies from the lockfile
 run Astro diagnostics
 run unit, server, form, and build-pipeline tests
+verify the incremental-build decision and select standard, incremental, or forced mode
 build the production candidate
 complete design and brand continuity review when visual work is in scope
 verify rendered text, logos, and interface icons pass the render sharpness gate
@@ -38,13 +73,19 @@ verify viewport-specific network resources and confirm preloads match measured L
 run desktop and mobile browser tests
 run Playwright WebKit with an iPhone profile
 test the built candidate in native iOS Safari through Xcode Simulator
+run the CMS authentication and session proof when the application has a write-capable control surface
 capture an advisory Cloudflare production RUM baseline when approved access exists
 deploy the exact candidate to staging
 verify staging serves the expected candidate
 run Ahrefs Site Audit when approved API v3 or crawler access exists
+verify PageSpeed provider access with one scored probe before a full matrix
 run PageSpeed Insights on staging for mobile and desktop
-require four scores of 100 in both strategies
-deploy the same candidate to production
+require four scores of 100 in both strategies, subject only to the protected staging rule below
+verify the hash-bound release evidence manifest for the frozen candidate
+create a local provider dry-run package from the framework-generated deployment manifest
+verify the dry-run package contains the complete executable module closure, assets, routes, and bindings
+provisionally deploy the same candidate to production
+require four PageSpeed scores of 100 on the canonical production hostname
 verify the canonical hostname
 verify the public sitemap and robots declaration
 verify trailing-slash, alternate-origin, and legacy redirects
@@ -53,6 +94,185 @@ query Cloudflare edge errors immediately and compare RUM after sufficient produc
 ```
 
 Do not rebuild between the successful staging audit and production promotion unless the new output repeats the complete gate.
+
+### Incremental static build integrity
+
+An incrementally restored page is part of the current candidate only when it
+exists in the newly assembled output and passes every current final-output and
+release check. A cache hit is not independent evidence of correctness.
+
+Before selecting incremental mode, require a passing decision report tied to
+the planned candidate. The report must record the resolved Astro version,
+eligible routes, reviewed cache keys, cross-page dependencies, volatile inputs,
+cache location and persistence, expected restored pages, measured benefit, and
+current full-render parity evidence.
+
+Select a forced build after middleware that affects prerendered HTML changes,
+cache implementation or key logic changes, an unknown rendering input is
+discovered, parity fails, or the project policy requires a clean render. A
+standard build is correct when no safe reusable cache exists or measured
+savings do not justify incremental state.
+
+Incremental rendering never reduces sitemap, site-health, semantic SEO,
+content-quality, render-sharpness, interface, browser, WebKit, native Safari,
+PageSpeed, staging, production, or evidence coverage. Run those gates against
+the complete newly produced output regardless of how many pages were restored.
+
+### CMS authentication and session continuity
+
+For every authenticated CMS or administrative console, follow
+[CMS Authentication and Session Gate](CMS-AUTHENTICATION-SESSION-GATE.md).
+A credential ceremony is only the first transition. The exact compiled
+candidate must also prove an immediate authenticated identity response, the
+real admin base path, required collection lists, existing record editors, and a
+disposable draft create, edit, reload, and cleanup lifecycle.
+
+The authentication session source of truth must satisfy the consistency
+required by an immediate write followed by a read. Do not treat an eventually
+consistent object cache as a strongly consistent session store. Record adapter
+reserved option names and verify the compiled configuration, because a valid
+custom driver can still receive the wrong binding when an adapter rewrites its
+options.
+
+This functional gate adds no exception to the complete mobile, desktop,
+WebKit, native Safari, accessibility, security, SEO, or 100 PageSpeed
+requirements.
+
+### Exact artifact packaging
+
+Promotion must consume the deployment manifest generated beside the verified
+build output when the framework or adapter provides one. Do not combine a
+source configuration with a generated entry file and an unbundled upload
+option unless the source configuration itself declares every generated module.
+
+Create a local provider dry run before the first production request. The dry
+run must prove all of the following:
+
+- The executable entry is the one named by the generated manifest.
+- Every statically reachable relative module is present in the package.
+- Generated module rules are active.
+- The asset directory and binding match the verified build output.
+- Routes, runtime bindings, compatibility settings, and scheduled triggers
+  match the reviewed production contract.
+
+A dry run containing only the entry file is not valid when that entry imports
+relative chunks. A successful source build does not prove provider package
+closure. Missing module closure blocks promotion before any provider upload.
+
+The provider package step must not rebuild or transform the frozen candidate.
+Its output is a transport package for the exact verified artifact. If
+packaging changes executable bytes, assets, routing, or runtime configuration,
+freeze a new candidate and repeat the mandatory release suite.
+
+### PageSpeed first-failure handling
+
+Run one scored provider probe before a full PageSpeed matrix. An API quota,
+authentication, billing, or provider error is an external-service blocker, not
+a performance score and not a reason to change the candidate.
+
+Preserve every valid score. Stop the matrix at the first category below 100 and
+record the raw report, exact candidate, URL, strategy, dominant audit,
+diagnosis evidence, and next bounded action. For a Performance failure, also
+record the filmstrip, network trace, LCP element and resource, request timing,
+and preload and responsive-source evidence.
+
+After any fix, create a new candidate and run the full required matrix and all
+other mandatory gates against that final candidate. Early stopping prevents
+wasted audit work. It does not weaken the requirement for 100 in all four
+categories on both mobile and desktop.
+
+### Candidate route and cache replacement
+
+A Worker deployment completing does not prove that a custom hostname serves
+the new candidate, and a hostname purge does not necessarily clear HTML stored
+through the Worker Cache API.
+
+For every candidate replacement:
+
+1. Deploy the uniquely named Worker and attach every required secret.
+2. Update the candidate route.
+3. Poll an uncached request until the exact candidate identifier is served.
+4. Purge the reviewed application cache tag for HTML.
+5. Poll clean representative URLs until they serve the same candidate.
+6. Repeat the tag purge if route propagation raced the first purge.
+7. Run positive and negative form checks only after the secret and clean route
+   are verified.
+
+Never accept a gate result from a stale clean URL merely because a cache-busted
+request reached the new Worker.
+
+### Production route convergence canary
+
+A successful production route API response does not prove that every visitor
+edge serves the reviewed candidate. Production promotion must begin with one
+canonical canary hostname while the apex and rollback hostname remain on the
+prior application.
+
+For the canary:
+
+1. Record the absence or exact prior state of production Worker routes.
+2. Attach only the reviewed canonical canary hostname.
+3. Purge the reviewed zone and application cache layers.
+4. Wait the project-defined route propagation interval.
+5. Probe the canary repeatedly from more than one network or region.
+6. Require every response to carry the exact candidate identity, expected
+   application marker, public robots policy, and public cache policy.
+7. Alternate those probes with the protected candidate hostname and require
+   its exact identity, protected robots policy, and protected cache policy.
+8. Repeat the consistency sequence after a second quiet interval.
+9. Run live SEO before PageSpeed, forms, crawler, or observability gates.
+10. Attach the apex only after the canonical hostname passes twice.
+
+Any mixed release identity, application marker, robots policy, or cache policy
+requires immediate route removal and cache purge. Verify the rollback
+application repeatedly, preserve the inconsistent responses as evidence, and
+stop the release. Do not cycle new candidates to address an unproven routing
+problem.
+
+### Cloudflare service and cache-namespace isolation
+
+Protected candidate hosts and public production hosts must not share one Worker
+service when Cloudflare's outer cache can return HTML before Worker middleware.
+Use separate services and Custom Domains for protected validation and public
+production. Reuse only the exact tested data bindings, attach secrets to each
+service through the approved secret flow, disable unneeded public preview
+subdomains, and prevent duplicate cron or queue consumers.
+
+Application cache keys, `noindex` middleware, and host-aware redirects do not
+protect a request that is satisfied before Worker code runs. A purge is a
+recovery action, not proof of durable host-policy isolation.
+
+Use a third minimal service for an apex-to-canonical redirect when the public
+application uses document caching. The redirect service must have no
+application data bindings or scheduled work, preserve the complete path and
+query, send a permanent redirect and `Cache-Control: no-store`, and expose a
+stable nonsecret marker for verification.
+
+Verify both GET and HEAD first hops for the apex root, a representative path,
+and a query-bearing path. Require the exact canonical destination and reject
+any apex response that serves the canonical document body with status 200.
+
+### Protected staging PageSpeed rule
+
+A staging archive must not be made indexable merely to satisfy Lighthouse
+`is-crawlable`. When production already serves the same content, staging must
+remain protected from indexing.
+
+For a protected staging hostname, the PageSpeed gate may accept an SEO score
+below 100 only when all of the following are proven for every configured URL
+and both strategies:
+
+- The response carries the exact expected release-candidate identifier.
+- The canonical URL uses the intended production origin and exact route.
+- The response header and HTML robots meta both contain `noindex`.
+- `is-crawlable` is the only failed weighted SEO audit.
+- Performance, Accessibility, and Best Practices each score 100.
+
+Production promotion is provisional until the unchanged candidate receives
+four PageSpeed scores of 100 for every configured URL and both strategies on
+the canonical hostname. Any production failure requires immediate rollback.
+The release record must preserve both the protected staging report and the
+production report.
 
 ## Toolkit Version Requirement
 
@@ -171,6 +391,8 @@ For multilingual sites, follow [INTERNATIONALIZATION-AND-HREFLANG.md](INTERNATIO
 Generate social images through [OPEN-GRAPH-GENERATION.md](OPEN-GRAPH-GENERATION.md), or an equivalent deterministic process with the same output checks. Generate complete contact sheets, inspect every image at full size, and record hash-bound approval for the exact files. Missing, shared, stale, unreadable, incorrectly sized, overlapping, clipped, visibly jagged, incorrectly cropped, or unapproved images block release.
 
 Normal builds must not generate, rewrite, recompress, rename, or optimize an existing approved social card. They must verify the existing rendering input fingerprint, file hash, and approval record without changing the file or its modification time. New or changed cards require an explicit regeneration command followed by full-size visual review and a new approval bound to both the rendering input hash and final image hash. Unrelated SEO, sitemap, citation, dependency, timestamp, environment, and build changes must not invalidate cards.
+
+Before the first bulk generation or any visual-system replacement, require a representative prototype set approved in a real messaging or social client. Bind the approval to the authoritative brand-reference hash, renderer source hash, visual-system fingerprint, prototype input hashes, and prototype output hashes. Missing or stale prototype approval blocks bulk regeneration. A technically valid reference template, prior hash approval, or completed full inventory does not substitute for project-appropriate visual approval.
 
 Social-card source artwork must also pass a suitability check. Flat gray placeholders, empty transparent exports, low-information gradients, and other visually empty sources must be replaced by an approved designed fallback. Record the suitability threshold and selection result in the rendering fingerprint so ordinary builds fail when this decision changes.
 
@@ -307,11 +529,106 @@ When 1Password is the secret manager and the 1Password CLI (`op`) is available, 
 
 Retry documented transient API failures only. A genuine category score below 100 is a failed release gate, not a reason to bypass the gate.
 
+### Document warmup integrity
+
+Read [PageSpeed Document Readiness](PAGESPEED-READINESS.md) before a PageSpeed
+workflow warms dynamic HTML.
+
+A claimed warmup must request the exact URL that PageSpeed will audit, send an
+HTML `Accept` header and `Sec-Fetch-Dest: document`, verify the expected
+candidate and application markers, repeat the request, and require an
+observable reusable cache state on the final response. Preserve the
+machine-readable warmup report with the PageSpeed evidence.
+
+A generic server-side fetch may bypass middleware that admits only browser
+document navigations. Response time alone does not prove a cache hit. When the
+application cache does not expose trustworthy state, instrument a safe
+diagnostic header or do not claim that the route was warmed.
+
+Protected staging with an outer-cache bypass must still prove the configured
+application cache state. On a public canonical host, a Cloudflare edge hit may
+serve before an application cache diagnostic is added. In that case, accept
+public document readiness only when the edge reports a hit and the response
+also proves the exact candidate, application marker, canonical URL, public
+indexing state, and reviewed public cache policy. This public-host allowance
+must never be used for a protected hostname.
+
+Warmup evidence never replaces purged cold-document, first-request-after-deploy,
+bounded burst, WebKit, native Safari, real-user, or PageSpeed evidence. It
+never authorizes retrying or discarding a genuine category score below 100.
+
+### PageSpeed provider errors and supplemental results
+
+A provider response with no Lighthouse result is missing evidence, not a site
+score. Preserve the raw provider error and leave the required matrix slot
+blocked. A targeted supplement may fill only a slot already classified as an
+external provider error.
+
+The supplement must match the frozen candidate, audited URL, strategy,
+configuration, warmup contract, and expected document. It must contain no
+Lighthouse runtime warning and every category must equal 100. Preserve hashes
+for the original matrix and each supplement.
+
+Never replace a scored result with a supplement. A valid category score below
+100 remains a failed gate even if a later request passes. The merger must
+reject duplicate slots, changed candidates, changed configurations, and
+attempts to overwrite any existing score.
+
 ## Candidate Identity
 
 The staging response should expose or otherwise permit verification of a candidate identifier generated during the build. The release process must confirm that staging serves the expected candidate before PageSpeed runs.
 
 Production must receive the same candidate. If source, dependencies, generated assets, configuration, or build output changes, repeat the complete gate.
+
+The candidate identifier names the deployable artifact, not the test harness.
+Record a deterministic hash of the deployable output independently from the
+application commit, toolkit commit, fixture schema, and harness configuration.
+A harness-only correction invalidates earlier evidence and requires a new
+verification run, but it must retain the candidate identifier when a rebuild
+produces the same artifact hash. A changed artifact hash requires a new
+candidate. Never change the identifier merely because a test runner, local
+fixture, evidence formatter, or toolkit revision changed.
+
+Identify and control framework-generated build entropy before using artifact
+hashes as candidate identity. Build-time encryption keys, generated salts,
+timestamps, absolute workspace paths, and random manifest values can change
+output without a source change. Use the framework's supported private
+environment input for stable secrets, build at a canonical path when paths are
+embedded, and compare two clean builds before declaring the artifact
+reproducible. Never commit or print the secret.
+
+Read-only approval verification must not regenerate visual review artifacts.
+It must validate the approved output bytes, input fingerprints, dimensions,
+format, opacity, size limits, and approval manifest in place. Contact sheets
+belong to explicit review and approval actions, not every release check.
+
+## Frozen candidate evidence manifest
+
+Before production promotion, run
+[`scripts/verify-release-evidence.mjs`](scripts/verify-release-evidence.mjs)
+with a reviewed project configuration. The verifier must bind the candidate
+identifier to the reviewed runtime revision, exact toolkit revision, and
+machine-readable gate artifacts. It must preserve a SHA-256 hash for every
+artifact and fail when a required artifact is missing, an assertion fails, the
+toolkit worktree is dirty, or a configured runtime path drifts from the frozen
+revision. Runtime drift includes tracked changes, staged changes, untracked
+files, and ignored files. A local metadata file or generated asset inside a
+configured source path is part of the deployment input even when Git status
+does not show it, so it must block the release.
+
+Every separately deployed runtime requires its own source record. An
+application Worker, form Worker, scheduled Worker, and apex redirect Worker
+cannot share one source assertion unless the record explicitly hashes every
+deployed source and configuration path. Adding a service after the first
+reconciliation invalidates the evidence package until that runtime is bound.
+
+PageSpeed automation must preserve every scored run. It must not overwrite a
+failed score with a later passing score or retry a genuine category score below
+100. A project may require multiple complete PageSpeed rounds, but every run in
+every required round must pass.
+
+When a PageSpeed process warms dynamic HTML, the frozen evidence must also
+preserve the passing document-readiness report for every audited URL.
 
 ## Production Verification
 
@@ -337,6 +654,7 @@ Stop the production release when:
 
 - Astro diagnostics fail.
 - The production build fails.
+- The incremental-build decision report is missing, failed, stale, tied to another candidate, or its selected mode differs from the recommendation without a current named override.
 - The production build does not generate and validate a complete sitemap.
 - The sitemap and indexable built canonicals do not match exactly.
 - `robots.txt` does not advertise the canonical sitemap URL.

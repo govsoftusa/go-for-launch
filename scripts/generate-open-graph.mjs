@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -6,6 +5,13 @@ import { Buffer } from "node:buffer";
 import { error, log } from "node:console";
 import process from "node:process";
 import sharp from "sharp";
+import {
+  prototypeCards,
+  sha256,
+  stableCardInput,
+  validateAdoptionGate,
+  validatePrototypeApproval
+} from "./lib/open-graph-contract.mjs";
 
 function option(name, fallback) {
   const prefix = `${name}=`;
@@ -26,35 +32,6 @@ function estimatedWidth(value, fontSize) {
     if (/[iltfjr]/.test(character)) return width + fontSize * 0.34;
     return width + fontSize * 0.55;
   }, 0);
-}
-
-function sha256(value) {
-  return createHash("sha256").update(value).digest("hex");
-}
-
-function stableCardInput(config, card, name) {
-  const typography = typographyRules(config);
-  return {
-    contractVersion: 1,
-    templateVersion: String(config.templateVersion || "1"),
-    seoContractVersion: String(config.seoContractVersion || "1"),
-    width: config.width || 1200,
-    height: config.height || 630,
-    name,
-    lineOne: String(card.lineOne || ""),
-    lineTwo: String(card.lineTwo || ""),
-    eyebrow: String(card.eyebrow || config.eyebrow || ""),
-    tagline: String(card.tagline || config.tagline || ""),
-    displayUrl: String(card.displayUrl || config.domain || ""),
-    mark: String(card.mark || config.mark || "GFL"),
-    colors: {
-      background: String(config.colors?.background || "#07110f"),
-      accent: String(config.colors?.accent || "#d6ff70"),
-      secondary: String(config.colors?.secondary || "#83f3c8")
-    },
-    typography,
-    sourceAssetSha256: String(card.sourceAssetSha256 || "")
-  };
 }
 
 function typographyRules(config) {
@@ -157,26 +134,49 @@ function renderArtwork(config, card, width, height) {
 const configPath = resolve(option("--config", "open-graph.config.mjs"));
 const config = (await import(`${pathToFileURL(configPath).href}?v=${Date.now()}`)).default;
 const root = dirname(configPath);
-const outputDirectory = isAbsolute(config.outputDirectory) ? config.outputDirectory : resolve(root, config.outputDirectory || "public");
-const stateFile = isAbsolute(config.stateFile || "") ? config.stateFile : resolve(root, config.stateFile || "open-graph-state.json");
+const prototype = process.argv.includes("--prototype");
+const bulkRegenerate = process.argv.includes("--regenerate");
+const regenerate = prototype || bulkRegenerate;
+const adoptionGate = config.adoptionGate || {};
+const configuredOutputDirectory = prototype
+  ? adoptionGate.prototypeOutputDirectory || "output/open-graph-prototype"
+  : config.outputDirectory || "public";
+const configuredStateFile = prototype
+  ? adoptionGate.prototypeStateFile || "open-graph-prototype-state.json"
+  : config.stateFile || "open-graph-state.json";
+const outputDirectory = isAbsolute(configuredOutputDirectory) ? configuredOutputDirectory : resolve(root, configuredOutputDirectory);
+const stateFile = isAbsolute(configuredStateFile) ? configuredStateFile : resolve(root, configuredStateFile);
+const configuredApprovalFile = adoptionGate.prototypeApprovalFile || "open-graph-prototype-approval.json";
+const prototypeApprovalFile = isAbsolute(configuredApprovalFile) ? configuredApprovalFile : resolve(root, configuredApprovalFile);
 const width = config.width || 1200;
 const height = config.height || 630;
-const regenerate = process.argv.includes("--regenerate");
 const failures = [];
+if (prototype && bulkRegenerate) {
+  failures.push("Use --prototype for representative prototype generation or --regenerate for approved bulk generation, not both");
+}
+if (prototype || bulkRegenerate) failures.push(...validateAdoptionGate(config));
+if (bulkRegenerate) {
+  const prototypeApproval = await readFile(prototypeApprovalFile, "utf8").then(JSON.parse).catch(() => null);
+  failures.push(...validatePrototypeApproval(config, prototypeApproval));
+}
+const activeCards = prototype ? prototypeCards(config) : config.cards || [];
 const names = new Set();
 const previousState = await readFile(stateFile, "utf8").then(JSON.parse).catch(() => null);
 const previousCards = new Map((previousState?.cards || []).map((card) => [card.name, card]));
 const nextRecords = [];
+const recordsByIndex = new Array(activeCards.length);
+const renderConcurrency = Math.max(1, Math.min(16, Number(config.renderConcurrency || 1)));
 let generated = 0;
 let reused = 0;
 
 if (width !== 1200 || height !== 630) failures.push("Open Graph output must be 1200 by 630 pixels");
 if (!Array.isArray(config.cards) || config.cards.length === 0) failures.push("Configuration must define at least one card");
+if (prototype && activeCards.length === 0) failures.push("Prototype generation requires configured prototype cards");
 if (!config.templateVersion) failures.push("Configuration must define templateVersion");
 if (!config.seoContractVersion) failures.push("Configuration must define seoContractVersion");
 validateBrandContract(config, failures);
 
-for (const card of config.cards || []) {
+for (const card of activeCards) {
   const name = card.name || card.slug;
   if (!/^[a-z0-9][a-z0-9-]*$/.test(name || "")) {
     failures.push(`Invalid card name: ${name || "missing"}`);
@@ -193,6 +193,9 @@ for (const card of config.cards || []) {
   const displayUrl = card.displayUrl || config.domain;
   const typography = typographyRules(config);
   if (!card.purpose) failures.push(`${name}: intended purpose is required for readability review`);
+  if (card.sourceAssetUrl && !card.sourceAssetSha256) {
+    failures.push(`${name}: an external source asset requires sourceAssetSha256`);
+  }
   if (estimatedWidth(card.lineOne, typography.headlineOneSize) > 620) failures.push(`${name}: lineOne exceeds the safe text region`);
   if (estimatedWidth(card.lineTwo, typography.headlineTwoSize) > 620) failures.push(`${name}: lineTwo exceeds the safe text region`);
   if (estimatedWidth(eyebrow, typography.eyebrowSize) > 500) failures.push(`${name}: eyebrow exceeds the safe text region`);
@@ -213,7 +216,7 @@ if (failures.length > 0) {
 
 if (regenerate) await mkdir(outputDirectory, { recursive: true });
 
-for (const card of config.cards || []) {
+async function processCard(card, index) {
   const name = card.name || card.slug;
 
   const inputSha256 = sha256(JSON.stringify(stableCardInput(config, card, name)));
@@ -224,27 +227,61 @@ for (const card of config.cards || []) {
   const unchanged = Boolean(existing && previous && previous.inputSha256 === inputSha256 && previous.outputSha256 === existingSha256);
 
   if (unchanged) {
-    nextRecords.push(previous);
+    recordsByIndex[index] = previous;
     reused += 1;
-    continue;
+    return;
   }
 
   if (!regenerate) {
     if (!existing || !previous) failures.push(`${name}: approved card state is missing, run the explicit regeneration command`);
     else if (previous.inputSha256 !== inputSha256) failures.push(`${name}: card rendering inputs changed, run the explicit regeneration command and repeat visual approval`);
     else failures.push(`${name}: card bytes do not match recorded state, restore the approved file or run the explicit regeneration command and repeat visual approval`);
-    continue;
+    return;
   }
 
-  const artwork = renderArtwork(config, card, width, height);
-  const png = await sharp(Buffer.from(artwork), { density: 192 })
+  const artwork = config.renderCard
+    ? await config.renderCard({
+        card,
+        config,
+        width,
+        height,
+        root,
+        sharp,
+        escapeXml
+      })
+    : renderArtwork(config, card, width, height);
+  const input = Buffer.isBuffer(artwork) || artwork instanceof Uint8Array
+    ? artwork
+    : Buffer.from(String(artwork));
+  const png = await sharp(input, { density: 192 })
     .resize(width, height, { fit: "fill", kernel: sharp.kernel.lanczos3 })
-    .png({ compressionLevel: 9, palette: true, quality: 92, dither: 0 })
+    .removeAlpha()
+    .png({
+      compressionLevel: 9,
+      palette: true,
+      quality: 92,
+      dither: 0,
+      ...(config.pngOptions || {})
+    })
     .toBuffer();
   await writeFile(output, png);
-  nextRecords.push({ name, file: `og-${name}.png`, inputSha256, outputSha256: sha256(png) });
+  recordsByIndex[index] = { name, file: `og-${name}.png`, inputSha256, outputSha256: sha256(png) };
   generated += 1;
 }
+
+let cardCursor = 0;
+async function cardWorker() {
+  while (cardCursor < activeCards.length) {
+    const index = cardCursor;
+    cardCursor += 1;
+    await processCard(activeCards[index], index);
+  }
+}
+
+await Promise.all(
+  Array.from({ length: renderConcurrency }, () => cardWorker())
+);
+nextRecords.push(...recordsByIndex.filter(Boolean));
 
 if (previousCards.size !== names.size && !regenerate && previousState) {
   for (const previousName of previousCards.keys()) {
@@ -259,12 +296,13 @@ if (failures.length > 0) {
 } else if (regenerate) {
   const state = {
     version: 2,
+    ...(prototype ? { kind: "open-graph-adoption-prototype-state" } : {}),
     templateVersion: String(config.templateVersion),
     seoContractVersion: String(config.seoContractVersion),
     cards: nextRecords.sort((left, right) => left.name.localeCompare(right.name))
   };
   await writeFile(stateFile, `${JSON.stringify(state, null, 2)}\n`);
-  log(`Open Graph regeneration complete: ${generated} generated, ${reused} unchanged and reused.`);
+  log(`${prototype ? "Open Graph prototype generation" : "Open Graph regeneration"} complete: ${generated} generated, ${reused} unchanged and reused.`);
 } else {
   log(`Verified and reused ${reused} approved Open Graph cards without rewriting files.`);
 }

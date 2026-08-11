@@ -15,6 +15,42 @@ const baseConfig = {
   reviewDirectory: "review",
   approvalFile: "open-graph-approvals.json",
   stateFile: "open-graph-state.json",
+  adoptionGate: {
+    brandReferenceSha256: "a".repeat(64),
+    rendererContract: {
+      kind: "toolkit-reference",
+      name: "Test reference renderer",
+      version: "1",
+      sourceSha256: "b".repeat(64)
+    },
+    minimumPrototypeCards: 1,
+    prototypeCardNames: ["home"],
+    requiredCases: ["publication-identity", "long-headline"],
+    prototypeCases: [
+      { name: "home", cases: ["publication-identity", "long-headline"] }
+    ],
+    prototypeOutputDirectory: "prototype-public",
+    prototypeReviewDirectory: "prototype-review",
+    prototypeStateFile: "prototype-state.json",
+    prototypeApprovalFile: "prototype-approval.json",
+    reviewContract: {
+      reviewer: "Prototype Reviewer",
+      reviewedOn: "2026-07-15",
+      brandReference: "Test brand system version 1",
+      realClient: "Test messaging client",
+      brandAuthorityApproved: true,
+      templateAppropriateApproved: true,
+      typographyApproved: true,
+      paletteApproved: true,
+      imageryApproved: true,
+      routeRelevanceApproved: true,
+      rightsAndMarksApproved: true,
+      noUnapprovedSyntheticArtwork: true,
+      readabilityApproved: true,
+      brandIntegrityApproved: true,
+      contactInformationApproved: true
+    }
+  },
   templateVersion: "1",
   seoContractVersion: "1",
   maximumBytes: 250000,
@@ -54,19 +90,36 @@ const baseConfig = {
     brandIntegrityApproved: true,
     contactInformationApproved: true
   },
-  cards: [{ name: "home", purpose: "Verify a readable homepage sharing card.", lineOne: "Build better", lineTwo: "Astro websites." }]
+  cards: [
+    {
+      name: "home",
+      purpose: "Verify a readable homepage sharing card.",
+      lineOne: "Build better",
+      lineTwo: "Astro websites.",
+      sourceAssetSha256: "c".repeat(64),
+      artworkReview: {
+        selectionMethod: "editor-curated-project-asset",
+        sourceReference: "project-media://homepage-city-photo",
+        routeRelevance: "The reviewed city photograph represents the publication homepage.",
+        routeRelevanceApproved: true,
+        rightsReviewed: true,
+        thirdPartyMarksReviewed: true,
+        noUnapprovedSyntheticArtwork: true
+      }
+    }
+  ]
 };
 
 async function writeConfig(value = baseConfig) {
   await writeFile(config, `export default ${JSON.stringify(value)};\n`);
 }
 
-function run(extra = []) {
-  return spawnSync(process.execPath, [generateScript.pathname, `--config=${config}`, ...extra], { encoding: "utf8" });
+function run(extra = [], selectedConfig = config) {
+  return spawnSync(process.execPath, [generateScript.pathname, `--config=${selectedConfig}`, ...extra], { encoding: "utf8" });
 }
 
-function review(extra = []) {
-  return spawnSync(process.execPath, [reviewScript.pathname, `--config=${config}`, ...extra], { encoding: "utf8" });
+function review(extra = [], selectedConfig = config) {
+  return spawnSync(process.execPath, [reviewScript.pathname, `--config=${selectedConfig}`, ...extra], { encoding: "utf8" });
 }
 
 await writeConfig();
@@ -75,6 +128,103 @@ const missing = run();
 if (missing.status === 0 || !missing.stderr.includes("explicit regeneration")) {
   throw new Error("A normal build was allowed to create a missing Open Graph card.");
 }
+
+const blockedBulk = run(["--regenerate"]);
+if (blockedBulk.status === 0 || !blockedBulk.stderr.includes("prototype approval is missing")) {
+  throw new Error("Bulk Open Graph generation was allowed without representative prototype approval.");
+}
+
+const prototype = run(["--prototype"]);
+if (prototype.status !== 0 || !prototype.stdout.includes("prototype generation complete")) {
+  throw new Error(`Representative Open Graph prototype generation failed:\n${prototype.stdout}${prototype.stderr}`);
+}
+const prototypeSheets = review(["--prototype"]);
+if (prototypeSheets.status !== 0) {
+  throw new Error(`Representative Open Graph prototype review sheets failed:\n${prototypeSheets.stdout}${prototypeSheets.stderr}`);
+}
+
+await writeConfig({
+  ...baseConfig,
+  adoptionGate: {
+    ...baseConfig.adoptionGate,
+    reviewContract: {
+      ...baseConfig.adoptionGate.reviewContract,
+      templateAppropriateApproved: false
+    }
+  }
+});
+const rejectedPrototypeApproval = review(["--approve-prototype"]);
+if (
+  rejectedPrototypeApproval.status === 0 ||
+  !rejectedPrototypeApproval.stderr.includes("template appropriateness")
+) {
+  throw new Error("Prototype approval was allowed without template appropriateness confirmation.");
+}
+
+await writeConfig({
+  ...baseConfig,
+  cards: baseConfig.cards.map((card) => ({
+    ...card,
+    artworkReview: {
+      ...card.artworkReview,
+      routeRelevanceApproved: false
+    }
+  }))
+});
+const rejectedRouteRelevance = run(["--prototype"]);
+if (
+  rejectedRouteRelevance.status === 0 ||
+  !rejectedRouteRelevance.stderr.includes("route relevance approval")
+) {
+  throw new Error("Prototype generation was allowed without route relevance approval.");
+}
+
+await writeConfig({
+  ...baseConfig,
+  cards: baseConfig.cards.map((card) => ({
+    ...card,
+    artworkReview: {
+      ...card.artworkReview,
+      thirdPartyMarksReviewed: false
+    }
+  }))
+});
+const rejectedMarksReview = run(["--prototype"]);
+if (
+  rejectedMarksReview.status === 0 ||
+  !rejectedMarksReview.stderr.includes("review for third-party marks")
+) {
+  throw new Error("Prototype generation was allowed without third-party marks review.");
+}
+
+await writeConfig();
+const prototypeApproval = review(["--approve-prototype"]);
+if (prototypeApproval.status !== 0) {
+  throw new Error(`Representative Open Graph prototype approval failed:\n${prototypeApproval.stdout}${prototypeApproval.stderr}`);
+}
+const prototypeApprovalCheck = review(["--check-prototype"]);
+if (prototypeApprovalCheck.status !== 0) {
+  throw new Error(`Representative Open Graph prototype approval check failed:\n${prototypeApprovalCheck.stdout}${prototypeApprovalCheck.stderr}`);
+}
+
+await writeConfig({
+  ...baseConfig,
+  adoptionGate: {
+    ...baseConfig.adoptionGate,
+    rendererContract: {
+      ...baseConfig.adoptionGate.rendererContract,
+      sourceSha256: "d".repeat(64)
+    }
+  }
+});
+const changedRendererBlocked = run(["--regenerate"]);
+if (
+  changedRendererBlocked.status === 0 ||
+  !changedRendererBlocked.stderr.includes("stale for the current visual system")
+) {
+  throw new Error("Changed renderer source did not invalidate prototype approval.");
+}
+await writeConfig();
 
 const first = run(["--regenerate"]);
 if (first.status !== 0) throw new Error(`First explicit Open Graph regeneration failed:\n${first.stdout}${first.stderr}`);
@@ -112,12 +262,17 @@ if (unapproved.status === 0 || !unapproved.stderr.includes("missing or stale")) 
 }
 const approval = review(["--approve"]);
 if (approval.status !== 0) throw new Error(`Open Graph visual approval failed:\n${approval.stdout}${approval.stderr}`);
+const reviewSentinel = join(root, "review", "check-must-not-rewrite.txt");
+await writeFile(reviewSentinel, "preserve");
 const approved = review(["--check"]);
 if (approved.status !== 0) throw new Error(`Approved Open Graph images did not pass review:\n${approved.stdout}${approved.stderr}`);
+if ((await readFile(reviewSentinel, "utf8")) !== "preserve") {
+  throw new Error("Read-only Open Graph approval verification rewrote the review directory.");
+}
 
 const changedConfig = {
   ...baseConfig,
-  cards: [{ name: "home", purpose: "Verify a readable homepage sharing card.", lineOne: "Ship better", lineTwo: "Astro websites." }]
+  cards: baseConfig.cards.map((card) => ({ ...card, lineOne: "Ship better" }))
 };
 await writeConfig(changedConfig);
 const changedWithoutPermission = run();
@@ -127,6 +282,16 @@ if (changedWithoutPermission.status === 0 || !changedWithoutPermission.stderr.in
 const unchangedBytes = await readFile(output);
 if (!unchangedBytes.equals(firstBytes)) throw new Error("A failed read-only check changed card bytes.");
 
+const stalePrototype = run(["--regenerate"]);
+if (stalePrototype.status === 0 || !stalePrototype.stderr.includes("prototype approval")) {
+  throw new Error("Changed representative inputs did not invalidate prototype approval.");
+}
+const changedPrototype = run(["--prototype"]);
+if (changedPrototype.status !== 0) throw new Error(`Changed prototype generation failed:\n${changedPrototype.stdout}${changedPrototype.stderr}`);
+const changedPrototypeApproval = review(["--approve-prototype"]);
+if (changedPrototypeApproval.status !== 0) {
+  throw new Error(`Changed prototype approval failed:\n${changedPrototypeApproval.stdout}${changedPrototypeApproval.stderr}`);
+}
 const changedWithPermission = run(["--regenerate"]);
 if (changedWithPermission.status !== 0) throw new Error(`Explicit changed-card regeneration failed:\n${changedWithPermission.stdout}${changedWithPermission.stderr}`);
 const secondHash = createHash("sha256").update(await readFile(output)).digest("hex");
@@ -187,5 +352,55 @@ if (unreadableApproval.status === 0 || !unreadableApproval.stderr.includes("read
   throw new Error("Visual approval was allowed without explicit readability approval.");
 }
 
+const customConfig = join(root, "custom-open-graph.config.mjs");
+const customBase = {
+  ...baseConfig,
+  outputDirectory: "custom-public",
+  stateFile: "custom-state.json",
+  adoptionGate: {
+    ...baseConfig.adoptionGate,
+    rendererContract: {
+      kind: "project-owned",
+      name: "Custom editorial renderer",
+      version: "1",
+      sourceSha256: "c".repeat(64)
+    },
+    prototypeOutputDirectory: "custom-prototype-public",
+    prototypeReviewDirectory: "custom-prototype-review",
+    prototypeStateFile: "custom-prototype-state.json",
+    prototypeApprovalFile: "custom-prototype-approval.json"
+  },
+  cards: [
+    {
+      ...baseConfig.cards[0],
+      brandAssetSha256: "brand-hash",
+      renderingFingerprint: { layout: "custom-editorial", revision: 1 }
+    }
+  ]
+};
+await writeFile(
+  customConfig,
+  `const config = ${JSON.stringify(customBase)};
+config.renderCard = async ({ width, height }) => \`<svg xmlns="http://www.w3.org/2000/svg" width="\${width}" height="\${height}"><rect width="100%" height="100%" fill="#d6ff70"/></svg>\`;
+export default config;
+`
+);
+const customPrototype = run(["--prototype"], customConfig);
+if (customPrototype.status !== 0) {
+  throw new Error(`Project-owned Open Graph prototype failed:\n${customPrototype.stdout}${customPrototype.stderr}`);
+}
+const customPrototypeApproval = review(["--approve-prototype"], customConfig);
+if (customPrototypeApproval.status !== 0) {
+  throw new Error(`Project-owned Open Graph prototype approval failed:\n${customPrototypeApproval.stdout}${customPrototypeApproval.stderr}`);
+}
+const customRendered = run(["--regenerate"], customConfig);
+if (customRendered.status !== 0) {
+  throw new Error(`Project-owned Open Graph renderer failed:\n${customRendered.stdout}${customRendered.stderr}`);
+}
+const customVerified = run([], customConfig);
+if (customVerified.status !== 0 || !customVerified.stdout.includes("without rewriting")) {
+  throw new Error(`Project-owned Open Graph output was not reusable:\n${customVerified.stdout}${customVerified.stderr}`);
+}
+
 await rm(root, { recursive: true, force: true });
-log("Open Graph reuse, explicit regeneration, input fingerprint, safe geometry, and hash-bound approval tests passed.");
+log("Open Graph prototype adoption, reuse, custom rendering, explicit regeneration, input fingerprint, safe geometry, and hash-bound approval tests passed.");

@@ -26,6 +26,8 @@ The verifier checks source existence, exact hashes, intrinsic dimensions, approv
 
 ## Social Cards
 
+Do not begin with the toolkit reference template and assume that changing its colors makes it project appropriate. Before bulk generation, render only the configured representative prototypes. Review them in a real messaging or social client and approve the complete visual system, not only the logo placement.
+
 Every social-card review must identify the brand guide and exact logo assets used. The card approval record must confirm:
 
 - The logo variant is approved for the actual background.
@@ -34,5 +36,7 @@ Every social-card review must identify the brand guide and exact logo assets use
 - The logo is not competing with page content or decorative artwork.
 - The asset remains sharp at full size and social-preview size.
 - Any fallback artwork uses approved brand assets, not a crop from another file.
+- The overall template, typography, palette, imagery, and tone are appropriate for the project.
+- Decorative geometry and synthetic artwork are absent unless the brand authority explicitly approved them.
 
 A wrong light or dark variant invalidates approval for every affected card, even when dimensions, metadata, and file hashes otherwise pass.

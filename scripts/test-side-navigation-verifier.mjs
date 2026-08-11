@@ -70,6 +70,14 @@ const noNavigationResult = verify(noNavigation);
 if (noNavigationResult.status === 0 || !noNavigationResult.stderr.includes("SIDE_NAV_REQUIRED")) {
   throw new Error("Required side navigation absence did not fail verification.");
 }
+const optionalNavigationResult = spawnSync(
+  process.execPath,
+  [verifier.pathname, `--root=${noNavigation}`, "--require=false"],
+  { encoding: "utf8" }
+);
+if (optionalNavigationResult.status !== 0 || !optionalNavigationResult.stdout.includes("passed across 1 page")) {
+  throw new Error("Optional side navigation audit did not pass without a marked navigation.");
+}
 
 await rm(root, { recursive: true, force: true });
 console.log("Side navigation verifier tests passed.");

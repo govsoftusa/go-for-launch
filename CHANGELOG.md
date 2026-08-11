@@ -1,10 +1,543 @@
 # Changelog
 
+## Unreleased
+
+- Added an optional Astro 7.2 incremental static build workflow with a mandatory
+  prebuild decision. Agents must inspect current content and rendering
+  dependencies before selecting standard, incremental, or forced mode. A new
+  verifier rejects unsafe reuse, missing persistent cache state, incomplete
+  cache-key review, stale parity evidence, and benefits below project-owned
+  thresholds without weakening any exact-candidate release gate.
+- Added a legacy rich text sanitization and cache repair gate. It requires
+  complete removal of noncontent HTML subtrees before structured conversion,
+  source and generated-output inventories, executable-text detection,
+  revision-preserving production correction, exact canonical cache proof, and
+  development fixture reconciliation.
+- Clarified that Worker entrypoint caching, framework route caching, Workers
+  Cache API, CDN caching, CMS object caching, and browser caching are separate
+  invalidation layers. A clean query variant no longer counts as proof that the
+  canonical URL is current.
+- Added provider account inventory and candidate retirement as release
+  closeout gates. Obsolete services, preview hosts, scheduled triggers, queues,
+  shared bindings, routes, and DNS must be reconciled against an explicit final
+  topology, with unrelated account workloads excluded from cleanup.
+- Added a mandatory CMS authentication and session-continuity gate.
+- Added a reusable session evidence record covering storage consistency,
+  adapter option collisions, immediate identity, admin collection loading,
+  existing editors, disposable draft lifecycle, and secret-safe cleanup.
+- Documented an anonymized credential-success and session-failure case study.
+- Documented production-reachability fixture fingerprints that ignore direct,
+  nested, and peer-only development-tool changes without hiding production
+  dependency changes.
+- Added exact-route authentication checks that require passkey bootstrap
+  requests to remain public through any framework-required trailing-slash
+  normalization.
+- Added a dynamic email-login challenge proof requiring a visible widget,
+  pre-verification submit blocking, post-verification enablement, token
+  attachment, and separate fail-closed server validation.
+- Added an EmDash editorial-readiness plugin contract for bounded per-post SEO
+  and AEO checks. It separates objective publication blockers from editorial
+  advice, requires an authoritative server-side prepublication hook, and keeps
+  all mobile, desktop, Safari, and PageSpeed application gates unchanged.
+- Strengthened the private CMS proof to send the challenge-protected request
+  through compiled middleware instead of relying on request interception.
+  Added guarded loopback-only challenge stubbing, direct final-route transport
+  for captured request helpers and single-use tokens, and reversible
+  users-console editing.
+- Added a deterministic font-build requirement. Public and CMS integration
+  fonts must come from locked packages, source-controlled assets, or approved
+  system stacks, so a live font provider cannot stop or alter a release.
+- Required browser proof that an integration font opt-out also removes any
+  runtime font component that expects the disabled family.
+- Documented private runtime bindings that appear in a provider startup table
+  but are absent from the compiled worker environment, including when a
+  temporary configuration declares them. Private test modes now prefer
+  transport isolation, host behavior, and behavioral HTTP proof.
+- Clarified that a CMS canonical origin can rewrite the framework request URL
+  and `Host` header. Loopback-only challenge proofs must use the
+  provider-supplied connection address that becomes the real client address
+  in production.
+
 This file records reusable improvements to Go for Launch so maintainers can understand what changed, why it changed, how projects are affected, and which tests prove the behavior.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+
+### CMS Lifecycle and Artifact Replacement Semantics
+
+#### Symptom
+
+- A corrected image was visible in a revision-enabled editor while the public
+  article still served the previous live record.
+- A copied release directory retained files that were absent from the new
+  verified build.
+
+#### Root Cause
+
+- A staged-revision save was treated as if it published the revision.
+- An additive directory copy was treated as if it replaced the destination.
+- The editorial contract covered publishing generally but did not enumerate
+  every state transition that can change, or intentionally preserve, public
+  output.
+
+#### Hard Rules and Implementation
+
+- Added an explicit lifecycle matrix for first publish, direct live edit,
+  staged-revision save, revision publish, draft save, scheduled save,
+  scheduled publish, unpublish, and restore.
+- Require draft and staged-revision saves to preserve public HTML.
+- Require direct live edits and live-state transitions to invalidate affected
+  public HTML after the durable content change.
+- Require canonical-route verification after the final content transition,
+  not merely after an editor save succeeds.
+- Require artifact transfers to use deletion-enabled synchronization or a new
+  empty destination.
+- Require a destination manifest and hash to reject retained, missing, or
+  changed files before upload.
+
+#### Test Evidence
+
+- Documentation and case-study normalization checks pass.
+- No performance score, mobile coverage, desktop coverage, PageSpeed
+  requirement, or mandatory application release gate changed.
+
+### Canonical CMS Authentication at Cutover
+
+#### Symptom
+
+- Email sign-in links continued to use a retired preview hostname after a
+  production cutover.
+- A passkey created on the preview hostname failed on the canonical production
+  hostname even after the canonical URL was added to the password manager
+  item.
+- The CMS admin shell loaded while existing records appeared as blank drafts.
+- A clean browser reproduced the failure, disproving the initial extension
+  hypothesis.
+- Global trailing-slash middleware changed the request URL without recomputing
+  framework route parameters, so the CMS received undefined identifiers.
+
+#### Root Cause
+
+- The CMS stored a private authentication base URL separately from its public
+  site URL and canonical metadata.
+- WebAuthn passkeys remained bound to the relying-party identifier used during
+  registration. Password manager website aliases did not change that binding.
+- Admin-shell availability was treated as proof that every CMS API request
+  worked.
+- Internal URL substitution was assumed to perform a new route match.
+
+#### Hard Rules and Implementation
+
+- Added a canonical authentication-origin cutover sequence to the
+  WordPress-to-EmDash migration guide.
+- Require one bounded magic-link host assertion and one canonical passkey
+  sign-out and sign-in cycle before retiring preview-host access.
+- Require old passkey access to remain until the canonical passkey succeeds.
+- Defined a guarded break-glass repair for initial-setup values that lack a
+  supported setter, including point-in-time recovery, exact row accounting,
+  read-back verification, and rollback.
+- Require an existing CMS record to load and save in a clean browser with the
+  exact content API request observed at the server.
+- Added checklist controls that distinguish client-side request filtering from
+  CMS, database, and application defects.
+- Require exact slashless admin API requests to preserve populated collection
+  and item parameters when a site enforces trailing slashes.
+- Require method-preserving normalization to pass list, existing-item, authors,
+  trash, save, and publish checks in the private candidate environment.
+
+#### Test Evidence
+
+- Documentation and case-study normalization checks pass.
+- No application release, performance threshold, mobile test, desktop test, or
+  PageSpeed requirement changed.
+
+### CMS Fixture Keys Ignore Test-Only Dependency Churn
+
+#### Symptom
+
+- A complete private CMS fixture rebuild started even though publication data,
+  importer behavior, compatibility patches, and production dependencies had
+  not changed.
+- The only package-lock difference was a development-only parser used by a
+  release check.
+
+#### Root Cause
+
+- The fixture key hashed the complete package lock rather than the production
+  dependency graph represented by the stored CMS state.
+
+#### Hard Rules and Implementation
+
+- Key CMS fixtures by seed, complete content archive, importer, compatibility
+  patches, and normalized production dependencies.
+- Exclude packages explicitly marked development-only from the dependency
+  fingerprint.
+- Require a unit check proving development dependency changes preserve the
+  fingerprint and production dependency changes invalidate it.
+- Permit a one-time cache alias only after every schema and content input is
+  proven identical.
+- Keep exact-candidate browser, performance, mobile, desktop, security, and
+  PageSpeed gates independent from fixture reuse.
+
+#### Test Evidence
+
+- Documentation and case-study normalization checks pass.
+- No score threshold or mandatory release gate changed.
+
+### Private Runtime Media Fixtures and Stable Candidate Identity
+
+#### Symptom
+
+- A private site-health run followed runtime-image redirects to original media.
+  Small originals passed while large originals failed, so the gate did not
+  consistently prove that the image transformation path worked.
+- A separate fixture parser split historical filenames at the first
+  extension-like segment and selected a slightly different sample than the
+  site-health parser.
+- Test harness corrections caused release identifiers to change even when the
+  deployable site artifact was unchanged.
+
+#### Root Cause
+
+- The local database fixture did not include the deterministic runtime media
+  sample, and the verifier checked only response status, type, and bytes.
+- Runtime inventory selection was duplicated between the verifier and the
+  fixture builder.
+- Artifact identity, source-control identity, and harness identity were treated
+  as one value.
+
+#### Hard Rules and Implementation
+
+- Added required runtime-image response headers so a redirected original cannot
+  satisfy a transformed-image gate.
+- Added zero-request runtime-image inventory mode. Private fixture preparation
+  now consumes the exact selected paths emitted by the authoritative verifier.
+- Required bounded, reusable local object fixtures with explicit request,
+  transfer, substitution, and cache provenance.
+- Defined candidate identity as the deployable artifact identity. Harness-only
+  changes invalidate evidence but retain the candidate identifier only when a
+  deterministic artifact hash remains unchanged.
+- Required projects to identify framework-generated build entropy. Stable
+  build secrets must use supported private environment inputs, while embedded
+  paths require a canonical workspace. Secrets must never enter source,
+  console output, or evidence.
+- Made Open Graph approval checks read-only for review artifacts. The check
+  still validates every approved image, input fingerprint, output hash,
+  dimension, format, opacity, byte limit, and approval record, but it no longer
+  regenerates contact sheets that were already reviewed.
+
+#### Test Evidence
+
+- Site-health tests reject an unexpected delivery-source header and accept
+  inventory generation without contacting the configured runtime origin.
+- Documentation, normalization, and the complete repository test suite pass.
+
+### Editorial Publishing Without Application Rebuilds
+
+#### Symptom
+
+- Routine publication and featured-image corrections triggered full Astro
+  builds, artifact uploads, archive crawls, and repeated application release
+  gates even though application code had not changed.
+- A content defect expanded into global renderer experiments, increasing risk
+  and delaying a small editorial correction.
+- A source image that returned successfully was assumed to exist in the
+  publication media store, and a small selected image produced a blurry lead.
+
+#### Root Cause
+
+- The toolkit treated every production mutation as an application candidate
+  change and had no formal editorial publishing lane.
+- Content corrections, application defects, cache invalidation, and media
+  reconciliation were not classified separately before work began.
+- Cache layers and dependent routes were not recorded as an explicit route
+  graph.
+
+#### Hard Rules and Implementation
+
+- Added `EDITORIAL-PUBLISHING-AND-DYNAMIC-CONTENT.md` to classify CMS-only
+  changes, define targeted validation, preserve performance, and escalate
+  application changes.
+- Added reusable editorial publish record and configuration templates.
+- Added `scripts/verify-editorial-publish.mjs` and tests. The verifier rejects
+  application-file changes, application builds, direct database writes,
+  incomplete route checks, stale dependencies, changed security boundaries,
+  and missing risk-based performance evidence.
+- Added delta-import, media-reconciliation, targeted invalidation, duplicate
+  hero, responsive-image, route-graph, and archive-review-queue rules.
+- Kept the application release gate unchanged. Application changes still
+  require the complete exact-candidate suite, native iOS Safari, mobile and
+  desktop coverage, and PageSpeed 100 in all four categories.
+
+#### Test Evidence
+
+- The editorial verifier accepts a complete CMS-only record.
+- It rejects application changes, builds, incomplete dependent-route evidence,
+  changed security boundaries, and a missing high-risk PageSpeed result.
+- Documentation, case-study normalization, and the complete repository test
+  suite pass.
+
+### Large Publication Production Cutover Controls
+
+#### Symptom
+
+- A protected candidate and public canonical host shared one Worker service.
+  The outer cache returned a public document on the protected host before
+  Worker middleware could add its robots and cache policy.
+- The apex passed HEAD redirect checks while a cached GET root returned the
+  canonical homepage with status 200.
+- A public PageSpeed matrix contained provider-error slots with no Lighthouse
+  result, while every real score still had to remain immutable and equal 100.
+- The existing publication case study stopped at an earlier blocked state and
+  did not record the final successful cutover.
+
+#### Root Cause
+
+- Host-aware application code was expected to enforce policy even when
+  Cloudflare answered from an outer cache first.
+- Control-plane success and one correct response were treated as weaker
+  evidence than repeated multi-region convergence.
+- Redirect verification did not explicitly require GET and HEAD first hops.
+- PageSpeed policy distinguished provider access from site scores but did not
+  define a safe supplement contract for missing external-error slots.
+
+#### Hard Rules and Implementation
+
+- Require separate protected and public Worker services when an outer cache can
+  precede middleware, with explicit bindings, secrets, preview-host, and
+  scheduled-work state.
+- Require a third minimal apex redirect service for cached public applications.
+  It has no application bindings or scheduled work, preserves path and query,
+  sends `Cache-Control: no-store`, and exposes a nonsecret marker.
+- Verify apex GET and HEAD for root, path, and query-bearing paths.
+- Permit public edge document readiness only when edge hit, candidate,
+  application marker, canonical, indexing, and cache policy all agree.
+  Protected staging still requires its application cache signal.
+- Permit targeted PageSpeed supplements only for preserved provider-error
+  slots. Never replace a scored result.
+- Require one source record for every separately deployed runtime.
+- Updated the anonymized WordPress to EmDash case study with the rounded
+  archive scale, remote Podman evidence, forms, search, native Safari, Open
+  Graph correction, convergence, final 100-point matrix, apex isolation, and
+  evidence reconciliation.
+
+#### Test Evidence
+
+- The complete repository test suite passes.
+- Case-study normalization and documentation verification pass.
+- Every required PageSpeed score remains 100 for Performance, Accessibility,
+  Best Practices, and SEO on mobile and desktop.
+- The new guidance preserves failed convergence and provider reports instead
+  of relabeling or overwriting them.
+
+### Editorial Artwork Provenance for Social-Card Prototypes
+
+#### Symptom
+
+- A technically valid homepage prototype used the first available recent
+  article image. The photograph was unrelated to the publication identity, and
+  another convenient source contained a prominent third-party event mark.
+- Dimensions, file hashes, palette checks, and general imagery approval all
+  passed because the contract did not explain why the selected visual
+  represented the shared route.
+
+#### Root Cause
+
+- Source eligibility and editorial suitability were treated as the same
+  decision.
+- Inventory order silently became an art-direction rule.
+- Image ownership review did not separately require inspection for trademarks,
+  sponsor marks, watermarks, generated text, or synthetic content.
+
+#### Hard Rules and Implementation
+
+- Every representative prototype now requires an `artworkReview` contract with
+  an approved selection method, route-relevance rationale, rights review,
+  third-party-mark review, and synthetic-artwork review.
+- Source artwork requires a durable source reference and SHA-256. A designed
+  fallback records why no suitable source image was selected.
+- Publication-identity artwork must be curated for that route. The newest item
+  or first inventory record cannot become the implicit homepage image.
+- Prototype approval now separately records route-relevance approval and
+  rights-and-marks approval, and those values are bound into the immutable
+  prototype input and approval records.
+- Updated onboarding, production instructions, the release checklist, and the
+  reusable Open Graph template with neutral examples.
+
+#### Test Evidence
+
+- Prototype generation fails when route relevance is not approved.
+- Prototype generation fails when third-party-mark review is missing.
+- The existing renderer, brand, input-hash, output-hash, and real-client
+  approval tests remain required.
+
+### PageSpeed Provider Preflight and First-Failure Triage
+
+#### Symptom
+
+- A full audit matrix was started before provider quota was verified, so every
+  request failed before scoring.
+- After authenticated access produced valid results, one route scored below
+  100 because its first-viewport image used an on-demand transform while
+  another route reused a release-local derivative of the same source.
+
+#### Root Cause
+
+- Provider readiness, site performance, and matrix completion were handled as
+  one loop.
+- A valid failed score did not require preservation of the filmstrip, network,
+  LCP resource, responsive-source, and comparison-route evidence before
+  another attempt.
+
+#### Hard Rules and Implementation
+
+- Require one scored provider probe before a multi-route or repeated-round
+  matrix. Quota, authentication, billing, and provider errors are external
+  blockers, not site-performance findings.
+- Preserve every valid score and stop the remaining matrix at the first
+  category below 100.
+- Require the frozen candidate's execution-control record to identify the raw
+  report, candidate, URL, strategy, dominant audit, diagnosis evidence, and
+  next bounded action.
+- Performance failures additionally require filmstrip, network, and LCP
+  evidence, including preload and responsive-source inspection.
+- Any remediation creates a new candidate. The final candidate still runs the
+  complete mobile and desktop matrix and must earn 100 in Performance,
+  Accessibility, Best Practices, and SEO.
+
+#### Test Evidence
+
+- A frozen candidate with a failed PageSpeed gate and no triage record fails
+  execution-control verification.
+- A complete preserved first-failure record passes the process verifier while
+  the candidate remains in the failed, non-production-ready phase.
+- Existing regression coverage still rejects a PageSpeed score of 99 for
+  production readiness.
+
+### Machine-Verifiable Execution Control
+
+- Added `scripts/verify-execution-control.mjs` and a reusable project
+  configuration so bounded-delivery rules are checked rather than relying only
+  on narrative process documentation.
+- Required a complete task envelope, reviewed scope, evidence-bearing
+  checkpoints, supported finding classifications, and explicit blocker states.
+- Rejected raised attempt, investigation, or progress limits unless a named
+  owner records the rationale and the specifically supported next action.
+- Rejected active blockers that reach their attempt or time limit without a
+  reviewed bounded continuation.
+- Required frozen candidates to declare every build, browser, device,
+  interface, accessibility, security, and PageSpeed gate.
+- Required production-ready candidates to record passing evidence for every
+  declared gate and exactly 100 in all four PageSpeed categories for both
+  mobile and desktop.
+- Added regression coverage proving that a 99 PageSpeed result, an unreviewed
+  raised limit, and an unapproved third attempt all fail closed.
+- Kept execution control separate from release evidence. A passing process
+  report cannot replace the complete exact-candidate release suite.
+
+### PageSpeed Document Readiness
+
+- Added a reusable verifier for projects that warm dynamic HTML before
+  PageSpeed. It sends browser-document headers, verifies the exact candidate
+  and application markers, and requires the final request to expose an
+  approved reusable cache state.
+- Added a configuration template and regression fixture proving that a generic
+  server-side fetch can miss middleware cache eligibility while an HTML
+  document navigation reaches the intended cache path.
+- Required projects that use warmups to preserve a separate machine-readable
+  readiness report for every audited URL.
+- Kept cold-document, first-request-after-deploy, bounded burst, real-user,
+  WebKit, native Safari, and PageSpeed evidence independent.
+- Explicitly prohibited treating a successful warmup as permission to retry,
+  discard, or waive a genuine PageSpeed score below 100.
+
+### Execution Control and Bounded Delivery
+
+- Added a reusable execution-control policy that separates process limits from
+  release requirements. Time limits, attempt limits, scope decisions,
+  deferrals, deadlines, and prior test results cannot waive a mandatory gate.
+- Added a task-envelope requirement covering the requested outcome, acceptance
+  owner, in-scope systems, explicit exclusions, completion conditions,
+  deployment authority, rollback, and the initial candidate state.
+- Added a four-way finding classification so required outcomes and release
+  blockers remain distinct from recommended follow-up and unrelated work.
+- Added representative-proof and named-review requirements before bulk work on
+  subjective branding, navigation, information architecture, editorial,
+  interaction, and design-system changes.
+- Added a default stop threshold of two unsuccessful attempts or ninety minutes
+  of active work on one blocker. Crossing the threshold records a blocked
+  result and requires a supported owner decision before work continues.
+- Added a repeated-evidence stop rule so materially identical failures trigger
+  root-cause review instead of speculative adjacent changes.
+- Added tiered testing for fast edit loops and phase checkpoints while
+  preserving the complete mandatory release suite for the exact frozen
+  candidate after the final change.
+- Added candidate-freeze, checkpoint, progress-record, follow-up, and
+  production-remediation rules that preserve known-good work and rollback.
+- Added `templates/execution-control-record.md` for task envelopes, finding
+  registers, checkpoints, blocker evidence, bounded continuation decisions,
+  exact-candidate results, promotion, and closeout.
+- Integrated execution control into project onboarding, repository agent
+  instructions, production policy, and the mandatory release checklist.
+
+### WordPress to EmDash on Astro Migration Path
+
+- Added a WordPress to EmDash adapter covering the three assumptions an EmDash target breaks: database-resident content, per-request route resolution, and Portable Text rich text.
+- Added a two-stage extraction model that emits the framework's neutral intermediate dataset before any target-specific conversion, so extraction is re-runnable, diffable, and able to feed the parity verifier independently of the running site.
+- Added `scripts/wp-extract.mjs`, which reads a WordPress database directly rather than a platform XML export, because the export omits the media offload mapping and the legacy redirect tables that a large migration depends on.
+- Added media resolution through the offload plugin's own table. Offloaded objects carry a version segment that the path stored in article bodies does not, so a hostname-prefix rewrite produces well-formed URLs that fail for every image. Every object in the reference migration was affected.
+- Added delivery-variant selection restricted to the platform's core image sizes, because sites that have changed themes retain hard-cropped variants that silently recompose photographs while passing every automated check.
+- Added `scripts/emdash-seed.mjs`, which splits schema, taxonomies, menus and bylines into the seed file and emits bulk content separately, because the seed file is inlined into every build.
+- Added deterministic Portable Text key rewriting, so two generator runs over identical input produce byte-identical output and migration runs can be diffed.
+- Added migration identity fields for source record ID, source permalink, and publish date, none of which the seed schema carries and all of which dated permalinks and idempotent import require.
+- Added `scripts/emdash-import.mjs`, an idempotent bulk importer over the REST API with bounded concurrency, dry-run and limit flags, and failure capture, closing the absence of a headless bulk-import path.
+- Added an index-and-slice archive resolver for numbered pagination, because cursor-only pagination cannot serve a deep archive page requested directly from a search result.
+- Added `scripts/verify-route-parity.mjs`, which builds the expected route inventory from the extracted dataset, fails on duplicate content slugs and reserved-slug collisions, and probes a deterministic article sample against a candidate.
+- Added `scripts/generate-redirects.mjs` with rule prioritisation, middleware overflow beyond the edge platform's static redirect limit, and recorded removal of vulnerability-probe rules that legacy 404-redirect plugins accumulate.
+- Added a taxonomy-archive indexation policy that requires traffic data before any archive is suppressed, defaulting to suppressing only empty archives. The common thin-content heuristic was measured on the reference migration and found backwards: roughly ninety percent of tag-archive traffic came from archives a three-post threshold would have deindexed, because those archives rank for proper nouns where post count does not predict search demand.
+- Added `templates/wp-extract.config.json` and `templates/emdash-migration.config.mjs`.
+
+### Pre-Migration Source Compromise Audit
+
+- Added a source compromise audit as a migration gate, run against the backup before extraction, after a production migration found an active compromise with a must-use-plugin dropper, a database-resident payload backup, and an external script injected into pages served to visitors.
+- Documented the checks: active plugin list, must-use plugins, encoded and self-writing PHP, executables under uploads, suspicious options, injected content in the database, accounts, and scheduled tasks.
+- Documented the remediation order, since removing a payload before its persistence mechanism restores it on the next request.
+- Documented the three outcomes and what each means for the migration, including the case where the platform is compromised but the content is clean.
+
+### Case Studies
+
+- Added a normalized WordPress to EmDash news archive migration case study recording the offloaded-media key mismatch, non-reproducible Portable Text conversion, cursor pagination limitation, prose-corrupting shortcode stripper, unsafe theme-generated image variants, adversarial legacy redirect table, inverted thin-archive heuristic, and source compromise findings.
+- Added a normalized WordPress to EmDash Cloudflare release-hardening case study covering isolated candidate identity, D1 and edge-cache performance, responsive media, compression, method-safe caching, server-enforced Turnstile, mobile navigation, CDN-injected test nondeterminism, exact-candidate evidence, social-card brand rejection, and the hard gates that correctly stopped production.
+
+### Project-Owned Open Graph Rendering
+
+- Added a fail-closed adoption gate that prohibits bulk Open Graph regeneration
+  until a representative prototype set has current named approval.
+- Bound prototype approval to the authoritative brand-reference hash, renderer
+  source hash, shared visual-system fingerprint, prototype input hashes, and
+  prototype output hashes.
+- Added separate prototype generation, review, approval, and verification modes
+  so a project can reject an unsuitable visual system before generating the
+  full route inventory.
+- Required real messaging or social-client review plus explicit approval of
+  brand authority, template suitability, typography, palette, imagery,
+  readability, and the absence of unapproved synthetic artwork.
+- Added onboarding records for the brand authority, renderer ownership,
+  representative cases, real-client review, and bulk-generation decision.
+- Added an asynchronous `renderCard` extension hook so a project can keep the
+  shared immutable-generation and approval contract without inheriting the
+  toolkit reference template as its visual identity.
+- Added `brandAssetSha256` and `renderingFingerprint` inputs for exact wordmark,
+  font, source-selection, and custom-layout provenance.
+- Added bounded concurrent card rendering for large route inventories.
+- Required stakeholder rejection to invalidate a prior hash-valid visual
+  approval, because byte integrity does not prove brand suitability.
+- Documented real editorial imagery as the preferred source when it supports
+  the crop without enlargement, with a designed typographic fallback for
+  missing, flat, unreadable, or undersized assets.
+- Added regression coverage for a project-owned renderer and immutable reuse
+  of its output.
 
 ## 0.4.0, 2026-07-22
 

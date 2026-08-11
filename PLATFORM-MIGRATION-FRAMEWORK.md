@@ -4,7 +4,7 @@
 
 This framework adapts the Webflow process to any source platform. The extraction mechanism changes, but the evidence and acceptance model remains stable.
 
-Maturity note: only the Webflow and WordPress paths have been exercised on real production migrations. The rows below for Squarespace, Wix, Drupal, static HTML, and custom content management systems are alpha implementations. They describe the expected shape of each migration but have not been proven end to end. Validate each step against the actual platform and report corrections.
+Maturity note: only the Webflow and WordPress paths have been exercised on real production migrations. The WordPress to EmDash path has been exercised once end to end and is documented separately in [WORDPRESS-TO-EMDASH-MIGRATION.md](WORDPRESS-TO-EMDASH-MIGRATION.md); treat it as alpha. The rows below for Squarespace, Wix, Drupal, static HTML, and custom content management systems are alpha implementations. They describe the expected shape of each migration but have not been proven end to end. Validate each step against the actual platform and report corrections.
 
 Every platform adapter and migration workflow must preserve the mandatory production gate in [PRODUCTION-RELEASE-POLICY.md](PRODUCTION-RELEASE-POLICY.md). The built candidate must pass native iOS Safari Simulator testing and must receive 100 for Performance, Accessibility, Best Practices, and SEO in PageSpeed Insights for both mobile and desktop before production.
 
@@ -14,6 +14,7 @@ Every platform adapter and migration workflow must preserve the mandatory produc
 |---|---|---|---|
 | Webflow | ZIP, CMS CSV, API, DevLink | Generated classes, interactions, hosted assets | Component extraction, CMS mapping, CSS ownership |
 | WordPress | REST API, XML, database, media uploads | Shortcodes, plugins, theme templates | Content normalization, redirects, media and SEO metadata |
+| WordPress to EmDash | Database, media offload tables, redirect plugin tables | Offloaded object keys, cursor-only pagination, seed size limits | Neutral dataset, Portable Text determinism, numbered pagination, bulk import |
 | Squarespace | XML, page HTML, hosted assets | Blocks, commerce, forms | Block mapping, asset capture, form replacement |
 | Wix | API, CSV, rendered pages | Velo code, dynamic datasets | Route discovery, data export, interaction replacement |
 | Drupal | JSON:API, database, files | Views, modules, field configuration | Content-type schemas, taxonomy, redirects |

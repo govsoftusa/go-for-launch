@@ -8,7 +8,7 @@ Go for Launch was started and is sponsored by [GovSoft](https://www.govsoft.com)
 
 ## What Go for Launch Covers
 
-The toolbox serves fifteen purposes:
+The toolbox serves twenty purposes:
 
 1. **Converting existing sites to Astro.** Complete workflows for rebuilding websites in Astro without losing content, design fidelity, responsive behavior, SEO, accessibility, performance, or browser reliability. The Webflow and WordPress workflows are proven in production, and the platform-neutral framework extends to Squarespace, Wix, Drupal, static HTML, and custom content management systems as alpha guidance.
 2. **Keeping existing Astro sites current.** A maintenance process for updating Astro sites already in production to the latest compatible Astro version and dependency set, with every upgrade passing the same release gates as a new migration. See [AUTOMATION-INTEGRATION.md](AUTOMATION-INTEGRATION.md).
@@ -25,6 +25,11 @@ The toolbox serves fifteen purposes:
 13. **Ahrefs-style final-output health auditing.** Fail builds on oversized referenced images, weak or duplicate metadata, redirecting internal links, missing targets, orphaned canonical pages, and invalid crawler declarations. See [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md).
 14. **Semantic SEO and citation review.** Require canonical consistency, descriptive and content-aligned titles, route-specific search intent, reviewed content depth, valid citation links, and evidence records that detect claim or source drift. Use Ahrefs API v3 as an optional public-crawl input when approved access exists. See [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md).
 15. **Stanford Rule content quality.** Define the audience and task for every page, check final HTML for machine-like filler, inflated language, excessive sentence and paragraph length, repetitive openings, inaccessible reading density, and cross-route copy similarity, then require a hash-bound editorial review from a senior psychology professor perspective. See [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md).
+16. **Bounded delivery without weaker gates.** Define the task envelope, classify findings, prototype subjective work, stop repeated remediation, preserve checkpoints, freeze exact candidates, and separate follow-up work while retaining every mandatory mobile, desktop, WebKit, native Safari, and PageSpeed release requirement. See [Execution Control and Bounded Delivery](EXECUTION-CONTROL.md).
+17. **Verified PageSpeed document readiness.** When a dynamic site intentionally warms HTML before PageSpeed, issue a real browser-document request, prove the exact candidate and reusable cache state, and preserve that report without weakening cold-path tests or the 100 requirement. See [PageSpeed Document Readiness](PAGESPEED-READINESS.md).
+18. **CMS publishing without application rebuilds.** Classify CMS record and media changes into a dedicated editorial lane, validate the changed route graph and conserve performance without rebuilding Astro, and escalate any renderer or infrastructure change to the unchanged full application release gate. See [Editorial Publishing and Dynamic Content](EDITORIAL-PUBLISHING-AND-DYNAMIC-CONTENT.md).
+19. **CMS authentication and session continuity.** Prove the credential assertion, immediate authenticated identity, real collection lists, existing editors, and a disposable draft lifecycle against the compiled private candidate. See [CMS Authentication and Session Gate](CMS-AUTHENTICATION-SESSION-GATE.md).
+20. **Optional incremental static builds with a mandatory decision gate.** Before every Astro application build, inspect the changed content and rendering dependency graph, then select a standard, incremental, or forced build. Incremental reuse requires reviewed cache keys, persistent isolated cache state, measured benefit, and full-render parity. See [Incremental Static Build Decision Gate](INCREMENTAL-STATIC-BUILDS.md).
 
 ## Why This Exists
 
@@ -44,36 +49,43 @@ This repository documents the process used to close those gaps while replacing l
 ## Start Here
 
 1. [Project Onboarding, Requirements, and External Services](PROJECT-ONBOARDING.md)
-2. [Project-Specific Extensions](PROJECT-EXTENSIONS.md)
-3. [Changelog](CHANGELOG.md)
-4. [Webflow to Astro Migration Guide](WEBFLOW-TO-ASTRO-MIGRATION.md)
-5. [Platform-Agnostic Migration Framework](PLATFORM-MIGRATION-FRAMEWORK.md)
-6. [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md)
-7. [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md)
-8. [Production Release Policy](PRODUCTION-RELEASE-POLICY.md)
-9. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
-10. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
-11. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
-12. [Cloudflare Production Observability](CLOUDFLARE-OBSERVABILITY.md)
-13. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
-14. [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md)
-15. [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md)
-16. [Astro Assets Implementation and Verification](ASTRO-ASSETS.md)
-17. [Internationalization, Canonicals, and Hreflang](INTERNATIONALIZATION-AND-HREFLANG.md)
-18. [Redirect Verification](REDIRECT-VERIFICATION.md)
-19. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
-20. [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md)
-21. [Visual Composition Testing](VISUAL-COMPOSITION-TESTING.md)
-22. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
-23. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
-24. [Interface Quality and Page Differentiation Gate](INTERFACE-QUALITY-AND-PAGE-DIFFERENTIATION.md)
-25. [Case Study Normalization Policy](CASE-STUDY-NORMALIZATION.md)
-26. [Render Sharpness Gate](RENDER-SHARPNESS.md)
-27. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
-28. [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md)
-29. [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md)
-30. [Contributing Guide](CONTRIBUTING.md)
-31. [Roadmap](ROADMAP.md)
+2. [Execution Control and Bounded Delivery](EXECUTION-CONTROL.md)
+3. [Project-Specific Extensions](PROJECT-EXTENSIONS.md)
+4. [Changelog](CHANGELOG.md)
+5. [Webflow to Astro Migration Guide](WEBFLOW-TO-ASTRO-MIGRATION.md)
+6. [Platform-Agnostic Migration Framework](PLATFORM-MIGRATION-FRAMEWORK.md)
+7. [WordPress to EmDash on Astro Migration Guide](WORDPRESS-TO-EMDASH-MIGRATION.md)
+8. [Editorial Publishing and Dynamic Content](EDITORIAL-PUBLISHING-AND-DYNAMIC-CONTENT.md)
+9. [EmDash Editorial Readiness Plugin](EMDASH-EDITORIAL-READINESS-PLUGIN.md)
+10. [Pre-Migration Source Compromise Audit](SOURCE-COMPROMISE-AUDIT.md)
+11. [Astro Mobile Safari Porting Playbook](ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md)
+12. [Testing and Release Checklist](TESTING-AND-RELEASE-CHECKLIST.md)
+13. [Production Release Policy](PRODUCTION-RELEASE-POLICY.md)
+14. [Astro Automation Integration](AUTOMATION-INTEGRATION.md)
+15. [Incremental Static Build Decision Gate](INCREMENTAL-STATIC-BUILDS.md)
+16. [Scheduled Astro Maintenance with Desktop Agents](AUTOMATED-MAINTENANCE.md)
+17. [Cloudflare Forms Default](CLOUDFLARE-FORMS.md)
+18. [Cloudflare Production Observability](CLOUDFLARE-OBSERVABILITY.md)
+19. [Sitemaps and Google Search Console](SITEMAPS-AND-SEARCH-CONSOLE.md)
+20. [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md)
+21. [Astro SEO Head and Static Output Validation](SEO-HEAD-AND-VALIDATION.md)
+22. [Astro Assets Implementation and Verification](ASTRO-ASSETS.md)
+23. [Internationalization, Canonicals, and Hreflang](INTERNATIONALIZATION-AND-HREFLANG.md)
+24. [Redirect Verification](REDIRECT-VERIFICATION.md)
+25. [Deterministic Open Graph Generation](OPEN-GRAPH-GENERATION.md)
+26. [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md)
+27. [Visual Composition Testing](VISUAL-COMPOSITION-TESTING.md)
+28. [Configurable Design-System Gate](DESIGN-GATE-POLICY.md)
+29. [Design Optimization and Brand Continuity](DESIGN-OPTIMIZATION-AND-BRAND-CONTINUITY.md)
+30. [Interface Quality and Page Differentiation Gate](INTERFACE-QUALITY-AND-PAGE-DIFFERENTIATION.md)
+31. [Case Study Normalization Policy](CASE-STUDY-NORMALIZATION.md)
+32. [Render Sharpness Gate](RENDER-SHARPNESS.md)
+33. [Ahrefs-Style Site Health Build Audit](SITE-HEALTH-AUDIT.md)
+34. [Semantic SEO and Citation Review Gate](SEMANTIC-SEO-AND-CITATION-REVIEW.md)
+35. [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md)
+36. [Contributing Guide](CONTRIBUTING.md)
+37. [Roadmap](ROADMAP.md)
+38. [PageSpeed Document Readiness](PAGESPEED-READINESS.md)
 
 ## Repository Structure
 
@@ -82,14 +94,21 @@ This repository documents the process used to close those gaps while replacing l
 ├── README.md
 ├── CHANGELOG.md
 ├── PROJECT-ONBOARDING.md
+├── EDITORIAL-PUBLISHING-AND-DYNAMIC-CONTENT.md
+├── EMDASH-EDITORIAL-READINESS-PLUGIN.md
+├── EXECUTION-CONTROL.md
 ├── PROJECT-EXTENSIONS.md
 ├── CASE-STUDY-NORMALIZATION.md
 ├── WEBFLOW-TO-ASTRO-MIGRATION.md
 ├── PLATFORM-MIGRATION-FRAMEWORK.md
+├── WORDPRESS-TO-EMDASH-MIGRATION.md
+├── SOURCE-COMPROMISE-AUDIT.md
 ├── ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md
 ├── TESTING-AND-RELEASE-CHECKLIST.md
 ├── PRODUCTION-RELEASE-POLICY.md
+├── PAGESPEED-READINESS.md
 ├── AUTOMATION-INTEGRATION.md
+├── INCREMENTAL-STATIC-BUILDS.md
 ├── AUTOMATED-MAINTENANCE.md
 ├── CLOUDFLARE-FORMS.md
 ├── CLOUDFLARE-OBSERVABILITY.md
@@ -121,6 +140,13 @@ This repository documents the process used to close those gaps while replacing l
 │   ├── verify-ahrefs-site-audit.mjs
 │   ├── verify-cloudflare-observability.mjs
 │   ├── verify-redirects.mjs
+│   ├── verify-route-parity.mjs
+│   ├── verify-pagespeed-warmup.mjs
+│   ├── verify-incremental-build-decision.mjs
+│   ├── wp-extract.mjs
+│   ├── emdash-seed.mjs
+│   ├── emdash-import.mjs
+│   ├── generate-redirects.mjs
 │   ├── generate-open-graph.mjs
 │   ├── verify-brand-assets.mjs
 │   ├── verify-visual-composition.mjs
@@ -130,11 +156,14 @@ This repository documents the process used to close those gaps while replacing l
 │   └── run-design-gate.mjs
 ├── case-studies/
 │   ├── webflow-astro-ios-safari.md
+│   ├── wordpress-emdash-news-archive-migration.md
 │   ├── wordpress-astro-safari-seo-performance.md
 │   ├── ahrefs-astro-site-health.md
 │   ├── cloudflare-rum-hidden-viewport-lcp.md
 │   ├── filtered-header-mobile-safari-menu.md
 │   ├── multi-page-interface-quality.md
+│   ├── wordpress-emdash-cloudflare-release-hardening.md
+│   ├── release-gate-throughput-on-a-large-archive.md
 │   ├── association-header-announcement-hierarchy.md
 │   └── association-navigation-render-sharpness.md
 └── templates/
@@ -146,18 +175,26 @@ This repository documents the process used to close those gaps while replacing l
     ├── visual-composition.config.mjs
     ├── interface-quality.config.mjs
     ├── redirects.config.mjs
+    ├── wp-extract.config.json
+    ├── emdash-migration.config.mjs
     ├── site-health.config.mjs
     ├── semantic-seo.config.mjs
     ├── content-quality.config.mjs
     ├── content-quality.reviews.json
     ├── ahrefs-site-audit.config.mjs
     ├── cloudflare-observability.config.mjs
+    ├── pagespeed-warmup.config.mjs
+    ├── incremental-build.config.mjs
     ├── design-gate.config.mjs
     ├── design-review-record.json
     ├── route-and-content-inventory.md
     ├── gap-analysis.md
     ├── design-optimization-brief.md
     ├── project-onboarding.md
+    ├── execution-control-record.md
+    ├── execution-control.config.mjs
+    ├── editorial-publish-record.md
+    ├── editorial-publish.config.mjs
     └── migration-acceptance-record.md
 ```
 
@@ -189,6 +226,14 @@ This repository documents the process used to close those gaps while replacing l
 24. Capture approved Cloudflare production RUM before a release and compare it after sufficient traffic reaches the promoted candidate.
 25. Record intentional differences so accessibility and performance improvements are not mistaken for missing parity.
 26. Turn every discovered migration defect into a reusable test or checklist item.
+27. Bound scope, remediation, and progress reporting without weakening any mandatory release gate.
+28. Prove that every claimed PageSpeed document warmup follows the browser navigation path and reaches observable reusable cache state.
+29. Curate and hash-bind representative social-card artwork with route relevance, rights, third-party-mark, and synthetic-artwork review before bulk generation.
+30. Preflight PageSpeed provider access, preserve the first valid failed score, and diagnose filmstrip, network, and LCP evidence before another attempt.
+31. Isolate protected, public, and apex redirect services when an outer cache can answer before Worker middleware.
+32. Verify apex redirects with GET and HEAD, including root, path, and query, before release signoff.
+33. Fill only empty external-provider PageSpeed slots with exact-candidate supplements, never replace a scored result.
+34. Assess every Astro application build before rendering and use incremental page reuse only when cache correctness, persistence, parity, and measured benefit pass.
 
 ## Evidence Model
 
@@ -197,6 +242,8 @@ Strong migration evidence combines:
 - Exported source files and CMS data.
 - Live source-site inspection.
 - A route and section inventory.
+- A completed execution-control record with the task envelope, finding classifications, checkpoints, blocker decisions, and exact-candidate identity.
+- A passing machine-readable execution-control report for the current phase, including every mandatory gate and both PageSpeed strategies at four scores of 100 before production readiness.
 - Asset manifests with hashes and missing-file reports.
 - Automated route, interaction, accessibility, and metadata checks.
 - Screenshot comparisons at multiple breakpoints.
@@ -207,6 +254,7 @@ Strong migration evidence combines:
 - Native iPhone Simulator inspection.
 - Staging performance audits.
 - Cloudflare production RUM and edge HTTP evidence when approved access exists.
+- A passing prebuild decision report recording standard, incremental, or forced mode, plus cache and parity evidence when incremental.
 - Canonical production verification.
 
 No single screenshot, Lighthouse result, or passing build proves migration completeness.
@@ -216,26 +264,27 @@ No single screenshot, Lighthouse result, or passing build proves migration compl
 Every site using Go for Launch must pass the following gate before production deployment:
 
 1. Fetch the Go for Launch upstream, confirm the checkout is current, and record its commit.
-2. Build the production candidate.
-3. Generate the sitemap and verify it matches every indexable built page.
-4. Run the Ahrefs-style site-health audit against final HTML, CSS, images, links, metadata, redirects, and crawler files.
-5. Run the semantic SEO gate against canonicals, titles, page intent, content depth, and citations.
-6. Run the Stanford Rule content quality gate and preserve its hash-bound editorial review.
-7. Run the mandatory render sharpness gate and preserve its machine-readable result.
-8. Run the interface-quality and page-differentiation gate across every indexable route and required viewport.
-9. Run the side-navigation verifier and activate every marked navigation item in browser tests.
-10. Run visual composition verification, then run the automated browser, WebKit, accessibility, form, and route tests against that candidate.
-11. Run the configured design-system gate and preserve its result. Only `required` design findings block production.
-12. Test the candidate in native iOS Safari through Xcode Simulator using a pinned device UDID.
-13. Verify the desktop and mobile network resource sets and confirm preloads match the measured LCP resources.
-14. Capture an advisory Cloudflare production baseline when approved account analytics access exists.
-15. Deploy the same candidate to staging.
-16. Run PageSpeed Insights against staging for mobile and desktop.
-17. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
-18. Run Ahrefs Site Audit when approved API or crawler access exists.
-19. Block production when any required test fails or any PageSpeed category is below 100.
-20. Verify the sitemap, crawler files, citations, and canonical production hostname after deployment.
-21. Query Cloudflare immediately for edge errors and repeat RUM comparison after sufficient production traffic when approved access exists.
+2. Inspect the current content and rendering dependency graph, then verify the standard, incremental, or forced build decision.
+3. Build the production candidate in the selected mode.
+4. Generate the sitemap and verify it matches every indexable built page.
+5. Run the Ahrefs-style site-health audit against final HTML, CSS, images, links, metadata, redirects, and crawler files.
+6. Run the semantic SEO gate against canonicals, titles, page intent, content depth, and citations.
+7. Run the Stanford Rule content quality gate and preserve its hash-bound editorial review.
+8. Run the mandatory render sharpness gate and preserve its machine-readable result.
+9. Run the interface-quality and page-differentiation gate across every indexable route and required viewport.
+10. Run the side-navigation verifier and activate every marked navigation item in browser tests.
+11. Run visual composition verification, then run the automated browser, WebKit, accessibility, form, and route tests against that candidate.
+12. Run the configured design-system gate and preserve its result. Only `required` design findings block production.
+13. Test the candidate in native iOS Safari through Xcode Simulator using a pinned device UDID.
+14. Verify the desktop and mobile network resource sets and confirm preloads match the measured LCP resources.
+15. Capture an advisory Cloudflare production baseline when approved account analytics access exists.
+16. Deploy the same candidate to staging.
+17. When the PageSpeed process warms dynamic HTML, verify browser-document cache readiness for every audited URL, then run PageSpeed Insights against staging for mobile and desktop.
+18. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+19. Run Ahrefs Site Audit when approved API or crawler access exists.
+20. Block production when any required test fails or any PageSpeed category is below 100.
+21. Verify the sitemap, crawler files, citations, and canonical production hostname after deployment.
+22. Query Cloudflare immediately for edge errors and repeat RUM comparison after sufficient production traffic when approved access exists.
 
 The detailed policy is in [PRODUCTION-RELEASE-POLICY.md](PRODUCTION-RELEASE-POLICY.md).
 
@@ -251,7 +300,7 @@ GovSoft and Go for Launch are independent of the Astro open-source project, The 
 
 ## Project Status and Platform Maturity
 
-Webflow and WordPress are the only source platforms this toolbox has been used on in real production migrations so far. Both are backed by the implementation case studies in `case-studies/`.
+Webflow and WordPress are the only source platforms this toolbox has been used on in real production migrations so far. Both are backed by the implementation case studies in `case-studies/`. The completed large-publication cutover, cache-isolation findings, forms, Safari, social-card, and 100-point PageSpeed evidence are documented in [WordPress to EmDash Cloudflare Release Hardening](case-studies/wordpress-emdash-cloudflare-release-hardening.md).
 
 Guidance for every other platform, including Squarespace, Wix, Drupal, static HTML, and custom content management systems, is an alpha implementation. It is derived from the platform-neutral framework but has not yet been exercised end to end on a production migration. Expect gaps, verify each step against the actual source platform, and treat the mandatory production gate as the safety net. Production-tested corrections and case studies for these platforms are the most valuable contributions this project can receive.
 

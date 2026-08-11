@@ -69,6 +69,10 @@ Generated social cards, email graphics, reports, and similar artifacts often com
 
 When a local generator uses a hash-bound approval contract:
 
+- The authoritative brand reference and renderer source must be hash-bound before prototype generation.
+- A representative prototype set must be generated and approved before bulk generation.
+- Prototype review must include at least one real messaging or social client.
+- Bulk generation must fail when the prototype approval is missing or stale.
 - The generator and reviewer must calculate the same stable input.
 - Normal builds must verify approved output without rewriting it.
 - Explicit regeneration must require renewed visual review and approval.

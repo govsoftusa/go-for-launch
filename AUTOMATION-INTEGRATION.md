@@ -23,6 +23,7 @@ Every run must read these files before deciding whether a site can deploy:
 - `ASTRO-MOBILE-SAFARI-PORTING-PLAYBOOK.md`
 - `TESTING-AND-RELEASE-CHECKLIST.md`
 - `PRODUCTION-RELEASE-POLICY.md`
+- `EXECUTION-CONTROL.md`
 - `AUTOMATION-INTEGRATION.md`
 - `SITEMAPS-AND-SEARCH-CONSOLE.md`
 - `ANSWER-ENGINE-OPTIMIZATION.md`
@@ -48,34 +49,36 @@ For each eligible Astro root:
 1. Fetch the Go for Launch upstream, confirm the checkout is current, and record its commit.
 2. Read the target repository instructions and deployment docs.
 3. Establish a clean git baseline or a deliberate local snapshot commit before edits.
-4. Install with the site package manager.
-5. Run available diagnostics, type checks, lint, tests, and app-specific smoke checks.
-6. Read the project design configuration. Keep core interface safety mandatory in every mode. When `advisory` or `required` design review applies, complete the design optimization brief, inventory brand anchors, diagnose hierarchy and density, define responsive anatomy, and record baseline evidence before changing styles.
-7. Build the exact production candidate through a command that generates and validates the complete sitemap.
-8. Run the mandatory interface-quality and page-differentiation gate against every indexable route and reviewed viewport, then preserve its JSON report and failure screenshots.
-9. Run the mandatory render sharpness gate against the exact build and preserve its JSON report. If explicit source auto-fix changes a file, rebuild before continuing.
-10. Discover every persistent side rail, table of contents, policy rail, and vertical tab list. Mark each region and item, run the side-navigation verifier against the exact build, and activate every item in Chromium and WebKit tests.
-11. Compare every indexable built canonical with the generated sitemap and verify the exact sitemap URL in `robots.txt`.
-12. Validate final HTML metadata, JSON-LD, heading hierarchy, Open Graph files, image dimensions, and responsive image output.
-13. Run the Ahrefs-style site-health audit against final HTML, CSS, referenced image weight, internal links, redirect targets, orphaned canonical pages, metadata limits, and `robots.txt`. Preserve its JSON report.
-14. Run the semantic SEO audit against canonical origin, title quality, title-to-content alignment, route-specific intent, reviewed content depth, citation URL availability, and citation evidence drift. Preserve its JSON report.
-15. For localized sites, validate self-canonicals, reciprocal hreflang clusters, `x-default`, localized sitemap entries, and localized navigation.
-16. Always run accessibility preferences, text resize, reflow, interaction, and responsive safety checks. When design review applies, also capture and inspect the configured viewports, route families, and design-system criteria.
-17. Run Playwright WebKit with an iPhone profile when the repo has Playwright coverage or when the automation adds a temporary smoke suite.
-18. Record desktop and mobile first-viewport requests, reject hidden-viewport downloads, and confirm every preload matches the measured LCP resource.
-19. Test the built candidate in native iOS Safari using an explicit Simulator UDID, including representative side-navigation interaction.
-20. Capture an advisory Cloudflare production RUM baseline when the canonical site is Cloudflare-hosted and approved Account Analytics Read access exists.
-21. Deploy the exact candidate to staging when a staging target is documented.
-22. Verify staging serves the expected candidate, canonical metadata, sitemap, child sitemaps, robots declaration, citations, and every side-navigation destination.
-23. Run PageSpeed Insights against staging for mobile and desktop.
-24. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
-25. Run Ahrefs Site Audit against the current project when approved API v3 or crawler access exists, and preserve pass, fail, or allowed skipped evidence.
-26. Run the design gate, preserve its result, and deploy production only when all core gates and every configured required gate pass and the production target is unambiguous.
-27. Verify the canonical production hostname with live HTTP checks, sitemap checks, citation checks, redirect checks, complete side-navigation coverage, WebKit smoke coverage, and native iOS Safari smoke coverage.
-28. Query approved Cloudflare edge HTTP analytics immediately, then compare production RUM after sufficient traffic and preserve every report or explicit skipped state.
-29. Verify the opposite trailing-slash form, alternate origins, and approved legacy routes redirect in one permanent hop with path and query preservation.
-30. When approved Search Console access exists, verify property access, list submitted sitemaps, submit the canonical sitemap when missing, and record the resulting status.
-31. When SEO or content work is in scope, research query language from approved Search Console, Ahrefs, support, sales, or analytics evidence before adding answer-focused content.
+4. Complete the execution-control record and config, then run the machine-readable verifier at every phase checkpoint. It must reject incomplete task envelopes, unreviewed raised limits, active blockers at their limit, and unsupported production-readiness claims.
+5. Install with the site package manager.
+6. Read [`INCREMENTAL-STATIC-BUILDS.md`](INCREMENTAL-STATIC-BUILDS.md), inspect the content and rendering dependency graph changed since the reusable cache was created, update the project decision config, and run the incremental-build decision verifier. Select `standard`, `incremental`, or `forced` exactly as the passing report recommends unless a named, expiring override permits a safer mode.
+7. Run available diagnostics, type checks, lint, tests, and app-specific smoke checks.
+8. Read the project design configuration. Keep core interface safety mandatory in every mode. When `advisory` or `required` design review applies, complete the design optimization brief, inventory brand anchors, diagnose hierarchy and density, define responsive anatomy, and record baseline evidence before changing styles.
+9. Build the exact production candidate in the selected mode through a command that generates and validates the complete sitemap.
+10. Run the mandatory interface-quality and page-differentiation gate against every indexable route and reviewed viewport, then preserve its JSON report and failure screenshots.
+11. Run the mandatory render sharpness gate against the exact build and preserve its JSON report. If explicit source auto-fix changes a file, rebuild before continuing.
+12. Discover every persistent side rail, table of contents, policy rail, and vertical tab list. Mark each region and item, run the side-navigation verifier against the exact build, and activate every item in Chromium and WebKit tests.
+13. Compare every indexable built canonical with the generated sitemap and verify the exact sitemap URL in `robots.txt`.
+14. Validate final HTML metadata, JSON-LD, heading hierarchy, Open Graph files, image dimensions, and responsive image output.
+15. Run the Ahrefs-style site-health audit against final HTML, CSS, referenced image weight, internal links, redirect targets, orphaned canonical pages, metadata limits, and `robots.txt`. Preserve its JSON report.
+16. Run the semantic SEO audit against canonical origin, title quality, title-to-content alignment, route-specific intent, reviewed content depth, citation URL availability, and citation evidence drift. Preserve its JSON report.
+17. For localized sites, validate self-canonicals, reciprocal hreflang clusters, `x-default`, localized sitemap entries, and localized navigation.
+18. Always run accessibility preferences, text resize, reflow, interaction, and responsive safety checks. When design review applies, also capture and inspect the configured viewports, route families, and design-system criteria.
+19. Run Playwright WebKit with an iPhone profile when the repo has Playwright coverage or when the automation adds a temporary smoke suite.
+20. Record desktop and mobile first-viewport requests, reject hidden-viewport downloads, and confirm every preload matches the measured LCP resource.
+21. Test the built candidate in native iOS Safari using an explicit Simulator UDID, including representative side-navigation interaction.
+22. Capture an advisory Cloudflare production RUM baseline when the canonical site is Cloudflare-hosted and approved Account Analytics Read access exists.
+23. Deploy the exact candidate to staging when a staging target is documented.
+24. Verify staging serves the expected candidate, canonical metadata, sitemap, child sitemaps, robots declaration, citations, and every side-navigation destination.
+25. Run PageSpeed Insights against staging for mobile and desktop.
+26. Require 100 for Performance, Accessibility, Best Practices, and SEO in both strategies.
+27. Run Ahrefs Site Audit against the current project when approved API v3 or crawler access exists, and preserve pass, fail, or allowed skipped evidence.
+28. Run the design gate, preserve its result, and deploy production only when all core gates and every configured required gate pass and the production target is unambiguous.
+29. Verify the canonical production hostname with live HTTP checks, sitemap checks, citation checks, redirect checks, complete side-navigation coverage, WebKit smoke coverage, and native iOS Safari smoke coverage.
+30. Query approved Cloudflare edge HTTP analytics immediately, then compare production RUM after sufficient traffic and preserve every report or explicit skipped state.
+31. Verify the opposite trailing-slash form, alternate origins, and approved legacy routes redirect in one permanent hop with path and query preservation.
+32. When approved Search Console access exists, verify property access, list submitted sitemaps, submit the canonical sitemap when missing, and record the resulting status.
+33. When SEO or content work is in scope, research query language from approved Search Console, Ahrefs, support, sales, or analytics evidence before adding answer-focused content.
 
 If a site has only a production deploy script and no safe staging target, do not deploy production unless the repo documentation explicitly allows the production target to serve as the release gate for that site.
 
@@ -183,12 +186,20 @@ PageSpeed Insights has a free anonymous tier with low rate limits, suitable for 
 PageSpeed evidence must be tied to the staged candidate:
 
 - Verify the audited URL, HTTP status, title, canonical URL, and visible content.
+- When dynamic HTML is warmed, run the document-readiness verifier from
+  [PAGESPEED-READINESS.md](PAGESPEED-READINESS.md) against the exact audited
+  URL and preserve its cache-state report.
 - Run mobile and desktop strategies.
 - Require all four Lighthouse categories to equal 100 in both strategies.
 - Treat any lower score as a release blocker.
 - Never print PageSpeed API keys or token-bearing URLs.
 
 If PageSpeed audits a stale page, redirect placeholder, access-denied page, Cloudflare error, or unrelated preview, the result is invalid.
+
+A generic automation fetch is not a browser-document warmup. Do not describe a
+route as warm unless the request sends the documented navigation headers and
+the final response proves reusable cache state. This verification does not
+permit score retries or reduce the eight required 100 checks.
 
 ## Cloudflare Production Observability
 
@@ -216,6 +227,7 @@ For every site touched by automation, report:
 - Dependency versions changed.
 - Commands run and pass or fail result.
 - Build candidate identity when available.
+- Incremental-build decision mode, recommendation, cache source, eligible and expected restored page counts, measured benefit, parity evidence, and report path.
 - Render sharpness report, result, reviewed viewports, and intentional exceptions.
 - Sitemap URL, indexable page count, sitemap URL count, and validation result.
 - Search Console property, permission, ownership status, and sitemap submission status when access exists.
@@ -239,6 +251,7 @@ Stop before production deployment when:
 - The toolkit files cannot be read.
 - Git baseline is not clean or deliberately snapshot-committed.
 - Build or required tests fail.
+- The incremental-build decision report is missing, failed, stale, or recommends a different mode without a current named override.
 - The render sharpness report is missing or failed, or source changed through auto-fix without a complete rebuild.
 - The interface-quality report is missing or fails on overlap, clipping, overflow, clearance, header or hero proportions, route coverage, or page differentiation.
 - The configured design mode is `required` and applicable design work begins without an approved brand source, baseline evidence, or diagnosis.

@@ -20,6 +20,7 @@ The verifier reads the exact output intended for staging and production. It fail
 - An indexable canonical page with no incoming internal links, unless explicitly approved.
 - A referenced local image missing from the build.
 - A referenced local image larger than the configured byte budget.
+- A declared runtime image that fails its live request, returns a nonimage response, or exceeds the configured byte budget.
 - A missing `robots.txt`, a missing `User-agent` directive, or a missing exact canonical sitemap declaration.
 
 Image discovery covers ordinary `src` values, `srcset`, `<source>` elements, Open Graph and Twitter image metadata, inline CSS, and built CSS files. This matters because a large decorative background can escape an audit that checks only `<img>` elements.
@@ -45,6 +46,42 @@ The verifier uses `cheerio`, which is already a Go for Launch dependency. Adapt 
 
 The command writes a machine-readable JSON report. Preserve that report with release evidence.
 
+## Runtime Image Delivery
+
+Some Cloudflare Workers and other edge runtimes generate same-origin image variants only when a visitor requests them. Those URLs are intentionally absent from the static output, so treating them as missing files creates a false build failure. Do not add them to a general image allowlist.
+
+Declare only the exact path families handled by the reviewed runtime:
+
+```js
+export default {
+  runtimeImagePrefixes: ["/media-fit-v1/*"],
+  runtimeImageBaseUrl: "https://candidate.example.gov",
+  runtimeImageConcurrency: 16,
+  runtimeImageTimeoutMs: 15_000,
+  runtimeImageAttempts: 3,
+  runtimeImageRequiredHeaders: {
+    "x-image-source": "verified-transform"
+  },
+  runtimeImageProgressEvery: 1_000
+};
+```
+
+The verifier sends a `HEAD` request for every distinct declared runtime image. Each response must succeed, declare an `image/*` content type, and stay within the applicable byte budget. Transport failures receive only the configured bounded attempts. HTTP failures and invalid responses still fail closed.
+
+When a runtime route can redirect to an unoptimized source, configure
+`runtimeImageRequiredHeaders`. The gate then proves that the reviewed transform
+or object path served the response. A small original file cannot pass merely
+because a redirect happened to stay within the byte limit.
+
+For a private runtime that needs deterministic local object fixtures, first run
+the verifier with `runtimeImageInventoryOnly: true`. The report records
+`runtimeImages.selectedPaths` without making runtime image requests. Populate
+the local fixture from that exact list, then run the normal verifier with
+inventory-only mode disabled. This prevents a fixture collector and the gate
+from selecting different samples.
+
+Keep ordinary static images in the exact release output. A runtime prefix must never be used to hide a missing built asset.
+
 ## Image Remediation Rules
 
 Keep imported or original assets immutable. Optimize only generated output or derived source assets so the original evidence remains available for comparison.
@@ -60,6 +97,13 @@ The default 100,000-byte budget reflects a strict information-site policy and th
 Link directly to the canonical route. Do not rely on a redirect to add or remove a trailing slash. Do not link to a legacy route that redirects to a current page. These redirects add request latency, consume crawl effort, and can hide navigation drift.
 
 Every indexable page should have at least one meaningful incoming link from another indexable page. Sitemap inclusion alone does not make content discoverable to a visitor. Use `orphanAllowlist` only for deliberately isolated pages with written approval.
+
+Links marked `rel="ugc"` are excluded from internal navigation, redirect, and
+orphan calculations. A legacy comment or other user submission is not part of
+the publication's information architecture and must not be allowed to create
+or satisfy an incoming-link relationship. The application must still escape
+the submitted text and mark generated anchors with `rel="ugc"`. Editorial and
+template links remain fully gated.
 
 ## Robots and Public Crawl Verification
 

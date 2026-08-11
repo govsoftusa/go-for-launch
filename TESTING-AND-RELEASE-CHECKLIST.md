@@ -25,6 +25,74 @@ This checklist is mandatory before production. Any unchecked required item block
 - [ ] If the active operator uses Windows or Linux, the exact candidate handoff to the qualified Mac runner is documented.
 - [ ] Production is blocked when required native iOS Simulator evidence cannot be produced.
 
+## Execution control and bounded delivery
+
+- [ ] `EXECUTION-CONTROL.md` was read before implementation began.
+- [ ] `templates/execution-control-record.md` was copied into the target repository and completed.
+- [ ] `templates/execution-control.config.mjs` was copied into the target repository, and `scripts/verify-execution-control.mjs` passes for the current phase.
+- [ ] The production-ready execution-control report records Performance, Accessibility, Best Practices, and SEO at 100 for both mobile and desktop PageSpeed.
+- [ ] The task envelope names the requested outcome, acceptance owner, in-scope systems, explicit exclusions, completion conditions, deployment authority, and rollback method.
+- [ ] Every new finding is classified as required outcome, release blocker, recommended follow-up, or unrelated before work expands.
+- [ ] Subjective brand, editorial, navigation, information-architecture, and interaction directions have representative proof and named human approval before bulk implementation.
+- [ ] Blocker attempts and active investigation time are recorded.
+- [ ] Two unsuccessful attempts, ninety minutes of active work, or two materially identical failure cycles stop speculative remediation unless a supported bounded continuation is explicitly approved.
+- [ ] Reaching a control threshold leaves the failed gate failed and changes the task status to blocked.
+- [ ] Checkpoint records identify the current commit, candidate, change, test evidence, blocker, next bounded action, and active time.
+- [ ] Candidate freeze excludes polish and unrelated improvements from release remediation.
+- [ ] Targeted development tests did not replace the complete mandatory release suite.
+- [ ] The complete mandatory release suite passed after the final change against the exact frozen candidate.
+- [ ] Any change after candidate freeze created a new candidate and repeated the complete mandatory suite.
+- [ ] Follow-up work is recorded separately and is not presented as part of the completed task.
+
+## Incremental static build decision
+
+- [ ] `INCREMENTAL-STATIC-BUILDS.md` was read before the application build.
+- [ ] `templates/incremental-build.config.mjs` was copied into the target project and updated for the planned candidate.
+- [ ] The agent inspected content, route generation, cache keys, cross-page dependencies, shared modules, volatile inputs, middleware, server islands, configuration, dependencies, and cache availability before selecting a mode.
+- [ ] The resolved Astro version and build concurrency came from current project evidence.
+- [ ] Total prerendered, `getStaticPaths`, keyed, and expected restored page counts were recorded.
+- [ ] The build selected `standard`, `incremental`, or `forced` exactly as the passing decision report recommends, or a safer mismatch has a current named and expiring override.
+- [ ] Incremental mode has a persistent project-isolated cache and passing full-render parity evidence with equal output hashes.
+- [ ] Incremental mode exceeds the project-owned minimum savings in seconds and percentage.
+- [ ] Middleware HTML changes, cache implementation changes, unknown rendering inputs, or failed parity selected forced mode.
+- [ ] The complete sitemap, static-output, browser, WebKit, native Safari, PageSpeed, evidence, staging, and production gates remain unchanged for restored pages.
+
+## Editorial publishing and dynamic content
+
+Complete this section instead of the application release sections only when the
+classification gate proves that the change is limited to CMS records and media.
+Any application change returns the task to the complete checklist. It does not
+waive any mobile, desktop, Safari, or 100/100 requirement for an application
+release.
+
+- [ ] `EDITORIAL-PUBLISHING-AND-DYNAMIC-CONTENT.md` was read before the production mutation.
+- [ ] `templates/editorial-publish-record.md` and `templates/editorial-publish.config.mjs` were copied into the target project and completed.
+- [ ] The change is limited to supported CMS record and media mutations.
+- [ ] Application source, dependencies, configuration, infrastructure, routing, cache implementation, templates, schemas, and built artifacts remain unchanged.
+- [ ] The current production application identity matches a previously verified candidate.
+- [ ] The mutation uses the supported CMS UI or API and has a documented rollback.
+- [ ] Direct database access is false. Any break-glass exception has explicit approval, a backup, least-privilege scope, exact affected-row evidence, rollback, and parity validation.
+- [ ] Delta import uses a stable source identifier and checksum, and a repeated import is an idempotent no-op.
+- [ ] Media identifiers, object keys, delivery URLs, intrinsic dimensions, content types, provenance, rights, and intended use were reconciled.
+- [ ] Featured-image selection received editorial review and was not chosen automatically by file size or inventory order.
+- [ ] The affected route graph names direct routes, home, archives, authors, related content, search, feeds, and sitemaps.
+- [ ] CMS query cache, object cache, Worker Cache API, CDN HTML cache, CDN asset cache, and browser cache were considered as separate layers.
+- [ ] Only the required content keys and dependent routes were invalidated.
+- [ ] Changed canonical routes pass GET and HEAD with the expected status and current application identity.
+- [ ] Canonical, index policy, title, deck, author, date, taxonomy, body, publication state, and media match the intended record.
+- [ ] The featured image is sharp at rendered size, responsive, within byte budget, and not duplicated accidentally at the start of the body.
+- [ ] Home, archive, author, search, feed, related-content, and sitemap surfaces agree with the CMS state.
+- [ ] Existing interactive forms retain the approved anti-spam boundary.
+- [ ] Any CMS editorial-readiness plugin ran against the final post hash and policy version.
+- [ ] Objective publication blockers passed, while subjective SEO and AEO guidance remained advisory.
+- [ ] Every authoritative publication path invokes a server-side prepublication check. A client-only editor check is not treated as enforcement.
+- [ ] Medium and high performance-risk publishes have a targeted browser trace for affected first-viewport routes.
+- [ ] High performance-risk publishes have a passing targeted PageSpeed result when the provider is available. A valid score below the project requirement follows the rollback policy.
+- [ ] `scripts/verify-editorial-publish.mjs` passes against the completed record.
+- [ ] Any renderer, schema, component, dependency, configuration, routing, cache-code, security-boundary, or infrastructure finding was separated into an application release.
+- [ ] No Astro build, application candidate, artifact upload, or full-site cache purge was performed for the qualifying editorial publish.
+- [ ] The publish record preserves symptoms, root cause, failed experiments, targeted checks, performance evidence, decision, and rollback status.
+
 ## Stanford Rule content quality
 
 - [ ] `STANFORD-RULE-CONTENT-QUALITY.md` was read before public content was written or revised.
@@ -53,6 +121,25 @@ This checklist is mandatory before production. Any unchecked required item block
 - [ ] Assign every indexable route to a page family and project-owned archetype with a reader purpose, content rhythm, visual identity, and distinctive selectors.
 - [ ] Capture legacy desktop, tablet, and mobile references.
 - [ ] Record the canonical hostname, staging target, and deployment contract.
+- [ ] The CMS stored authentication origin equals the canonical production origin and is not inherited from a retired preview host.
+- [ ] A bounded password-reset, invitation, or magic-link test uses the canonical production scheme and hostname.
+- [ ] A passkey registered on the canonical production origin completes one sign-out and sign-in cycle before preview-host access is retired.
+- [ ] The session source of truth provides the consistency required for an immediate authentication write followed by an identity read.
+- [ ] Custom session driver option names were checked against deployment-adapter reserved and overwritten options.
+- [ ] The compiled private candidate completes the credential assertion and an immediate authenticated identity request with the expected role.
+- [ ] The real CMS admin base path loads, not an assumed shortcut or public application route.
+- [ ] An existing CMS record loads and saves in a clean browser, and the exact content API request is observed at the server.
+- [ ] Browser extensions or privacy rules that block CMS requests are diagnosed before a client-blocked editor is treated as a server or database defect.
+- [ ] If public routes enforce trailing slashes, the slashless CMS API URLs used by the admin reach handlers with populated collection and item parameters.
+- [ ] Exact public authentication endpoints remain public after any required slash normalization and reach their verifier without requiring a preexisting session.
+- [ ] API slash normalization preserves GET, POST, and PUT semantics, including one disposable local write with its request body intact.
+- [ ] A dynamic email login state renders its anti-spam challenge, blocks submission before verification, enables submission after verification, and attaches the token to the outgoing request.
+- [ ] The private browser proof stubs the external challenge client while the server separately rejects missing and invalid tokens.
+- [ ] CMS list, existing-item, authors, trash, save, and publish requests pass in the private candidate environment.
+- [ ] Every required editorial collection renders a real fixture title in the admin console.
+- [ ] A disposable local draft can be created, edited, reloaded, moved to trash, and permanently deleted.
+- [ ] Redirect responses are not counted as final API success, and the final handler receives preserved route parameters, method, and body.
+- [ ] Authentication evidence excludes raw tokens, cookies, personal addresses, private bodies, and token-bearing URLs.
 
 ## Project-Controlled Design-System Conformance
 
@@ -155,6 +242,10 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Every generated artboard capture is reviewed at native size for reading order, balance, useful empty space, connector clarity, and professional craft.
 - [ ] The visual composition JSON report, screenshots, reviewer, and decision are preserved with the exact candidate evidence.
 - [ ] Every named first-choice font is shipped or replaced with an approved system stack.
+- [ ] The production build does not download fonts from a live third-party provider.
+- [ ] Framework and CMS integrations cannot silently add release-time font downloads.
+- [ ] Build-only font packages do not invalidate runtime data fixtures.
+- [ ] A disabled integration font does not leave a runtime font component that fails rendering.
 - [ ] Inline logos and interface SVGs avoid accidental fractional view-box scaling.
 - [ ] The normal production build generates `/sitemap.xml` and runs the sitemap verifier.
 - [ ] Every indexable built canonical appears exactly once in the sitemap.
@@ -181,8 +272,15 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Titles and descriptions are unique and within the configured length limits.
 - [ ] The machine-readable site-health report is preserved with release evidence.
 - [ ] Open Graph contact sheets include every indexable page and were reviewed at full size.
+- [ ] The authoritative brand reference and renderer source are hash-bound in the social-card adoption gate.
+- [ ] Representative social-card prototypes covered publication identity, a long headline, source artwork when applicable, and the designed fallback.
+- [ ] Every prototype records an approved selection method, route-relevance rationale, source reference when applicable, rights review, third-party-mark review, and synthetic-artwork review.
+- [ ] Publication-identity artwork was curated for that route and was not selected implicitly from the newest content item or first inventory record.
+- [ ] A named reviewer approved the current prototypes in a real messaging or social client before bulk regeneration.
+- [ ] The prototype approval matches the current visual-system, brand-reference, renderer, prototype-input, and prototype-output hashes.
 - [ ] Open Graph cards have no overlapping or clipped text, jagged or upscaled artwork, unintended transparency, incorrect page content, or unsafe crop placement.
 - [ ] Every social-card source image is visually informative, with flat placeholders and empty exports replaced by an approved designed fallback.
+- [ ] No unapproved trademark, sponsor mark, watermark, product packaging, or generated text becomes the focal identity of a card.
 - [ ] The normal build reused existing approved Open Graph cards without changing their bytes, names, encoding, or modification times.
 - [ ] Any regenerated card was explicitly requested because a rendering input changed, and unchanged cards were not rewritten.
 - [ ] Card input fingerprints exclude unrelated SEO policy, sitemap, citation, dependency, timestamp, environment, and build values.
@@ -229,6 +327,17 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] PageSpeed desktop Accessibility equals 100.
 - [ ] PageSpeed desktop Best Practices equals 100.
 - [ ] PageSpeed desktop SEO equals 100.
+- [ ] One PageSpeed provider preflight returned a scored result before the full route and strategy matrix began.
+- [ ] API quota, authentication, billing, or provider failures were classified as external blockers rather than site-performance findings.
+- [ ] Every valid PageSpeed result was preserved.
+- [ ] The matrix stopped at the first valid category below 100 for diagnosis.
+- [ ] A failed result records the exact candidate, URL, strategy, raw report, dominant audit, diagnosis evidence, and next bounded action.
+- [ ] A Performance failure records filmstrip, network, LCP resource, request timing, preload, and responsive-source evidence.
+- [ ] After any PageSpeed remediation, a new candidate ran the complete required mobile and desktop matrix.
+- [ ] Any claimed PageSpeed HTML warmup uses the exact audited URL and sends an HTML `Accept` header plus `Sec-Fetch-Dest: document`.
+- [ ] Any claimed PageSpeed HTML warmup verifies candidate identity, application markers, and final reusable cache state in a preserved machine-readable report.
+- [ ] Warmup evidence remains separate from cold-document, first-request-after-deploy, bounded burst, WebKit, native Safari, and real-user evidence.
+- [ ] No warmup result is used to retry, discard, or waive a genuine PageSpeed score below 100.
 - [ ] Normal text and large text meet WCAG 2.2 AA contrast requirements in every changed surface state.
 - [ ] Changed content and controls remain usable at 200 percent text resize.
 - [ ] Ordinary page content reflows without two-dimensional scrolling at 320 CSS pixels.
@@ -261,16 +370,37 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] The production candidate was built before staging and Simulator testing.
 - [ ] The exact tested candidate is deployed to staging.
 - [ ] Staging returns the candidate identifier expected by the release gate.
+- [ ] Protected candidate hosts and public production hosts use separate Worker services when an outer cache can answer before middleware.
+- [ ] Each isolated service has the intended bindings and secrets, public preview state, and scheduled-work state, with no duplicate cron or queue consumer.
 - [ ] PageSpeed audited the expected staging candidate rather than an error, stale, or access-denied page.
+- [ ] If the PageSpeed runner warms HTML, `scripts/verify-pagespeed-warmup.mjs` passes for every audited URL and its report is bound into release evidence.
+- [ ] Protected staging proves application cache state, while any public edge-hit allowance also proves exact candidate, application marker, canonical URL, public indexing, and public cache policy.
+- [ ] Every PageSpeed provider error remains preserved and blocked until a matching supplemental result fills only that external-error slot.
+- [ ] No supplemental PageSpeed result replaces a scored result, and every completed matrix result has all four categories equal to 100.
 - [ ] All eight required PageSpeed category checks equal 100.
 - [ ] No production push occurs before the Simulator and PageSpeed gates pass.
+- [ ] The production upload uses the framework-generated deployment manifest beside the verified artifact.
+- [ ] A local provider dry run proves the complete executable module closure, generated module rules, assets, routes, bindings, compatibility settings, and scheduled triggers before any production request.
+- [ ] The dry-run package contains every statically reachable relative module. An entry-only package fails when the entry imports generated chunks.
+- [ ] Packaging does not rebuild or transform the frozen candidate.
 - [ ] Production deployment completes successfully.
+- [ ] Production begins with one canonical canary hostname while the apex and rollback hostname remain on the prior application.
+- [ ] The canary is given the reviewed route propagation interval before application gates begin.
+- [ ] Repeated probes from more than one network or region agree on the exact candidate identity, application marker, robots policy, and cache policy.
+- [ ] Protected candidate probes alternate with public canary probes and never leak protected robots or cache policy to the public hostname.
+- [ ] The complete route consistency sequence passes again after a second quiet interval.
+- [ ] Any mixed application identity triggers automatic route removal, cache purge, rollback verification, evidence capture, and release stop.
 - [ ] The canonical public hostname serves the new candidate.
+- [ ] Live production SEO passes before PageSpeed, forms, crawler, or observability gates run.
 - [ ] The production `/sitemap.xml`, child sitemaps, and robots declaration pass public HTTP checks.
 - [ ] Public `robots.txt` returns HTTP 200 and advertises the exact canonical sitemap URL.
 - [ ] A fresh approved external crawl was run after deployment, or the access blocker and required follow-up were recorded.
 - [ ] Ahrefs API v3 Site Audit was checked when approved access exists, and the report records pass, fail, or an allowed skipped state.
 - [ ] Apex and alternate-host redirects behave correctly.
+- [ ] The apex is attached only after the canonical canary passes route consistency twice.
+- [ ] A cached public application uses a dedicated minimal apex redirect service with no application data bindings or scheduled work.
+- [ ] Apex GET and HEAD first hops pass for the root, a representative path, and a query-bearing path.
+- [ ] The apex redirect preserves the exact path and query, sends a permanent status and `Cache-Control: no-store`, and never returns the canonical document body with status 200.
 - [ ] Opposite trailing-slash forms return one HTTP 301 or 308 to the exact canonical URL.
 - [ ] Redirect probes preserve paths and query strings unless an approved map intentionally changes the path.
 - [ ] Localized canonical, hreflang, language selector, and sitemap behavior passes on public hosts.
@@ -281,6 +411,7 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Any required Cloudflare threshold or baseline regression passes under the reviewed enforcement mode.
 - [ ] Generated build output is cleaned without reverting source changes.
 - [ ] Final evidence records versions, test counts, scores, and remaining risks.
+- [ ] Final evidence contains a source record for every separately deployed application, form, scheduled, and redirect runtime.
 - [ ] Final evidence records the render sharpness result, report path, native-resolution review, and intentional exceptions.
 - [ ] Final evidence records sitemap counts and Search Console verification and submission status.
 - [ ] Final evidence records the AEO query baseline, reviewed pages, sources, and measurement plan when answer-focused content changed.

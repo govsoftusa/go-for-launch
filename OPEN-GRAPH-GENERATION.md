@@ -13,10 +13,26 @@ Every indexable page needs a relevant social preview. Social cards are release a
 7. Every new or changed card requires full-size human review. Approval must record both the rendering input SHA-256 and final image SHA-256. Any later input or pixel change invalidates approval.
 8. A production candidate must use the same approved files inspected in the contact sheets. Do not rebuild or optimize them between approval, staging, and production.
 9. Do not treat a technically valid file as useful artwork. Measure candidate source images after flattening transparency and reject visually flat, empty, placeholder, or low-detail assets. Use an approved designed fallback when a page source does not carry enough information for the card.
+10. Bulk regeneration is prohibited until a representative prototype set has current named approval tied to the authoritative brand reference, renderer contract, prototype inputs, and prototype output hashes.
+11. Every prototype card must record how its artwork was selected, why it represents the route, the durable source reference when artwork is used, and explicit review of rights, third-party marks, and synthetic content. An automatically selected recent item is not homepage evidence merely because it is available.
 
 ## Configure the Cards
 
 Copy [`open-graph.config.mjs`](templates/open-graph.config.mjs) into the target site. Keep page-specific rendering content in `cards` and shared brand choices at the top level.
+
+The bundled renderer is a reference implementation, not a universal visual
+identity. If its composition, typography, symbols, or tone do not match the
+project, set `renderCard` to a project-owned asynchronous renderer. The hook
+receives the card, complete config, output dimensions, config root, Sharp, and
+the XML escape helper. It may return SVG text, a Buffer, or a Uint8Array. The
+shared pipeline still enforces dimensions, opacity, deterministic hashing,
+explicit regeneration, and hash-bound review.
+
+When a custom renderer needs additional route-specific values, place them in
+`card.renderingFingerprint`. Place the reviewed logo or wordmark hash in
+`brandAssetSha256`. The input fingerprint then changes when real visual inputs
+change, without treating the renderer function's source text or an unrelated
+project setting as card content.
 
 Required controls:
 
@@ -26,11 +42,15 @@ Required controls:
 - `seoContractVersion` identifies the SEO content rules that affect text inside cards.
 - `maximumBytes` blocks unnecessarily heavy files.
 - `sourceAssetSha256` must be set for any external image or illustration used by a card.
+- `brandAssetSha256` records the exact reviewed logo or wordmark used by a custom renderer.
+- `renderingFingerprint` records custom template inputs that visibly affect the card.
 - `brandRules` defines the approved palette, approved type families, minimum safe padding, minimum supporting-text size, and maximum headline size.
 - `typography` defines the actual type families and sizes used by the renderer.
 - `contactInformation` declares whether a visible canonical destination or other contact detail is required.
 - Every card includes `purpose`, a plain-language statement of what the preview must communicate when that page is shared.
 - `reviewContract` records the reviewer, review date, brand reference, readability approval, brand-integrity approval, and contact-information approval.
+- `adoptionGate` records the authoritative brand-reference hash, renderer contract, representative prototype cards and cases, real-client review, and immutable prototype approval path.
+- Every prototype card includes `artworkReview`. Use `route-owned`, `editor-curated-project-asset`, `licensed-editorial-asset`, or `designed-fallback` as the selection method. Record route relevance, rights review, third-party-mark review, and synthetic-artwork review. Source artwork also requires a durable source reference and `sourceAssetSha256`.
 
 Before selecting any logo or mark, follow [Brand Asset Provenance and Usage](BRAND-ASSET-PROVENANCE.md). Record the authoritative brand-guide hash and exact asset hashes. A full-color asset approved for a light panel cannot be reused on a dark panel unless the guide explicitly allows it. Run the brand asset verifier before regenerating or approving cards.
 
@@ -43,10 +63,19 @@ Copy [`generate-open-graph.mjs`](scripts/generate-open-graph.mjs) and [`review-o
 Explicit maintenance workflow:
 
 ```bash
+node scripts/generate-open-graph.mjs --config=open-graph.config.mjs --prototype
+node scripts/review-open-graph.mjs --config=open-graph.config.mjs --prototype
+node scripts/review-open-graph.mjs --config=open-graph.config.mjs --approve-prototype
 node scripts/generate-open-graph.mjs --config=open-graph.config.mjs --regenerate
 node scripts/review-open-graph.mjs --config=open-graph.config.mjs
 node scripts/review-open-graph.mjs --config=open-graph.config.mjs --approve
 ```
+
+The prototype set lives outside the production output and state manifest. Use it to validate the visual system before bulk work begins. For projects with at least three cards, include at least three prototypes. Cover publication identity and a long headline in every project. Add source artwork and the designed fallback whenever those layouts exist.
+
+`--approve-prototype` requires a named reviewer, review date, authoritative brand reference, named real messaging or social client, and explicit approval of the template, typography, palette, imagery, route relevance, rights and third-party marks, brand authority, readability, and absence of unapproved synthetic artwork. The resulting approval is bound to the brand-reference hash, renderer source hash, visual-system fingerprint, prototype input hashes, and prototype output hashes.
+
+`--regenerate` validates that approval before writing any production card. A changed template version, renderer hash, brand reference, shared palette, shared typography, brand rule, prototype selection, or prototype input invalidates it.
 
 Normal build and release workflow:
 
@@ -58,6 +87,12 @@ node scripts/review-open-graph.mjs --config=open-graph.config.mjs --check
 The first command in the normal workflow verifies the state manifest, rendering input fingerprint, existing file hash, route set, and safe text constraints. It does not render or write an image. The second command verifies dimensions, format, opacity, file size, recorded output hash, and hash-bound visual approval.
 
 Automated checks must reject non-brand colors, unapproved type families, insufficient padding, supporting text below the configured minimum, headlines above the configured maximum, horizontal text overflow, vertical text-region overlap, truncated destination text, missing required contact information, and missing purpose statements. Human review remains mandatory because automation cannot fully judge hierarchy, clarity, tone, visual balance, or whether the card succeeds for its intended sharing context.
+
+A prior approval is invalid as soon as a stakeholder rejects the template,
+even when every file still matches its approved hash. Remove or supersede the
+approval, increment the template version, regenerate explicitly, and review
+the replacement contact sheets. Hash integrity proves which artwork was
+reviewed. It does not prove that the artwork was good.
 
 Commit stable social-card files, the state manifest, and the approval manifest. Review sheets may remain release evidence instead of source-controlled files.
 
@@ -73,6 +108,19 @@ Commit stable social-card files, the state manifest, and the approval manifest. 
 - Use a minimum practical display size of 20 pixels for destination and supporting text in a 1200 by 630 image.
 - Prefer vector logos and artwork. If a raster source is required, record its SHA-256 and verify that its intrinsic size supports the rendered placement.
 - Evaluate page artwork separately from brand marks. A correct logo cannot rescue a gray placeholder panel, an empty transparent export, or a near-uniform gradient.
+- Prefer real page photography or illustration when the project owns it and
+  the file is large enough for the intended crop. A designed typographic
+  fallback is safer than enlarging a small source or inventing unrelated art.
+- Curate publication-identity artwork for the publication route. Do not use the
+  newest article image, first inventory item, or generic image search result as
+  an implicit homepage selection rule.
+- Inspect the entire crop for trademarks, event marks, sponsor walls, product
+  packaging, watermarks, and generated text. A project may own the photograph
+  while still lacking approval to make a third-party mark the visual identity
+  of the shared route.
+- Do not reuse decorative geometry, synthetic marks, or a toolkit's house
+  style merely because the renderer can produce it. The card must look like
+  the publication or product that owns the destination.
 - Use `scripts/lib/artwork-suitability.mjs` in project generators as a baseline low-detail check. Tune the threshold against the project contact sheet, and bind the threshold and selection result into the rendering-input fingerprint.
 - Produce an opaque 1200 by 630 raster image with the declared content type.
 - Set `og:image:alt` to describe the preview information, not decorative geometry.
@@ -86,6 +134,8 @@ Inspect every card at full size and in the complete contact sheet. Check:
 - No flat gray placeholder, empty transparent export, low-information gradient, or other source that reads as missing content.
 - No template symbols that could be mistaken for status, validation, warning, or error icons.
 - The page topic, title, and destination match the page metadata and visible content.
+- The selected image represents the shared route, not merely a recent or technically eligible item.
+- Source ownership or license was reviewed, and no unapproved third-party mark becomes the card's focal identity.
 - Destination text is readable and useful, with no truncation.
 - Small labels remain sharp at actual preview size.
 - Brand marks retain their aspect ratio and have adequate clear space.

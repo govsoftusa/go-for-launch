@@ -47,6 +47,12 @@ await page(valid, "articles/service-guide", html({
   h1: "Public Service Technology Guide",
   body: `<p>This public service technology guide explains how agencies evaluate secure systems, accessible delivery, operational reliability, and measurable outcomes for residents.</p><p>A reviewed federal study documents public service technology performance in comparable programs through transparent methods and published findings. See the <a href="${sourceUrl}">federal public service technology study</a>.</p>`
 }));
+await page(valid, "legacy/opinion", html({
+  route: "/legacy/opinion/",
+  title: "Historical Independent Contributor Perspective",
+  h1: "A Different Original Headline",
+  body: "<p>This preserved contributor page intentionally keeps historical title and heading language that no longer shares the current metadata vocabulary.</p>"
+}));
 const validReport = join(root, "valid-report.json");
 const validConfig = join(root, "valid-config.json");
 await writeFile(validConfig, JSON.stringify({
@@ -55,7 +61,10 @@ await writeFile(validConfig, JSON.stringify({
   output: validReport,
   requirePageRule: true,
   title: { minimumCharacters: 30, maximumCharacters: 60, minimumWords: 4, minimumH1Overlap: 2, minimumContentOverlap: 3, maximumRepeatedWord: 2 },
-  pageRules: [{ pattern: "/articles/**", minimumWords: 35, titleTerms: ["public service"], contentTerms: ["technology", "agencies"], minimumContentTerms: 2, requireCitations: true }],
+  pageRules: [
+    { pattern: "/articles/**", minimumWords: 35, titleTerms: ["public service"], contentTerms: ["technology", "agencies"], minimumContentTerms: 2, requireCitations: true },
+    { pattern: "/legacy/**", minimumWords: 1, minimumH1Overlap: 0, minimumContentOverlap: 0 }
+  ],
   citations: {
     routePatterns: ["/articles/**"],
     requireOnMatchedRoutes: true,

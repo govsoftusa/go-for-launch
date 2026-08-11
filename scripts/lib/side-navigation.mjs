@@ -36,22 +36,22 @@ function attributeSelector(name, value) {
 export function auditSideNavigation(root, { requireNavigation = false } = {}) {
   const directory = resolve(root);
   const files = collectHtmlFiles(directory);
-  const pages = new Map(
-    files.map((file) => {
-      const html = readFileSync(file, "utf8");
-      return [normalizeRoute(routeForFile(directory, file)), { file, html, $: load(html) }];
-    })
+  const pageFiles = new Map(
+    files.map((file) => [normalizeRoute(routeForFile(directory, file)), file])
   );
+  const destinationDocuments = new Map();
   const findings = [];
   let navigationCount = 0;
   let itemCount = 0;
 
-  for (const [route, page] of pages) {
-    const relativeFile = relative(directory, page.file).split(sep).join("/");
+  for (const file of files) {
+    const route = normalizeRoute(routeForFile(directory, file));
+    const document = load(readFileSync(file, "utf8"));
+    const relativeFile = relative(directory, file).split(sep).join("/");
 
-    page.$("[data-side-navigation]").each((navigationIndex, navigation) => {
+    document("[data-side-navigation]").each((navigationIndex, navigation) => {
       navigationCount += 1;
-      const container = page.$(navigation);
+      const container = document(navigation);
       const role = container.attr("role");
       if (navigation.tagName !== "nav" && role !== "tablist" && role !== "navigation") {
         findings.push({
@@ -72,7 +72,7 @@ export function auditSideNavigation(root, { requireNavigation = false } = {}) {
 
       items.each((itemIndex, item) => {
         itemCount += 1;
-        const element = page.$(item);
+        const element = document(item);
         const label = (element.attr("aria-label") || element.text()).replace(/\s+/g, " ").trim();
         const href = element.attr("href")?.trim() || "";
 
@@ -103,7 +103,7 @@ export function auditSideNavigation(root, { requireNavigation = false } = {}) {
         }
 
         const controls = element.attr("aria-controls");
-        if (controls && page.$(attributeSelector("id", controls)).length !== 1) {
+        if (controls && document(attributeSelector("id", controls)).length !== 1) {
           findings.push({
             file: relativeFile,
             code: "SIDE_NAV_CONTROL_TARGET",
@@ -126,8 +126,8 @@ export function auditSideNavigation(root, { requireNavigation = false } = {}) {
         if (destination.origin !== "https://example.test") return;
 
         const destinationRoute = normalizeRoute(destination.pathname);
-        const destinationPage = pages.get(destinationRoute);
-        if (!destinationPage) {
+        const destinationFile = pageFiles.get(destinationRoute);
+        if (!destinationFile) {
           findings.push({
             file: relativeFile,
             code: "SIDE_NAV_ROUTE_TARGET",
@@ -138,7 +138,15 @@ export function auditSideNavigation(root, { requireNavigation = false } = {}) {
 
         if (destination.hash) {
           const id = decodeURIComponent(destination.hash.slice(1));
-          if (!id || destinationPage.$(attributeSelector("id", id)).length !== 1) {
+          let destinationDocument = document;
+          if (destinationRoute !== route) {
+            destinationDocument = destinationDocuments.get(destinationRoute);
+            if (!destinationDocument) {
+              destinationDocument = load(readFileSync(destinationFile, "utf8"));
+              destinationDocuments.set(destinationRoute, destinationDocument);
+            }
+          }
+          if (!id || destinationDocument(attributeSelector("id", id)).length !== 1) {
             findings.push({
               file: relativeFile,
               code: "SIDE_NAV_HASH_TARGET",
