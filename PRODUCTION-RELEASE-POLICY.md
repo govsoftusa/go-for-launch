@@ -332,6 +332,8 @@ When a release adds or materially changes FAQ, AEO, or other answer-focused cont
 
 The built candidate must prove that question headings and complete answers are present in the initial HTML. Any FAQ structured data must parse, describe only visible content, and match the visible wording exactly. Unsupported claims, hidden answers, fabricated questions, ineligible `QAPage` markup, or schema that drifts from the page block production.
 
+Run [`scripts/verify-aeo.mjs`](scripts/verify-aeo.mjs) against the built output and preserve the machine-readable JSON report with the release evidence. A missing llms.txt is a warning; the task remains open but does not block production. An empty or malformed llms.txt is a blocker. A missing `_headers` file or missing Link headers for llms.txt and sitemap.xml are warnings that must be triaged and addressed before the next content release. The JSON report must be retained alongside other release artifacts.
+
 Do not promise or require a particular ranking, rich result, AI citation, or answer-engine appearance. Those outcomes are not controlled by the site. The release gate evaluates content quality, technical eligibility, and measurement readiness.
 
 ## Core Interface Safety and Configurable Design Review
