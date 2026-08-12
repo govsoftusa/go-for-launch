@@ -63,6 +63,69 @@ When `FAQPage` JSON-LD is used:
 
 Google currently limits FAQ rich results primarily to well-known government and health sites. Valid FAQ markup does not guarantee a rich result, higher ranking, or inclusion in an AI answer. Do not use `QAPage` for an editorial FAQ. Google reserves `QAPage` for a single question where users can submit multiple answers.
 
+## Agent-Facing Discovery Signals
+
+Search engines, AI crawlers, and autonomous agents discover content through signals beyond HTML. Three additions meaningfully improve agent discoverability for a typical informational or lead-generation site. Implement them in the order they appear here.
+
+### llms.txt
+
+Publish a plain text file at `/llms.txt` that describes the site in natural language for AI systems. The file format is defined at [llmstxt.org](https://llmstxt.org) and uses Markdown conventions.
+
+A minimal file includes:
+
+- A level-one heading with the organization or site name.
+- A short description in a blockquote.
+- An About section with one to three sentences describing the organization and its primary audience.
+- A Content section linking key pages with short descriptions.
+
+Place the file in the Astro project `public/` directory so Astro copies it unchanged to the build root. Use [`templates/llms.txt`](templates/llms.txt) as a starting point.
+
+Keep the file accurate and current. Update it when primary content, navigation, or key page URLs change. It is not a Google ranking input and does not replace a sitemap.
+
+### HTTP Link Headers for Agent Discovery
+
+Add HTTP `Link` response headers that advertise the llms.txt file and the canonical sitemap. Agents and crawlers that read response headers before parsing HTML discover these resources directly.
+
+For Cloudflare Pages, create a `_headers` file in the Astro project `public/` directory:
+
+```text
+/*
+  Link: </llms.txt>; rel="describedby"; type="text/plain"
+  Link: </sitemap.xml>; rel="sitemap"
+```
+
+Each entry adds a `Link` header to every response from the site. Confirm the `_headers` file appears in the built output root after `astro build`. Verify the header is present on the canonical homepage before staging.
+
+### Markdown Content Negotiation
+
+Some AI crawlers send `Accept: text/markdown` to request a Markdown version of a page rather than HTML. Responding correctly requires server-side logic that detects the header and returns a Markdown file for the same URL.
+
+This is optional for most informational sites. llms.txt satisfies the primary machine-readable content need. Prioritize llms.txt and Link headers before implementing Markdown negotiation middleware.
+
+If Markdown negotiation is required, use a Cloudflare Worker deployed in front of the static Astro output. The Worker inspects the `Accept` header and returns a corresponding pre-built `.md` file with `Content-Type: text/markdown; charset=utf-8`. Pre-build the Markdown files during the Astro build step.
+
+### What Not to Implement for Informational Sites
+
+The following signals apply only when a site exposes APIs, agent tools, or commerce integrations. Do not implement them for standard informational or lead-generation sites:
+
+- `/.well-known/mcp.json`: Required only when the site runs a Model Context Protocol server.
+- `/.well-known/ai-plugin.json`: Required only when the site exposes an agent skill or plugin.
+- OAuth and OIDC discovery endpoints: Required only when the site offers an API that agents can authenticate against.
+- DNS-AIG records: An early experimental approach to DNS-based agent discovery. Skip until adoption is established. Re-evaluate quarterly.
+- Commerce agent protocols (AAEI, MPP, KCP): Required only for commerce-enabled sites with agent-facing checkout flows.
+
+Third-party site assessment tools often score all of these signals as missing without distinguishing which apply to a given site type. A low score on inapplicable infrastructure is not a defect.
+
+### Verify Agent Discovery Signals
+
+Run [`scripts/verify-aeo.mjs`](scripts/verify-aeo.mjs) against the built candidate to confirm llms.txt and the Link headers are in place before staging:
+
+```bash
+node scripts/verify-aeo.mjs --dir=dist --site=https://www.example.com
+```
+
+Add `--live` to also check response headers on the deployed staging URL. The script writes a machine-readable JSON report and exits with a non-zero code when signals are missing or malformed.
+
 ## Astro Implementation Pattern
 
 Keep each question and answer in one typed source object, then render both the visible HTML and optional JSON-LD from it:
@@ -107,7 +170,13 @@ For every page with answer-focused content:
 - Test mobile heading wrapping, accordions when used, and horizontal overflow.
 - Verify the deployed page through Search Console URL Inspection when access exists.
 
-Do not block a release because an answer engine did not cite a new page. Citation selection is outside the site's control. Block the release for invalid schema, hidden or contradictory content, unsupported claims, broken sources, missing sitemap coverage, or a failed standard SEO gate.
+For agent discoverability signals, run `verify-aeo.mjs` and confirm:
+
+- llms.txt is present in the build output and contains a level-one heading and an About section.
+- `_headers` includes `Link: </llms.txt>; rel="describedby"` and `Link: </sitemap.xml>; rel="sitemap"`.
+- No verify-aeo.mjs blockers are reported. Warnings do not block release but must be triaged.
+
+Do not block a release because an answer engine did not cite a new page. Citation selection is outside the site's control. Block the release for invalid schema, hidden or contradictory content, unsupported claims, broken sources, missing sitemap coverage, missing or malformed llms.txt (when present), or a failed standard SEO gate.
 
 ## Measure and Maintain
 
@@ -123,6 +192,22 @@ Measure:
 
 Google reports traffic from AI Overviews and AI Mode within the Search Console Performance report under the Web search type rather than as a separate AEO channel. Evaluate Search Console, analytics, lead quality, and citation monitoring together. Preserve dated evidence and avoid attributing every traffic change to one FAQ revision.
 
+## Staying Current with AEO Standards
+
+AEO standards and agent discovery protocols are evolving. Review the following on a recurring basis, at minimum quarterly, and after any major announcement from a search engine or AI platform vendor.
+
+Track for changes:
+
+- The llmstxt.org specification. The format is stable but may gain new optional sections or conventions. Update `templates/llms.txt` and any site-specific llms.txt files when the spec changes meaningfully.
+- Google Search Central documentation on AI features and structured data. Google does not require dedicated agent files today but its guidance changes. Re-read the AI features page quarterly.
+- Agent tool and plugin discovery standards (`/.well-known/mcp.json`, `/.well-known/ai-plugin.json`). These apply only to sites that expose APIs or agent tools, but the specs are maturing. Review quarterly if any GovSoft property adds an API.
+- DNS-AIG (DNS-based Agent Identification and Guidance). An early-stage experimental approach. Skip implementation for now; re-evaluate quarterly.
+- Commerce agent protocols (AAEI, MPP, KCP). Skip for informational sites; re-evaluate if a site adds commerce functionality.
+
+When a material change in standards is identified, update `ANSWER-ENGINE-OPTIMIZATION.md`, `verify-aeo.mjs` if the verification logic needs updating, and `templates/llms.txt` if the template format changes. Use a descriptive commit message referencing the source of the change.
+
+The Go for Launch toolkit itself must be kept current. When agent discovery or AEO requirements change, open a pull request against the `main` branch of the `govsoftusa/go-for-launch` repository with a description of what changed and why. Do not defer updates indefinitely; a toolkit that lags real-world requirements causes compounding remediation work on downstream sites.
+
 ## Sources
 
 - [HubSpot, FAQs for AEO](https://blog.hubspot.com/marketing/faqs-for-aeo)
@@ -130,3 +215,5 @@ Google reports traffic from AI Overviews and AI Mode within the Search Console P
 - [Google Search Central, General structured data guidelines](https://developers.google.com/search/docs/appearance/structured-data/sd-policies)
 - [Google Search Central, Changes to HowTo and FAQ rich results](https://developers.google.com/search/blog/2023/08/howto-faq-changes)
 - [Google Search Central, Q&A structured data](https://developers.google.com/search/docs/appearance/structured-data/qapage)
+- [llmstxt.org, The llms.txt specification](https://llmstxt.org)
+- [IETF RFC 8288, Web Linking](https://www.rfc-editor.org/rfc/rfc8288) (the standard governing HTTP Link headers)

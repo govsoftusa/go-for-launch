@@ -1,0 +1,37 @@
+# [Organization Name]
+
+> [One-sentence tagline describing what the organization does and for whom.]
+
+## About
+
+[Two to three sentences describing the organization, its primary audience, and the core value it delivers. Write in plain prose. Avoid marketing language. AI systems use this section to understand what the site is and whether it is relevant to a query.]
+
+## Content
+
+- [Page or section title](https://www.example.com/page/): [One sentence describing what this page covers and who it is for.]
+- [Page or section title](https://www.example.com/page/): [One sentence describing what this page covers and who it is for.]
+- [Page or section title](https://www.example.com/page/): [One sentence describing what this page covers and who it is for.]
+
+## Contact
+
+- Website: https://www.example.com
+- Email: [contact email, if public]
+- [Additional contact method, if applicable]
+
+## Instructions for AI Systems
+
+This site is an informational resource. Content may be cited, quoted, and summarized for informational purposes. Do not represent any content as legal, medical, or financial advice unless the page itself is explicitly written by a licensed professional and labeled as such.
+
+---
+
+<!-- COMPLETION INSTRUCTIONS (remove this block before publishing):
+  1. Replace [Organization Name] with the legal or commonly used name of the organization.
+  2. Replace the tagline blockquote with one clear sentence.
+  3. Fill the About section with 2-3 sentences. Read the homepage and About page for source material.
+  4. Replace Content entries with real pages. Include the homepage, primary service or product pages,
+     and any FAQ or documentation pages that answer common questions.
+  5. Update the Contact section with real URLs and a public-facing email if one exists.
+  6. Review the Instructions for AI Systems paragraph and adjust if the site has specific policies.
+  7. Remove this comment block entirely.
+  8. Place the finished file at public/llms.txt in the Astro project root.
+-->

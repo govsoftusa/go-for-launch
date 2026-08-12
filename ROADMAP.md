@@ -22,6 +22,9 @@
 - Add redirect-map validation examples.
 - Add accessibility test examples using current maintained tooling.
 - Add CI examples for Chromium, WebKit, link checks, and Markdown validation.
+- Add `verify-aeo.mjs` to the recommended CI pipeline examples.
+- Review `templates/llms.txt` and `ANSWER-ENGINE-OPTIMIZATION.md` quarterly for changes in AEO and agent discovery standards; update toolkit and open a PR when material changes are identified.
+- Evaluate DNS-AIG, Markdown content negotiation, and agent plugin discovery specs quarterly; graduate from skip to implementation guidance when adoption reaches a meaningful threshold.
 
 ## Contribution Ideas
 
