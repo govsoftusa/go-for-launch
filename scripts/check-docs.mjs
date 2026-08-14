@@ -18,11 +18,20 @@ const failures = [];
 const markdownFiles = collectMarkdown(root);
 const packageMetadata = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const readme = readFileSync(join(root, "README.md"), "utf8");
+const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
 const documentedVersion = readme.match(/^\*\*Current version:\*\*\s+([^\s]+)$/m)?.[1];
 
 if (documentedVersion !== packageMetadata.version) {
   failures.push(
     `${join(root, "README.md")}: current version ${documentedVersion ?? "missing"} does not match package.json ${packageMetadata.version}`,
+  );
+}
+
+const escapedVersion = packageMetadata.version.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const releasedVersion = new RegExp(`^##\\s+${escapedVersion},\\s+\\d{4}-\\d{2}-\\d{2}$`, "m");
+if (!releasedVersion.test(changelog)) {
+  failures.push(
+    `${join(root, "CHANGELOG.md")}: missing dated release heading for package.json ${packageMetadata.version}`,
   );
 }
 

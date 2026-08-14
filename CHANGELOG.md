@@ -1,7 +1,21 @@
 # Changelog
 
+This file records reusable improvements to Go for Launch so maintainers can understand what changed, why it changed, how projects are affected, and which tests prove the behavior.
+
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
 ## Unreleased
 
+No changes have been recorded since 0.5.0.
+
+## 0.5.0, 2026-08-14
+
+### Added
+
+- Added a build-time AEO verifier and `llms.txt` starter for agent-facing
+  discovery signals. The verifier checks the built file, Cloudflare `Link`
+  headers, and optional live response headers without treating experimental or
+  inapplicable agent protocols as universal requirements.
 - Added an optional Astro 7.2 incremental static build workflow with a mandatory
   prebuild decision. Agents must inspect current content and rendering
   dependencies before selecting standard, incremental, or forced mode. A new
@@ -21,6 +35,15 @@
   closeout gates. Obsolete services, preview hosts, scheduled triggers, queues,
   shared bindings, routes, and DNS must be reconciled against an explicit final
   topology, with unrelated account workloads excluded from cleanup.
+- Added frozen release-evidence and route-convergence verifiers that bind
+  browser, PageSpeed, deployment, artifact, and public-route proof to the exact
+  candidate being promoted.
+- Added machine-readable execution controls, verified PageSpeed document
+  readiness, large-archive request budgeting, direct-object media preflight,
+  clean artifact comparison, and ignored-release-input rejection.
+- Added stronger interface, artwork, Open Graph, font readiness, render
+  sharpness, and production canary checks for desktop, responsive, WebKit, and
+  native Safari release evidence.
 - Added a mandatory CMS authentication and session-continuity gate.
 - Added a reusable session evidence record covering storage consistency,
   adapter option collisions, immediate identity, admin collection loading,
@@ -58,11 +81,15 @@
   provider-supplied connection address that becomes the real client address
   in production.
 
-This file records reusable improvements to Go for Launch so maintainers can understand what changed, why it changed, how projects are affected, and which tests prove the behavior.
+### Changed
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## Unreleased
+- Updated the package and documentation version from 0.4.0 to 0.5.0.
+- Updated the compatible Astro development baseline from 7.2.0 to 7.2.2.
+- Expanded the README capability, documentation, command, and package
+  inventories to cover every verifier, template, and operational workflow
+  shipped in 0.5.0.
+- Extended documentation validation so the README and changelog must both
+  identify the package version before packaging or publication.
 
 ### CMS Lifecycle and Artifact Replacement Semantics
 

@@ -2,13 +2,13 @@
 
 A toolbox for [Astro](https://astro.build) sites. Open-source documentation, checklists, and templates for building and operating Astro websites to a strict production standard.
 
-**Current version:** 0.4.0
+**Current version:** 0.5.0
 
 Go for Launch was started and is sponsored by [GovSoft](https://www.govsoft.com), and is open to community contributions. It is a community project and is not affiliated with or endorsed by the Astro project or Astro Technology Company.
 
 ## What Go for Launch Covers
 
-The toolbox serves twenty purposes:
+The toolbox serves twenty-five purposes:
 
 1. **Converting existing sites to Astro.** Complete workflows for rebuilding websites in Astro without losing content, design fidelity, responsive behavior, SEO, accessibility, performance, or browser reliability. The Webflow and WordPress workflows are proven in production, and the platform-neutral framework extends to Squarespace, Wix, Drupal, static HTML, and custom content management systems as alpha guidance.
 2. **Keeping existing Astro sites current.** A maintenance process for updating Astro sites already in production to the latest compatible Astro version and dependency set, with every upgrade passing the same release gates as a new migration. See [AUTOMATION-INTEGRATION.md](AUTOMATION-INTEGRATION.md).
@@ -30,6 +30,36 @@ The toolbox serves twenty purposes:
 18. **CMS publishing without application rebuilds.** Classify CMS record and media changes into a dedicated editorial lane, validate the changed route graph and conserve performance without rebuilding Astro, and escalate any renderer or infrastructure change to the unchanged full application release gate. See [Editorial Publishing and Dynamic Content](EDITORIAL-PUBLISHING-AND-DYNAMIC-CONTENT.md).
 19. **CMS authentication and session continuity.** Prove the credential assertion, immediate authenticated identity, real collection lists, existing editors, and a disposable draft lifecycle against the compiled private candidate. See [CMS Authentication and Session Gate](CMS-AUTHENTICATION-SESSION-GATE.md).
 20. **Optional incremental static builds with a mandatory decision gate.** Before every Astro application build, inspect the changed content and rendering dependency graph, then select a standard, incremental, or forced build. Incremental reuse requires reviewed cache keys, persistent isolated cache state, measured benefit, and full-render parity. See [Incremental Static Build Decision Gate](INCREMENTAL-STATIC-BUILDS.md).
+21. **Agent-facing discovery signals.** Publish and validate an accurate `llms.txt`, advertise it and the sitemap through Cloudflare `Link` headers, and record which experimental agent protocols do not apply to the project. These signals supplement ordinary crawlability and never replace SEO, sitemaps, or useful content. See [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md).
+22. **Frozen release evidence and route convergence.** Bind browser, PageSpeed, deployment, artifact, public-route, and canonical-host evidence to one immutable candidate, then prove that staging and production converge on it before promotion is accepted. See [Production Release Policy](PRODUCTION-RELEASE-POLICY.md) and the reusable `release-evidence` and `route-convergence` templates.
+23. **Legacy content and cache integrity.** Sanitize noncontent rich text before structured conversion, preserve revision state, inventory generated output, detect executable text, and verify each cache layer against the canonical route. See [Legacy Rich Text Sanitization and Cache Repair](LEGACY-RICH-TEXT-SANITIZATION-AND-CACHE-REPAIR.md).
+24. **Provider topology and release closeout.** Inventory provider services, routes, bindings, queues, schedules, preview hosts, DNS, and shared workloads, then retire obsolete candidates without touching unrelated account resources. See [Production Release Policy](PRODUCTION-RELEASE-POLICY.md).
+25. **Large-site verification and request budgeting.** Order inexpensive content gates before archive crawls, cap provider requests, verify direct media objects, preserve the first valid failure, and keep exact-candidate coverage practical for large publications. See [Request Budget and Large-Site Verification](REQUEST-BUDGET-AND-LARGE-SITE-VERIFICATION.md).
+
+## Shipped Feature Inventory
+
+Version 0.5.0 includes documentation, reusable templates, and executable
+verifiers. Projects copy the applicable configuration into their own
+repository, replace the neutral examples, and add the required commands to
+their build and release pipeline.
+
+| Capability | Shipped implementation |
+| --- | --- |
+| Sitemap, SEO, structured data, headings, images, i18n, and redirects | `verify-sitemap.mjs`, `verify-seo.mjs`, `verify-images.mjs`, `verify-redirects.mjs`, `SeoHead.astro`, `ResponsivePicture.astro`, and `localized-seo.ts` |
+| AEO content and agent discovery | `ANSWER-ENGINE-OPTIMIZATION.md`, `verify-aeo.mjs`, and `templates/llms.txt` |
+| Site health, semantic SEO, citations, and content quality | `verify-site-health.mjs`, `verify-semantic-seo.mjs`, `verify-content-quality.mjs`, optional Ahrefs verification, and the Stanford Rule review records |
+| Open Graph, brand, artwork, and visual quality | Deterministic Open Graph generation and review, brand provenance, artwork suitability, visual composition, interface quality, side-navigation, render-sharpness, and configurable design-gate checks |
+| Browser, mobile, and performance release gates | Chromium, Playwright WebKit, native iOS Safari guidance, PageSpeed readiness, route parity, route convergence, Cloudflare observability, and exact-candidate release evidence |
+| Build and delivery control | Incremental-build decision, bounded execution, clean artifact, ignored-input, provider-topology, and candidate-retirement requirements |
+| Dynamic publishing and protected CMS operation | Editorial publish verification, CMS authentication and session continuity, deterministic fonts, challenge validation, cache-layer proof, and revision-safe artifact replacement |
+| Migration and large-site work | Platform-neutral, Webflow, WordPress, and EmDash workflows, source compromise review, direct-object media preflight, request budgeting, rich text repair, extraction, import, and redirect generation |
+| Cloudflare operations | Static-host deployment policy, Turnstile plus Email Service forms, apex canonical redirects, staging proof, production observability, and provider closeout |
+| Agent-driven maintenance | Claude Desktop and ChatGPT Desktop MCP scheduling guidance, prompt logging, external-service onboarding, platform limitations, and scheduled Astro maintenance |
+
+The executable package entry points are listed in `package.json`. The full
+framework test suite covers every reusable verifier with deterministic
+fixtures. Provider-backed and native Safari checks remain project-level gates
+because they require the target account, domain, candidate, or macOS simulator.
 
 ## Why This Exists
 
@@ -86,6 +116,9 @@ This repository documents the process used to close those gaps while replacing l
 36. [Contributing Guide](CONTRIBUTING.md)
 37. [Roadmap](ROADMAP.md)
 38. [PageSpeed Document Readiness](PAGESPEED-READINESS.md)
+39. [CMS Authentication and Session Gate](CMS-AUTHENTICATION-SESSION-GATE.md)
+40. [Legacy Rich Text Sanitization and Cache Repair](LEGACY-RICH-TEXT-SANITIZATION-AND-CACHE-REPAIR.md)
+41. [Request Budget and Large-Site Verification](REQUEST-BUDGET-AND-LARGE-SITE-VERIFICATION.md)
 
 ## Repository Structure
 
@@ -99,6 +132,9 @@ This repository documents the process used to close those gaps while replacing l
 ├── EXECUTION-CONTROL.md
 ├── PROJECT-EXTENSIONS.md
 ├── CASE-STUDY-NORMALIZATION.md
+├── CMS-AUTHENTICATION-SESSION-GATE.md
+├── LEGACY-RICH-TEXT-SANITIZATION-AND-CACHE-REPAIR.md
+├── REQUEST-BUDGET-AND-LARGE-SITE-VERIFICATION.md
 ├── WEBFLOW-TO-ASTRO-MIGRATION.md
 ├── PLATFORM-MIGRATION-FRAMEWORK.md
 ├── WORDPRESS-TO-EMDASH-MIGRATION.md
@@ -133,6 +169,7 @@ This repository documents the process used to close those gaps while replacing l
 ├── scripts/
 │   ├── verify-sitemap.mjs
 │   ├── verify-seo.mjs
+│   ├── verify-aeo.mjs
 │   ├── verify-images.mjs
 │   ├── verify-site-health.mjs
 │   ├── verify-semantic-seo.mjs
@@ -141,8 +178,12 @@ This repository documents the process used to close those gaps while replacing l
 │   ├── verify-cloudflare-observability.mjs
 │   ├── verify-redirects.mjs
 │   ├── verify-route-parity.mjs
+│   ├── verify-route-convergence.mjs
 │   ├── verify-pagespeed-warmup.mjs
 │   ├── verify-incremental-build-decision.mjs
+│   ├── verify-execution-control.mjs
+│   ├── verify-editorial-publish.mjs
+│   ├── verify-release-evidence.mjs
 │   ├── wp-extract.mjs
 │   ├── emdash-seed.mjs
 │   ├── emdash-import.mjs
@@ -151,6 +192,7 @@ This repository documents the process used to close those gaps while replacing l
 │   ├── verify-brand-assets.mjs
 │   ├── verify-visual-composition.mjs
 │   ├── verify-interface-quality.mjs
+│   ├── verify-side-navigation.mjs
 │   ├── verify-case-study-normalization.mjs
 │   ├── verify-render-sharpness.mjs
 │   └── run-design-gate.mjs
@@ -170,6 +212,7 @@ This repository documents the process used to close those gaps while replacing l
     ├── astro-seo/SeoHead.astro
     ├── astro-assets/ResponsivePicture.astro
     ├── astro-i18n/localized-seo.ts
+    ├── llms.txt
     ├── open-graph.config.mjs
     ├── brand-assets.config.mjs
     ├── visual-composition.config.mjs
@@ -185,6 +228,8 @@ This repository documents the process used to close those gaps while replacing l
     ├── cloudflare-observability.config.mjs
     ├── pagespeed-warmup.config.mjs
     ├── incremental-build.config.mjs
+    ├── route-convergence.config.mjs
+    ├── release-evidence.config.mjs
     ├── design-gate.config.mjs
     ├── design-review-record.json
     ├── route-and-content-inventory.md
@@ -195,6 +240,7 @@ This repository documents the process used to close those gaps while replacing l
     ├── execution-control.config.mjs
     ├── editorial-publish-record.md
     ├── editorial-publish.config.mjs
+    ├── cms-authentication-session-record.md
     └── migration-acceptance-record.md
 ```
 
