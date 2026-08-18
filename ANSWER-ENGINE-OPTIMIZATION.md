@@ -65,7 +65,7 @@ Google currently limits FAQ rich results primarily to well-known government and 
 
 ## Agent-Facing Discovery Signals
 
-Search engines, AI crawlers, and autonomous agents discover content through signals beyond HTML. Three additions meaningfully improve agent discoverability for a typical informational or lead-generation site. Implement them in the order they appear here.
+Search engines, AI crawlers, and autonomous agents discover content through signals beyond HTML. Three additions improve agent discoverability for a typical informational or lead-generation site. The first two, llms.txt and HTTP Link headers, are required for any site built with the Go for Launch toolkit. Markdown content negotiation is optional. Implement them in the order they appear here.
 
 ### llms.txt
 
@@ -84,7 +84,7 @@ Keep the file accurate and current. Update it when primary content, navigation, 
 
 ### HTTP Link Headers for Agent Discovery
 
-Add HTTP `Link` response headers that advertise the llms.txt file and the canonical sitemap. Agents and crawlers that read response headers before parsing HTML discover these resources directly.
+Add HTTP `Link` response headers that advertise the llms.txt file and the canonical sitemap. This is required alongside llms.txt. Agents and crawlers that read response headers before parsing HTML discover these resources directly without needing to parse any HTML.
 
 For Cloudflare Pages, create a `_headers` file in the Astro project `public/` directory:
 
@@ -94,7 +94,15 @@ For Cloudflare Pages, create a `_headers` file in the Astro project `public/` di
   Link: </sitemap.xml>; rel="sitemap"
 ```
 
-Each entry adds a `Link` header to every response from the site. Confirm the `_headers` file appears in the built output root after `astro build`. Verify the header is present on the canonical homepage before staging.
+Each entry adds a `Link` header to every response from the site. Confirm the `_headers` file appears in the built output root after `astro build`.
+
+Before staging, verify the header is present in the actual HTTP response on the deployed site, not just in the build output. Run:
+
+```bash
+curl -sI https://www.example.com/ | grep -i "^link:"
+```
+
+A missing Link header on the live site is a release blocker even when the `_headers` file is correctly present in the build output. Cloudflare Pages configuration, caching layers, or a misconfigured Worker can suppress headers that appear correct locally.
 
 ### Markdown Content Negotiation
 
@@ -174,9 +182,10 @@ For agent discoverability signals, run `verify-aeo.mjs` and confirm:
 
 - llms.txt is present in the build output and contains a level-one heading and an About section.
 - `_headers` includes `Link: </llms.txt>; rel="describedby"` and `Link: </sitemap.xml>; rel="sitemap"`.
+- The Link headers are confirmed present in the actual HTTP response on the deployed site. Run `curl -sI https://www.example.com/ | grep -i "^link:"` and confirm the llms.txt and sitemap entries appear. A missing header on the live site is a blocker even when `_headers` is correct in the build output.
 - No verify-aeo.mjs blockers are reported. Warnings do not block release but must be triaged.
 
-Do not block a release because an answer engine did not cite a new page. Citation selection is outside the site's control. Block the release for invalid schema, hidden or contradictory content, unsupported claims, broken sources, missing sitemap coverage, missing or malformed llms.txt (when present), or a failed standard SEO gate.
+Do not block a release because an answer engine did not cite a new page. Citation selection is outside the site's control. Block the release for invalid schema, hidden or contradictory content, unsupported claims, broken sources, missing sitemap coverage, missing or malformed llms.txt, missing Link headers for llms.txt and sitemap on the deployed site, or a failed standard SEO gate.
 
 ## Measure and Maintain
 
