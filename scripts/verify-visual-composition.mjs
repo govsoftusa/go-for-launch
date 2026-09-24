@@ -105,13 +105,22 @@ try {
               const rect = element.getBoundingClientRect();
               const box = (node, fallback) => {
                 const nodeRect = node.getBoundingClientRect();
+                const style = getComputedStyle(node);
+                if (
+                  nodeRect.width <= 0 ||
+                  nodeRect.height <= 0 ||
+                  style.display === "none" ||
+                  style.visibility === "hidden" ||
+                  style.visibility === "collapse" ||
+                  Number.parseFloat(style.opacity) === 0
+                ) return null;
                 return { name: node.getAttribute("data-visual-name") || fallback, left: nodeRect.left, top: nodeRect.top, width: nodeRect.width, height: nodeRect.height };
               };
               return {
                 name: element.getAttribute("data-visual-name") || `artboard-${index + 1}`,
                 artboard: { name: "artboard", left: rect.left, top: rect.top, width: rect.width, height: rect.height },
-                labels: [...element.querySelectorAll("[data-visual-label]")].map((node, labelIndex) => box(node, `label-${labelIndex + 1}`)),
-                decorations: [...element.querySelectorAll("[data-visual-decoration]")].map((node, decorationIndex) => box(node, `decoration-${decorationIndex + 1}`)),
+                labels: [...element.querySelectorAll("[data-visual-label]")].map((node, labelIndex) => box(node, `label-${labelIndex + 1}`)).filter(Boolean),
+                decorations: [...element.querySelectorAll("[data-visual-decoration]")].map((node, decorationIndex) => box(node, `decoration-${decorationIndex + 1}`)).filter(Boolean),
                 thresholds: {
                   minimumHorizontalFill: Number(element.getAttribute("data-min-horizontal-fill") || "0.5"),
                   minimumVerticalFill: Number(element.getAttribute("data-min-vertical-fill") || "0.5"),

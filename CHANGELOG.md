@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-09-24, visual composition visibility correction
+
+- Ignore visual labels and decorations that are not rendered because they have zero geometry, `display: none`, hidden visibility, or zero opacity.
+- Added a verifier fixture so responsive layouts can intentionally hide decoration without producing a false invalid-geometry failure.
+
 This file records reusable improvements to Go for Launch so maintainers can understand what changed, why it changed, how projects are affected, and which tests prove the behavior.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
