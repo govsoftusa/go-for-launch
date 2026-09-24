@@ -41,6 +41,18 @@ const viewports = config.viewports || [
 ];
 const engines = config.browsers || ["chromium", "webkit"];
 const browserTypes = { chromium, webkit };
+const networkPolicy = config.network?.policy || "block";
+const maximumCompletedExternalRequests = Number(config.network?.maximumCompletedExternalRequests ?? 0);
+
+if (!["block", "allow"].includes(networkPolicy)) {
+  console.error(`Unsupported visual composition network policy: ${networkPolicy}`);
+  process.exit(1);
+}
+
+if (!Number.isInteger(maximumCompletedExternalRequests) || maximumCompletedExternalRequests < 0) {
+  console.error("Visual composition maximumCompletedExternalRequests must be a non-negative integer.");
+  process.exit(1);
+}
 
 if (routes.length === 0) {
   console.error("Visual composition configuration must declare at least one route.");
@@ -78,8 +90,31 @@ const server = createServer(async (request, response) => {
 await new Promise((resolveListening) => server.listen(0, "127.0.0.1", resolveListening));
 const address = server.address();
 const baseUrl = `http://127.0.0.1:${address.port}`;
+const localOrigin = new URL(baseUrl).origin;
 const records = [];
 const failures = [];
+const networkActivity = {
+  policy: networkPolicy,
+  attemptedExternalRequests: 0,
+  blockedExternalRequests: 0,
+  completedExternalRequests: 0,
+  reportedExternalTransferBytes: 0,
+  externalOrigins: {}
+};
+
+function recordExternalOrigin(url) {
+  networkActivity.externalOrigins[url.origin] = (networkActivity.externalOrigins[url.origin] || 0) + 1;
+}
+
+async function preparePageForAudit(page) {
+  return page.evaluate(async () => {
+    await Promise.race([
+      document.fonts.ready,
+      new Promise((resolveFontTimeout) => window.setTimeout(resolveFontTimeout, 3000))
+    ]);
+    await new Promise((resolveFrame) => requestAnimationFrame(() => requestAnimationFrame(resolveFrame)));
+  });
+}
 
 function cleanName(value) {
   return value.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "home";
@@ -95,12 +130,37 @@ try {
       for (const viewport of viewports) {
         const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
         try {
+          await page.route("**/*", async (route) => {
+            const requestUrl = new URL(route.request().url());
+            if (requestUrl.origin === localOrigin) {
+              await route.continue();
+              return;
+            }
+            networkActivity.attemptedExternalRequests += 1;
+            recordExternalOrigin(requestUrl);
+            if (networkPolicy === "block") {
+              networkActivity.blockedExternalRequests += 1;
+              await route.abort("blockedbyclient");
+              return;
+            }
+            await route.continue();
+          });
+          page.on("response", (response) => {
+            const responseUrl = new URL(response.url());
+            if (responseUrl.origin === localOrigin) return;
+            networkActivity.completedExternalRequests += 1;
+            const contentLength = Number(response.headers()["content-length"]);
+            if (Number.isFinite(contentLength) && contentLength > 0) {
+              networkActivity.reportedExternalTransferBytes += contentLength;
+            }
+          });
           for (const route of routes) {
-            const response = await page.goto(new URL(route, baseUrl).href, { waitUntil: "networkidle" });
+            const response = await page.goto(new URL(route, baseUrl).href, { waitUntil: "domcontentloaded" });
             if (!response || response.status() !== 200) {
               failures.push(`${engine}/${viewport.name}${route}: expected HTTP 200.`);
               continue;
             }
+            await preparePageForAudit(page);
             const artboards = await page.locator("[data-visual-artboard]").evaluateAll((elements) => elements.map((element, index) => {
               const rect = element.getBoundingClientRect();
               const box = (node, fallback) => {
@@ -157,7 +217,23 @@ try {
   await new Promise((resolveClosed) => server.close(resolveClosed));
 }
 
-const report = { status: failures.length === 0 ? "passed" : "failed", root, routes, viewports, engines, records, failures };
+if (networkActivity.completedExternalRequests > maximumCompletedExternalRequests) {
+  failures.push(
+    `Browser verification completed ${networkActivity.completedExternalRequests} external requests, maximum is ${maximumCompletedExternalRequests}.`
+  );
+}
+
+const report = {
+  status: failures.length === 0 ? "passed" : "failed",
+  root,
+  routes,
+  viewports,
+  engines,
+  networkActivity,
+  maximumCompletedExternalRequests,
+  records,
+  failures
+};
 await mkdir(dirname(reportPath), { recursive: true });
 await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 

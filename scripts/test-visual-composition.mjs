@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 const root = await mkdtemp(join(tmpdir(), "go-for-launch-visual-"));
 const script = resolve("scripts/verify-visual-composition.mjs");
 
-async function fixture(name, decorationLeft) {
+async function fixture(name, decorationLeft, externalScript = "") {
   const directory = join(root, name);
   const output = join(directory, "dist");
   await mkdir(output, { recursive: true });
@@ -21,7 +21,7 @@ async function fixture(name, decorationLeft) {
     <span class="two" data-visual-label data-visual-name="Two">Two</span>
     <span class="hidden" data-visual-label data-visual-name="Hidden">Hidden</span>
     <i data-visual-decoration data-visual-name="Rule"></i>
-  </div>`);
+  </div>${externalScript ? '<script src="https://example.invalid/never.js"></script>' : ""}`);
   const config = join(directory, "config.mjs");
   await writeFile(config, `export default ${JSON.stringify({
     outputDirectory: output,
@@ -40,6 +40,20 @@ if (validResult.status !== 0) throw new Error(`Valid visual fixture failed:\n${v
 const validReport = JSON.parse(await readFile(join(valid.directory, "report.json"), "utf8"));
 if (validReport.records[0]?.metrics?.labelCount !== 2) {
   throw new Error(`Hidden visual labels must not participate in composition analysis:\n${JSON.stringify(validReport, null, 2)}`);
+}
+
+const external = await fixture("external", 145, true);
+const externalResult = spawnSync(process.execPath, [script, `--config=${external.config}`], { encoding: "utf8" });
+if (externalResult.status !== 0) {
+  throw new Error(`Externally connected visual fixture failed instead of blocking the request:\n${externalResult.stdout}${externalResult.stderr}`);
+}
+const externalReport = JSON.parse(await readFile(join(external.directory, "report.json"), "utf8"));
+if (
+  externalReport.networkActivity?.attemptedExternalRequests !== 1 ||
+  externalReport.networkActivity?.blockedExternalRequests !== 1 ||
+  externalReport.networkActivity?.completedExternalRequests !== 0
+) {
+  throw new Error(`Visual composition must block and count external requests by default:\n${JSON.stringify(externalReport, null, 2)}`);
 }
 
 const invalid = await fixture("invalid", 55);

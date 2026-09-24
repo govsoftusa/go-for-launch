@@ -38,7 +38,18 @@ Run the verifier after the production build:
 node /path/to/go-for-launch/scripts/verify-visual-composition.mjs --config=visual-composition.config.mjs
 ```
 
-The verifier serves the static output locally, opens it in Chromium and WebKit, measures the rendered geometry, captures every marked artboard, and writes a machine-readable report. It fails when:
+The verifier serves the static output locally, opens it in Chromium and WebKit, measures the rendered geometry, captures every marked artboard, and writes a machine-readable report. It blocks and counts external requests by default, then waits for the local document, fonts, and two animation frames instead of waiting for third-party network idleness. This keeps anti-bot, analytics, font, and media services from hanging a local composition gate or consuming an external request budget.
+
+Keep the default zero-completion network policy in the project configuration:
+
+```js
+network: {
+  policy: "block",
+  maximumCompletedExternalRequests: 0
+}
+```
+
+The verifier fails when:
 
 - A configured route does not contain a marked artboard.
 - A label leaves the artboard safe area.
@@ -46,6 +57,7 @@ The verifier serves the static output locally, opens it in Chromium and WebKit, 
 - A marked decorative element crosses a label.
 - Marked content does not meet the reviewed horizontal or vertical fill threshold.
 - A browser cannot render the configured route successfully.
+- The completed external request count exceeds the configured maximum.
 
 Wire this command into the unskippable release verification command. Preserve its JSON report and screenshots with the candidate evidence.
 

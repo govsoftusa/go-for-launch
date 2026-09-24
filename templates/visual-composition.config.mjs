@@ -2,6 +2,10 @@ export default {
   outputDirectory: "dist",
   report: "artifacts/visual-composition-report.json",
   screenshotDirectory: "artifacts/visual-composition",
+  network: {
+    policy: "block",
+    maximumCompletedExternalRequests: 0
+  },
   routes: ["/"],
   browsers: ["chromium", "webkit"],
   viewports: [
