@@ -49,7 +49,8 @@ export default {
     },
     maximumItemLines: 1,
     alignmentTolerance: 3,
-    requireCurrentPage: true
+    requireCurrentPage: true,
+    allowLabelTruncation: false
   },
   controls: {
     selector: 'a[href], button, summary, input:not([type="hidden"]), textarea, select',

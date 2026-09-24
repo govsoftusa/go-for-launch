@@ -148,9 +148,9 @@ Mark the breadcrumb navigation, labels, and separators so the interface gate can
 </nav>
 ```
 
-Configure the reviewed row limit and baseline tolerance through the top-level `breadcrumbs` contract. The verifier checks that DOM order matches visual reading order, every marked separator shares the label baseline in its item, breadcrumb labels stay within the allowed line count, the complete trail stays within its row budget, and exactly one current page appears in the final item.
+Configure the reviewed row limit and baseline tolerance through the top-level `breadcrumbs` contract. The verifier checks that DOM order matches visual reading order, every marked separator shares the label baseline in its item, breadcrumb labels stay within the allowed line count without silent clipping, the complete trail stays within its row budget, and exactly one current page appears in the final item.
 
-Projects may allow two breadcrumb rows at narrow widths when the visual order remains coherent. Use `maximumRowsByViewport` for that reviewed exception. Do not raise the row limit to hide a separator or item that has become visually orphaned.
+Projects may allow two breadcrumb rows at narrow widths when the visual order remains coherent. Use `maximumRowsByViewport` for that reviewed exception. A project may explicitly allow label truncation only when the full label remains available to assistive technology and the design review accepts the abbreviated visual result. Do not raise the row limit or allow truncation to hide a separator or item that has become visually orphaned.
 
 ## Clearance contracts
 

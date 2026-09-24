@@ -86,7 +86,8 @@ const breadcrumbRules = {
   maximumRowsByViewport: config.breadcrumbs?.maximumRowsByViewport || {},
   maximumItemLines: config.breadcrumbs?.maximumItemLines ?? 1,
   alignmentTolerance: config.breadcrumbs?.alignmentTolerance ?? 3,
-  requireCurrentPage: config.breadcrumbs?.requireCurrentPage ?? true
+  requireCurrentPage: config.breadcrumbs?.requireCurrentPage ?? true,
+  allowLabelTruncation: config.breadcrumbs?.allowLabelTruncation ?? false
 };
 const maximumConfiguredHeroViewportHeightRatio = 1;
 
@@ -700,6 +701,9 @@ try {
                   }
                   if (itemLabelLines.length > breadcrumbRules.maximumItemLines) {
                     issues.push({ code: "breadcrumb-item-wrapped", message: `${breadcrumbName} item ${itemIndex + 1} uses ${itemLabelLines.length} lines, maximum is ${breadcrumbRules.maximumItemLines}.` });
+                  }
+                  if (!breadcrumbRules.allowLabelTruncation && itemLabel.scrollWidth > itemLabel.clientWidth + overflowTolerance) {
+                    issues.push({ code: "breadcrumb-label-clipped", message: `${breadcrumbName} item ${itemIndex + 1} clips or truncates its label.` });
                   }
                   labelLines.push({ itemIndex, ...itemLabelLines[0] });
 

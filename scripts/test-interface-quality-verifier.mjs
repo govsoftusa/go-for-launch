@@ -267,6 +267,7 @@ const invalidStyle = `<style>
   .breadcrumbs ol { display: flex; gap: 8px; }
   .breadcrumbs li { display: flex; gap: 8px; }
   .breadcrumbs a { min-height: 44px; display: inline-flex; align-items: center; }
+  .breadcrumbs [aria-current="page"] { display: block; max-width: 80px; overflow: hidden; white-space: nowrap; }
   .clipped-heading { height: 20px; overflow: hidden; font-size: 36px; line-height: 44px; }
   .sparse { position: relative; height: 700px; }
   .sparse .first { position: absolute; top: 0; }
@@ -302,7 +303,7 @@ await writeFile(invalidConfig, `export default ${JSON.stringify({
 const invalidResult = run(invalidConfig);
 if (invalidResult.status === 0) throw new Error("Invalid interface fixture passed.");
 const invalidData = JSON.parse(await readFile(invalidReport, "utf8"));
-for (const expected of ["horizontal-overflow", "controls-overlap", "clearance-too-small", "hero-maximum-invalid", "hero-too-tall", "hero-contract-missing", "heading-orphan-fragment", "heading-clipped", "breadcrumb-separator-misaligned", "breadcrumb-reading-order", "breadcrumb-too-many-rows", "region-too-tall", "region-internal-empty-band", "site-header-too-tall", "route-families-too-similar"]) {
+for (const expected of ["horizontal-overflow", "controls-overlap", "clearance-too-small", "hero-maximum-invalid", "hero-too-tall", "hero-contract-missing", "heading-orphan-fragment", "heading-clipped", "breadcrumb-separator-misaligned", "breadcrumb-reading-order", "breadcrumb-too-many-rows", "breadcrumb-label-clipped", "region-too-tall", "region-internal-empty-band", "site-header-too-tall", "route-families-too-similar"]) {
   if (!invalidData.findings.some((finding) => finding.code === expected)) throw new Error(`Invalid interface fixture did not report ${expected}.`);
 }
 
