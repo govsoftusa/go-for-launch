@@ -22,6 +22,8 @@ const sharedValidStyle = `<style>
   html, body { margin: 0; width: 100%; overflow-x: clip; }
   .site-header { height: 56px; padding: 8px 16px; background: #071321; }
   .site-header a, button { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; }
+  .breadcrumbs ol, .breadcrumbs li { display: flex; align-items: center; gap: 8px; }
+  .breadcrumbs [data-breadcrumb-label] { min-height: 44px; display: inline-flex; align-items: center; }
   .hero { height: 280px; padding: 24px; }
   .actions { display: flex; gap: 12px; margin-bottom: 20px; }
   .divider { border-top: 1px solid #777; padding-top: 16px; }
@@ -32,6 +34,7 @@ const sharedValidStyle = `<style>
 </style>`;
 await page(validDirectory, "/", `<!doctype html><html><head><link rel="canonical" href="https://example.com/">${sharedValidStyle}</head><body>
   <header class="site-header"><a href="/about/">About</a></header>
+  <nav class="breadcrumbs" data-breadcrumbs aria-label="Breadcrumb"><ol><li><a data-breadcrumb-label href="/about/">About</a><span data-breadcrumb-separator aria-hidden="true">/</span></li><li><span data-breadcrumb-label aria-current="page">Current page</span></li></ol></nav>
   <main class="home-layout" data-page-archetype="editorial-cover">
     <section class="hero"><h1>Start with a useful question</h1><div class="actions"><button>Begin</button><a href="/about/">Learn more</a></div><div class="divider">Current status</div></section>
     <section class="next"><figure>Distinctive home illustration</figure><p>Read the evidence before deciding what a claim means.</p></section>
@@ -78,6 +81,7 @@ await writeFile(validConfig, `export default ${JSON.stringify({
   differentiationScope: "every-route-to-family-representative",
   screenshots: "none",
   header: { selector: ".site-header", maximumViewportHeightRatio: 0.2 },
+  breadcrumbs: { maximumRows: 1, maximumItemLines: 1, alignmentTolerance: 3 },
   controls: {
     overlap: { ignoreSelectors: [".citation"] },
     targetSize: { enabled: true, severity: "error", ignoreSelectors: [".citation"] }
@@ -260,6 +264,9 @@ const invalidStyle = `<style>
   .actions { position: relative; width: 200px; height: 44px; }
   .actions button { position: absolute; inset: 0; width: 160px; height: 44px; }
   .divider { border-top: 1px solid black; }
+  .breadcrumbs ol { display: flex; gap: 8px; }
+  .breadcrumbs li { display: flex; gap: 8px; }
+  .breadcrumbs a { min-height: 44px; display: inline-flex; align-items: center; }
   .clipped-heading { height: 20px; overflow: hidden; font-size: 36px; line-height: 44px; }
   .sparse { position: relative; height: 700px; }
   .sparse .first { position: absolute; top: 0; }
@@ -268,6 +275,7 @@ const invalidStyle = `<style>
 for (const [route, archetype, routeClass] of [["/", "cover", "home-layout"], ["/about/", "record", "about-layout"]]) {
   await page(invalidDirectory, route, `<!doctype html><html><head><link rel="canonical" href="https://example.com${route}">${invalidStyle}</head><body>
     <header class="site-header"><a href="/">Home</a></header>
+    ${route === "/" ? '<nav class="breadcrumbs" data-breadcrumbs aria-label="Breadcrumb"><ol><li><a data-breadcrumb-label href="/about/">Services</a><span data-breadcrumb-separator aria-hidden="true">/</span></li><li><span data-breadcrumb-label aria-current="page">Book digitization for AI</span></li></ol></nav>' : ""}
     <main class="${routeClass}" data-page-archetype="${archetype}"><section class="hero" data-page-hero><h1>Same layout</h1><h2>NeedleTrave<br>l</h2><h3 class="clipped-heading">Clipped heading</h3><div class="actions"><button>First</button><button>Second</button></div><div class="divider">Status</div><section class="sparse"><p class="first">First item</p><p class="last">Last item</p></section></section></main>
   </body></html>`);
 }
@@ -284,6 +292,7 @@ await writeFile(invalidConfig, `export default ${JSON.stringify({
   minimumDistinctiveDimensions: 2,
   screenshots: "none",
   header: { selector: ".site-header", maximumViewportHeightRatio: 0.15 },
+  breadcrumbs: { maximumRows: 1, maximumItemLines: 1, alignmentTolerance: 3 },
   controls: { targetSize: { enabled: false } },
   routes: [
     { path: "/", family: "home", archetype: "cover", purpose: "Orient", contentRhythm: "Opening", visualIdentity: "Cover", requiredSelectors: ["main"], distinctiveSelectors: [".home-layout"], hero: { selector: ".hero", maximumViewportHeightRatio: 1.5 }, regions: [{ name: "Sparse panel", selector: ".sparse", maximumViewportHeightRatio: 0.8, maximumInternalEmptyBandRatio: 0.2 }], clearance: [{ from: ".actions", to: ".divider", minimum: 16 }] },
@@ -293,7 +302,7 @@ await writeFile(invalidConfig, `export default ${JSON.stringify({
 const invalidResult = run(invalidConfig);
 if (invalidResult.status === 0) throw new Error("Invalid interface fixture passed.");
 const invalidData = JSON.parse(await readFile(invalidReport, "utf8"));
-for (const expected of ["horizontal-overflow", "controls-overlap", "clearance-too-small", "hero-maximum-invalid", "hero-too-tall", "hero-contract-missing", "heading-orphan-fragment", "heading-clipped", "region-too-tall", "region-internal-empty-band", "site-header-too-tall", "route-families-too-similar"]) {
+for (const expected of ["horizontal-overflow", "controls-overlap", "clearance-too-small", "hero-maximum-invalid", "hero-too-tall", "hero-contract-missing", "heading-orphan-fragment", "heading-clipped", "breadcrumb-separator-misaligned", "breadcrumb-reading-order", "breadcrumb-too-many-rows", "region-too-tall", "region-internal-empty-band", "site-header-too-tall", "route-families-too-similar"]) {
   if (!invalidData.findings.some((finding) => finding.code === expected)) throw new Error(`Invalid interface fixture did not report ${expected}.`);
 }
 

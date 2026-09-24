@@ -76,6 +76,18 @@ const headingRules = {
   minimumLastLineCharacters: config.headings?.minimumLastLineCharacters ?? 2,
   maximumHeroLines: config.headings?.maximumHeroLines ?? 4
 };
+const breadcrumbRules = {
+  selector: config.breadcrumbs?.selector || '[data-breadcrumbs], nav[aria-label="Breadcrumb"]',
+  listSelector: config.breadcrumbs?.listSelector || "ol",
+  itemSelector: config.breadcrumbs?.itemSelector || ":scope > li",
+  labelSelector: config.breadcrumbs?.labelSelector || "[data-breadcrumb-label]",
+  separatorSelector: config.breadcrumbs?.separatorSelector || "[data-breadcrumb-separator]",
+  maximumRows: config.breadcrumbs?.maximumRows ?? 2,
+  maximumRowsByViewport: config.breadcrumbs?.maximumRowsByViewport || {},
+  maximumItemLines: config.breadcrumbs?.maximumItemLines ?? 1,
+  alignmentTolerance: config.breadcrumbs?.alignmentTolerance ?? 3,
+  requireCurrentPage: config.breadcrumbs?.requireCurrentPage ?? true
+};
 const maximumConfiguredHeroViewportHeightRatio = 1;
 
 const findings = [];
@@ -147,6 +159,20 @@ if (!Number.isInteger(headingRules.minimumLastLineCharacters) || headingRules.mi
 }
 if (!Number.isInteger(headingRules.maximumHeroLines) || headingRules.maximumHeroLines < 1) {
   throw new Error("headings.maximumHeroLines must be a positive integer.");
+}
+if (!Number.isInteger(breadcrumbRules.maximumRows) || breadcrumbRules.maximumRows < 1) {
+  throw new Error("breadcrumbs.maximumRows must be a positive integer.");
+}
+if (!Number.isInteger(breadcrumbRules.maximumItemLines) || breadcrumbRules.maximumItemLines < 1) {
+  throw new Error("breadcrumbs.maximumItemLines must be a positive integer.");
+}
+if (!Number.isFinite(breadcrumbRules.alignmentTolerance) || breadcrumbRules.alignmentTolerance < 0) {
+  throw new Error("breadcrumbs.alignmentTolerance must be a nonnegative number.");
+}
+for (const [viewportName, maximumRows] of Object.entries(breadcrumbRules.maximumRowsByViewport)) {
+  if (!Number.isInteger(maximumRows) || maximumRows < 1) {
+    throw new Error(`breadcrumbs.maximumRowsByViewport.${viewportName} must be a positive integer.`);
+  }
 }
 if (!["block", "allow"].includes(networkPolicy)) {
   throw new Error("network.externalRequests must be block or allow.");
@@ -469,7 +495,7 @@ try {
                   if (recoveryFailed) continue;
                 }
 
-                const measurement = await page.evaluate(({ rule, controlSelector, targetSize, overlapIgnoreSelectors, overlapTolerance, overflowTolerance, headerContract, headingRules, viewportName }) => {
+                const measurement = await page.evaluate(({ rule, controlSelector, targetSize, overlapIgnoreSelectors, overlapTolerance, overflowTolerance, headerContract, headingRules, breadcrumbRules, viewportName }) => {
                   const viewportWidth = document.documentElement.clientWidth;
                   const viewportHeight = window.innerHeight;
                   const rectValue = (rect) => ({ left: rect.left, top: rect.top, width: rect.width, height: rect.height, right: rect.right, bottom: rect.bottom });
@@ -514,6 +540,34 @@ try {
                       lastLineCharacters: lines.at(-1)?.text.length || 0,
                       lines: lines.map((line) => line.text)
                     };
+                  };
+                  const textLineMetrics = (element) => {
+                    const lines = [];
+                    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+                    let node = walker.nextNode();
+                    while (node) {
+                      for (let index = 0; index < node.textContent.length; index += 1) {
+                        const character = node.textContent[index];
+                        if (/\s/u.test(character)) continue;
+                        const range = document.createRange();
+                        range.setStart(node, index);
+                        range.setEnd(node, index + 1);
+                        const rect = range.getBoundingClientRect();
+                        if (rect.width <= 0 || rect.height <= 0) continue;
+                        let line = lines.find((candidate) => Math.abs(candidate.top - rect.top) <= 2);
+                        if (!line) {
+                          line = { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, text: "" };
+                          lines.push(line);
+                        }
+                        line.top = Math.min(line.top, rect.top);
+                        line.bottom = Math.max(line.bottom, rect.bottom);
+                        line.left = Math.min(line.left, rect.left);
+                        line.right = Math.max(line.right, rect.right);
+                        line.text += character;
+                      }
+                      node = walker.nextNode();
+                    }
+                    return lines.sort((first, second) => first.top - second.top || first.left - second.left);
                   };
                   const clippingAncestor = (element) => {
                     const rect = element.getBoundingClientRect();
@@ -602,6 +656,84 @@ try {
                 }
                 if (heading.selfClipped || heading.clippingAncestor) {
                   issues.push({ code: "heading-clipped", message: `${heading.label} is clipped${heading.clippingAncestor ? ` by ${heading.clippingAncestor}` : ""}.` });
+                }
+              }
+
+              const breadcrumbRoots = [...document.querySelectorAll(breadcrumbRules.selector)].filter(visible);
+              for (const breadcrumbRoot of breadcrumbRoots) {
+                const breadcrumbName = label(breadcrumbRoot);
+                const list = breadcrumbRoot.matches(breadcrumbRules.listSelector)
+                  ? breadcrumbRoot
+                  : breadcrumbRoot.querySelector(breadcrumbRules.listSelector);
+                if (!list || !visible(list)) {
+                  issues.push({ code: "breadcrumb-list-missing", message: `${breadcrumbName} has no visible ${breadcrumbRules.listSelector} list.` });
+                  continue;
+                }
+
+                const items = [...list.querySelectorAll(breadcrumbRules.itemSelector)].filter(visible);
+                if (items.length === 0) {
+                  issues.push({ code: "breadcrumb-items-missing", message: `${breadcrumbName} has no visible breadcrumb items.` });
+                  continue;
+                }
+
+                const currentPages = [...list.querySelectorAll('[aria-current="page"]')].filter(visible);
+                if (breadcrumbRules.requireCurrentPage && (currentPages.length !== 1 || !items.at(-1).contains(currentPages[0]))) {
+                  issues.push({ code: "breadcrumb-current-page-invalid", message: `${breadcrumbName} must identify exactly one current page inside its final item.` });
+                }
+
+                const labelLines = [];
+                for (const [itemIndex, item] of items.entries()) {
+                  const markedLabel = item.querySelector(breadcrumbRules.labelSelector);
+                  const fallbackLabel = [...item.children].find((child) =>
+                    !child.matches(breadcrumbRules.separatorSelector) && child.getAttribute("aria-hidden") !== "true"
+                  );
+                  const itemLabel = markedLabel || fallbackLabel;
+                  if (!itemLabel || !visible(itemLabel)) {
+                    issues.push({ code: "breadcrumb-label-missing", message: `${breadcrumbName} item ${itemIndex + 1} has no visible label.` });
+                    continue;
+                  }
+
+                  const itemLabelLines = textLineMetrics(itemLabel);
+                  if (itemLabelLines.length === 0) {
+                    issues.push({ code: "breadcrumb-label-empty", message: `${breadcrumbName} item ${itemIndex + 1} has no rendered label text.` });
+                    continue;
+                  }
+                  if (itemLabelLines.length > breadcrumbRules.maximumItemLines) {
+                    issues.push({ code: "breadcrumb-item-wrapped", message: `${breadcrumbName} item ${itemIndex + 1} uses ${itemLabelLines.length} lines, maximum is ${breadcrumbRules.maximumItemLines}.` });
+                  }
+                  labelLines.push({ itemIndex, ...itemLabelLines[0] });
+
+                  const separators = [...item.querySelectorAll(breadcrumbRules.separatorSelector)].filter(visible);
+                  for (const separator of separators) {
+                    const separatorLine = textLineMetrics(separator)[0];
+                    if (!separatorLine) continue;
+                    const labelCenter = (itemLabelLines[0].top + itemLabelLines[0].bottom) / 2;
+                    const separatorCenter = (separatorLine.top + separatorLine.bottom) / 2;
+                    if (Math.abs(labelCenter - separatorCenter) > breadcrumbRules.alignmentTolerance) {
+                      issues.push({ code: "breadcrumb-separator-misaligned", message: `${breadcrumbName} item ${itemIndex + 1} places its separator on a different visual baseline from its label.` });
+                    }
+                  }
+                }
+
+                for (let index = 1; index < labelLines.length; index += 1) {
+                  const previous = labelLines[index - 1];
+                  const current = labelLines[index];
+                  if (
+                    current.top < previous.top - breadcrumbRules.alignmentTolerance ||
+                    (Math.abs(current.top - previous.top) <= breadcrumbRules.alignmentTolerance && current.left < previous.left - breadcrumbRules.alignmentTolerance)
+                  ) {
+                    issues.push({ code: "breadcrumb-reading-order", message: `${breadcrumbName} renders item ${current.itemIndex + 1} before item ${previous.itemIndex + 1} in visual reading order.` });
+                    break;
+                  }
+                }
+
+                const visualRows = [];
+                for (const line of [...labelLines].sort((first, second) => first.top - second.top)) {
+                  if (!visualRows.some((rowTop) => Math.abs(rowTop - line.top) <= breadcrumbRules.alignmentTolerance)) visualRows.push(line.top);
+                }
+                const maximumRows = breadcrumbRules.maximumRowsByViewport[viewportName] ?? breadcrumbRules.maximumRows;
+                if (visualRows.length > maximumRows) {
+                  issues.push({ code: "breadcrumb-too-many-rows", message: `${breadcrumbName} uses ${visualRows.length} visual rows, maximum is ${maximumRows} for ${viewportName}.` });
                 }
               }
 
@@ -767,6 +899,7 @@ try {
                   overflowTolerance,
                   headerContract: config.header || null,
                   headingRules,
+                  breadcrumbRules,
                   viewportName: viewport.name
                 });
 

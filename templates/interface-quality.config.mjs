@@ -36,6 +36,21 @@ export default {
     minimumLastLineCharacters: 2,
     maximumHeroLines: 4
   },
+  breadcrumbs: {
+    selector: '[data-breadcrumbs], nav[aria-label="Breadcrumb"]',
+    listSelector: "ol",
+    itemSelector: ":scope > li",
+    labelSelector: "[data-breadcrumb-label]",
+    separatorSelector: "[data-breadcrumb-separator]",
+    maximumRows: 2,
+    maximumRowsByViewport: {
+      mobile: 2,
+      minimum: 2
+    },
+    maximumItemLines: 1,
+    alignmentTolerance: 3,
+    requireCurrentPage: true
+  },
   controls: {
     selector: 'a[href], button, summary, input:not([type="hidden"]), textarea, select',
     overlap: {

@@ -24,6 +24,7 @@ The blocking geometry checks cover:
 - Project-defined maximum header and hero proportions.
 - Project-defined first-viewport visibility for the content after a hero.
 - Missing route-specific elements and missing page-archetype markers.
+- Breadcrumb labels and separators that fall onto conflicting baselines, render out of reading order, wrap beyond the reviewed row limit, or lose the current-page marker.
 
 Target-size findings are warnings by default because WCAG includes exceptions that require context. Inline text links are excluded from the automated target-size check. Projects may make the remaining findings blocking after documenting the applicable control and spacing policy.
 
@@ -127,6 +128,30 @@ The interface gate inspects visible `h1`, `h2`, and `h3` elements by default. It
 
 Use route `regions` contracts for large cards, service panels, callouts, or other compositions where overlap checks are insufficient. A region contract can limit viewport-height occupancy and the proportion of leading, internal, or trailing empty vertical bands. These thresholds should reflect a reviewed composition, not be raised until a poor layout passes.
 
+## Breadcrumb contracts
+
+Breadcrumbs can remain visible and avoid overlap while still becoming difficult to read. A large touch target on one linked crumb can center its text lower than a separator or current-page label. Flex wrapping can also place a later crumb above an earlier crumb. Generic overflow and collision checks do not detect either failure.
+
+Mark the breadcrumb navigation, labels, and separators so the interface gate can measure their rendered text geometry:
+
+```html
+<nav data-breadcrumbs aria-label="Breadcrumb">
+  <ol>
+    <li>
+      <a data-breadcrumb-label href="/services/">Services</a>
+      <span data-breadcrumb-separator aria-hidden="true">/</span>
+    </li>
+    <li>
+      <span data-breadcrumb-label aria-current="page">Current service</span>
+    </li>
+  </ol>
+</nav>
+```
+
+Configure the reviewed row limit and baseline tolerance through the top-level `breadcrumbs` contract. The verifier checks that DOM order matches visual reading order, every marked separator shares the label baseline in its item, breadcrumb labels stay within the allowed line count, the complete trail stays within its row budget, and exactly one current page appears in the final item.
+
+Projects may allow two breadcrumb rows at narrow widths when the visual order remains coherent. Use `maximumRowsByViewport` for that reviewed exception. Do not raise the row limit to hide a separator or item that has become visually orphaned.
+
 ## Clearance contracts
 
 Ordinary collision detection cannot tell whether a button touching a separator is intentional. Add a clearance contract for important relationships:
@@ -158,15 +183,16 @@ Both reports are required evidence. Neither report proves design quality or huma
 
 1. Copy [`templates/interface-quality.config.mjs`](templates/interface-quality.config.mjs) into the target project.
 2. Add `data-site-header` to the persistent site header.
-3. Add one `data-page-archetype` marker to each configured route.
-4. Define the complete indexable inventory, its coverage classes, and either
+3. Add `data-breadcrumbs`, `data-breadcrumb-label`, and `data-breadcrumb-separator` where breadcrumb navigation exists.
+4. Add one `data-page-archetype` marker to each configured route.
+5. Define the complete indexable inventory, its coverage classes, and either
    every route contract or deterministic representative contracts.
-5. Add hero and clearance contracts only where the relationship exists.
-6. Run the verifier after the exact production build.
-7. Wire it into the normal build or unskippable release verification command.
-8. Preserve the JSON report and failure screenshots with candidate evidence.
-9. Capture and inspect first-viewport and full-page evidence for every route family at native size. Production candidates should use `screenshots: "all"`; failure-only screenshots are appropriate only during targeted development.
-10. Repeat the gate after any HTML, CSS, font, content, asset, breakpoint, or global-header change.
+6. Add hero and clearance contracts only where the relationship exists.
+7. Run the verifier after the exact production build.
+8. Wire it into the normal build or unskippable release verification command.
+9. Preserve the JSON report and failure screenshots with candidate evidence.
+10. Capture and inspect first-viewport and full-page evidence for every route family at native size. Production candidates should use `screenshots: "all"`; failure-only screenshots are appropriate only during targeted development.
+11. Repeat the gate after any HTML, CSS, font, content, asset, breakpoint, or global-header change.
 
 ## Human review
 
