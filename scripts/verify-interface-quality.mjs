@@ -71,6 +71,12 @@ const targetSize = {
   ignoreSelectors: config.controls?.targetSize?.ignoreSelectors || []
 };
 const overlapIgnoreSelectors = config.controls?.overlap?.ignoreSelectors || [];
+const headingRules = {
+  selector: config.headings?.selector || "h1, h2, h3",
+  minimumLastLineCharacters: config.headings?.minimumLastLineCharacters ?? 2,
+  maximumHeroLines: config.headings?.maximumHeroLines ?? 4
+};
+const maximumConfiguredHeroViewportHeightRatio = 1;
 
 const findings = [];
 const records = [];
@@ -136,6 +142,12 @@ if (!Array.isArray(coverageInventory) || coverageInventory.length === 0) {
 if (!Array.isArray(coverageKeyFields) || coverageKeyFields.length === 0) {
   throw new Error("coverageKeyFields must contain at least one field.");
 }
+if (!Number.isInteger(headingRules.minimumLastLineCharacters) || headingRules.minimumLastLineCharacters < 1) {
+  throw new Error("headings.minimumLastLineCharacters must be a positive integer.");
+}
+if (!Number.isInteger(headingRules.maximumHeroLines) || headingRules.maximumHeroLines < 1) {
+  throw new Error("headings.maximumHeroLines must be a positive integer.");
+}
 if (!["block", "allow"].includes(networkPolicy)) {
   throw new Error("network.externalRequests must be block or allow.");
 }
@@ -157,6 +169,46 @@ for (const rule of routeRules) {
   }
   if (normalizedSelectorList(rule.distinctiveSelectors).length === 0) {
     addFinding("error", "distinctive-selector-missing", `${path} does not declare a distinctive selector.`, { route: path });
+  }
+  if (rule.hero) {
+    const maximumRatio = rule.hero.maximumViewportHeightRatio;
+    if (!String(rule.hero.selector || "").trim()) {
+      addFinding("error", "hero-selector-missing", `${path} declares a hero contract without a selector.`, { route: path });
+    }
+    if (!Number.isFinite(maximumRatio) || maximumRatio <= 0 || maximumRatio > maximumConfiguredHeroViewportHeightRatio) {
+      addFinding(
+        "error",
+        "hero-maximum-invalid",
+        `${path} must set maximumViewportHeightRatio above 0 and no greater than ${maximumConfiguredHeroViewportHeightRatio}.`,
+        { route: path, maximumViewportHeightRatio: maximumRatio }
+      );
+    }
+    for (const [viewportName, viewportRatio] of Object.entries(rule.hero.maximumViewportHeightRatioByViewport || {})) {
+      if (!Number.isFinite(viewportRatio) || viewportRatio <= 0 || viewportRatio > maximumConfiguredHeroViewportHeightRatio) {
+        addFinding(
+          "error",
+          "hero-viewport-maximum-invalid",
+          `${path} must set the ${viewportName} hero ratio above 0 and no greater than ${maximumConfiguredHeroViewportHeightRatio}.`,
+          { route: path, viewport: viewportName, maximumViewportHeightRatio: viewportRatio }
+        );
+      }
+    }
+    if (rule.hero.maximumHeadingLines !== undefined && (!Number.isInteger(rule.hero.maximumHeadingLines) || rule.hero.maximumHeadingLines < 1)) {
+      addFinding("error", "hero-heading-lines-invalid", `${path} maximumHeadingLines must be a positive integer.`, { route: path });
+    }
+  }
+  for (const region of rule.regions || []) {
+    if (!String(region.selector || "").trim()) {
+      addFinding("error", "region-selector-missing", `${path} has a region contract without a selector.`, { route: path });
+    }
+    if (region.maximumViewportHeightRatio !== undefined && (!Number.isFinite(region.maximumViewportHeightRatio) || region.maximumViewportHeightRatio <= 0)) {
+      addFinding("error", "region-height-ratio-invalid", `${path} region ${region.name || region.selector || "unnamed"} has an invalid maximumViewportHeightRatio.`, { route: path });
+    }
+    for (const field of ["maximumInternalEmptyBandRatio", "maximumLeadingWhitespaceRatio", "maximumTrailingWhitespaceRatio"]) {
+      if (region[field] !== undefined && (!Number.isFinite(region[field]) || region[field] < 0 || region[field] > 1)) {
+        addFinding("error", "region-empty-space-ratio-invalid", `${path} region ${region.name || region.selector || "unnamed"} has an invalid ${field}.`, { route: path, field });
+      }
+    }
   }
 }
 
@@ -417,7 +469,7 @@ try {
                   if (recoveryFailed) continue;
                 }
 
-                const measurement = await page.evaluate(({ rule, controlSelector, targetSize, overlapIgnoreSelectors, overlapTolerance, overflowTolerance, headerContract }) => {
+                const measurement = await page.evaluate(({ rule, controlSelector, targetSize, overlapIgnoreSelectors, overlapTolerance, overflowTolerance, headerContract, headingRules, viewportName }) => {
                   const viewportWidth = document.documentElement.clientWidth;
                   const viewportHeight = window.innerHeight;
                   const rectValue = (rect) => ({ left: rect.left, top: rect.top, width: rect.width, height: rect.height, right: rect.right, bottom: rect.bottom });
@@ -432,6 +484,52 @@ try {
                     const rect = element.getBoundingClientRect();
                     const nativeVisible = typeof element.checkVisibility !== "function" || element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
                     return nativeVisible && rect.width > 0 && rect.height > 0 && style.display !== "none" && style.visibility !== "hidden" && Number(style.opacity) !== 0;
+                  };
+                  const textLineSummary = (element) => {
+                    const lines = [];
+                    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+                    let node = walker.nextNode();
+                    while (node) {
+                      for (let index = 0; index < node.textContent.length; index += 1) {
+                        const character = node.textContent[index];
+                        if (/\s/u.test(character)) continue;
+                        const range = document.createRange();
+                        range.setStart(node, index);
+                        range.setEnd(node, index + 1);
+                        const rect = range.getBoundingClientRect();
+                        if (rect.width <= 0 || rect.height <= 0) continue;
+                        let line = lines.find((candidate) => Math.abs(candidate.top - rect.top) <= 2);
+                        if (!line) {
+                          line = { top: rect.top, bottom: rect.bottom, text: "" };
+                          lines.push(line);
+                        }
+                        line.bottom = Math.max(line.bottom, rect.bottom);
+                        line.text += character;
+                      }
+                      node = walker.nextNode();
+                    }
+                    lines.sort((first, second) => first.top - second.top);
+                    return {
+                      count: lines.length,
+                      lastLineCharacters: lines.at(-1)?.text.length || 0,
+                      lines: lines.map((line) => line.text)
+                    };
+                  };
+                  const clippingAncestor = (element) => {
+                    const rect = element.getBoundingClientRect();
+                    let ancestor = element.parentElement;
+                    while (ancestor && ancestor !== document.documentElement) {
+                      const style = getComputedStyle(ancestor);
+                      const ancestorRect = ancestor.getBoundingClientRect();
+                      const clipsX = ["hidden", "clip"].includes(style.overflowX);
+                      const clipsY = ["hidden", "clip"].includes(style.overflowY);
+                      if (
+                        (clipsX && (rect.left < ancestorRect.left - overflowTolerance || rect.right > ancestorRect.right + overflowTolerance)) ||
+                        (clipsY && (rect.top < ancestorRect.top - overflowTolerance || rect.bottom > ancestorRect.bottom + overflowTolerance))
+                      ) return label(ancestor);
+                      ancestor = ancestor.parentElement;
+                    }
+                    return null;
                   };
                   const controls = [...document.querySelectorAll(controlSelector)].filter(visible).map((element) => {
                     const style = getComputedStyle(element);
@@ -484,6 +582,29 @@ try {
                 }
               }
 
+              const headingMeasurements = [...document.querySelectorAll(headingRules.selector)].filter(visible).map((heading) => {
+                const style = getComputedStyle(heading);
+                const summary = textLineSummary(heading);
+                return {
+                  element: heading,
+                  label: label(heading),
+                  summary,
+                  selfClipped: (
+                    (["hidden", "clip"].includes(style.overflowX) && heading.scrollWidth > heading.clientWidth + overflowTolerance) ||
+                    (["hidden", "clip"].includes(style.overflowY) && heading.scrollHeight > heading.clientHeight + overflowTolerance)
+                  ),
+                  clippingAncestor: clippingAncestor(heading)
+                };
+              });
+              for (const heading of headingMeasurements) {
+                if (heading.summary.count > 1 && heading.summary.lastLineCharacters < headingRules.minimumLastLineCharacters) {
+                  issues.push({ code: "heading-orphan-fragment", message: `${heading.label} leaves only ${heading.summary.lastLineCharacters} character on its final line.` });
+                }
+                if (heading.selfClipped || heading.clippingAncestor) {
+                  issues.push({ code: "heading-clipped", message: `${heading.label} is clipped${heading.clippingAncestor ? ` by ${heading.clippingAncestor}` : ""}.` });
+                }
+              }
+
               const archetypeRoots = [...document.querySelectorAll("[data-page-archetype]")].filter(visible);
               if (archetypeRoots.length !== 1) {
                 issues.push({ code: "archetype-marker-count", message: `Expected one visible data-page-archetype marker, found ${archetypeRoots.length}.` });
@@ -496,6 +617,11 @@ try {
                 if (elements.length === 0) issues.push({ code: "required-selector-missing", message: `No visible element matches ${selector}.` });
               }
 
+              const markedHero = document.querySelector("[data-page-hero]");
+              if (markedHero && visible(markedHero) && !rule.hero) {
+                issues.push({ code: "hero-contract-missing", message: "A data-page-hero region is visible but the route has no hero contract." });
+              }
+
               if (rule.hero) {
                 const hero = document.querySelector(rule.hero.selector);
                 if (!hero || !visible(hero)) {
@@ -503,8 +629,19 @@ try {
                 } else {
                   const heroRect = hero.getBoundingClientRect();
                   const ratio = heroRect.height / viewportHeight;
-                  if (Number.isFinite(rule.hero.maximumViewportHeightRatio) && ratio > rule.hero.maximumViewportHeightRatio) {
-                    issues.push({ code: "hero-too-tall", message: `Hero uses ${(ratio * 100).toFixed(1)}% of the viewport height, maximum is ${(rule.hero.maximumViewportHeightRatio * 100).toFixed(1)}%.` });
+                  const maximumHeroRatio = rule.hero.maximumViewportHeightRatioByViewport?.[viewportName] ?? rule.hero.maximumViewportHeightRatio;
+                  if (Number.isFinite(maximumHeroRatio) && ratio > maximumHeroRatio) {
+                    issues.push({ code: "hero-too-tall", message: `Hero uses ${(ratio * 100).toFixed(1)}% of the viewport height, maximum is ${(maximumHeroRatio * 100).toFixed(1)}% for ${viewportName}.` });
+                  }
+                  const heroHeading = hero.querySelector(rule.hero.headingSelector || "h1");
+                  if (!heroHeading || !visible(heroHeading)) {
+                    issues.push({ code: "hero-heading-missing", message: `Hero has no visible ${rule.hero.headingSelector || "h1"}.` });
+                  } else {
+                    const lineSummary = textLineSummary(heroHeading);
+                    const maximumHeadingLines = rule.hero.maximumHeadingLines ?? headingRules.maximumHeroLines;
+                    if (lineSummary.count > maximumHeadingLines) {
+                      issues.push({ code: "hero-heading-too-many-lines", message: `Hero heading uses ${lineSummary.count} lines, maximum is ${maximumHeadingLines}.` });
+                    }
                   }
                   if (rule.hero.nextContentSelector && Number.isFinite(rule.hero.minimumNextContentPixels)) {
                     const next = document.querySelector(rule.hero.nextContentSelector);
@@ -517,6 +654,50 @@ try {
                         issues.push({ code: "next-content-below-fold", message: `Only ${Math.round(visiblePixels)} pixels of the next content region are visible, minimum is ${rule.hero.minimumNextContentPixels}.` });
                       }
                     }
+                  }
+                }
+              }
+
+              for (const region of rule.regions || []) {
+                const regionElements = [...document.querySelectorAll(region.selector)].filter(visible);
+                if (regionElements.length === 0) {
+                  issues.push({ code: "region-missing", message: `${region.name || region.selector} has no visible match.` });
+                  continue;
+                }
+                for (const regionElement of regionElements) {
+                  const regionRect = regionElement.getBoundingClientRect();
+                  const regionName = `${region.name || region.selector} ${label(regionElement)}`;
+                  const heightRatio = regionRect.height / viewportHeight;
+                  if (Number.isFinite(region.maximumViewportHeightRatio) && heightRatio > region.maximumViewportHeightRatio) {
+                    issues.push({ code: "region-too-tall", message: `${regionName} uses ${(heightRatio * 100).toFixed(1)}% of the viewport height, maximum is ${(region.maximumViewportHeightRatio * 100).toFixed(1)}%.` });
+                  }
+                  const candidates = [...regionElement.querySelectorAll(region.contentSelector || "h1, h2, h3, h4, h5, h6, p, a, button, img, figure, form, li, table, dl")].filter(visible);
+                  const leafCandidates = candidates.filter((candidate) => !candidates.some((other) => other !== candidate && candidate.contains(other)));
+                  const intervals = leafCandidates.map((candidate) => candidate.getBoundingClientRect())
+                    .map((rect) => ({ top: Math.max(regionRect.top, rect.top), bottom: Math.min(regionRect.bottom, rect.bottom) }))
+                    .filter((interval) => interval.bottom > interval.top)
+                    .sort((first, second) => first.top - second.top);
+                  if (intervals.length === 0 || regionRect.height <= 0) continue;
+                  const merged = [];
+                  for (const interval of intervals) {
+                    const previous = merged.at(-1);
+                    if (!previous || interval.top > previous.bottom + 1) merged.push({ ...interval });
+                    else previous.bottom = Math.max(previous.bottom, interval.bottom);
+                  }
+                  const leadingWhitespaceRatio = Math.max(0, merged[0].top - regionRect.top) / regionRect.height;
+                  const trailingWhitespaceRatio = Math.max(0, regionRect.bottom - merged.at(-1).bottom) / regionRect.height;
+                  let maximumInternalEmptyBandRatio = 0;
+                  for (let index = 1; index < merged.length; index += 1) {
+                    maximumInternalEmptyBandRatio = Math.max(maximumInternalEmptyBandRatio, (merged[index].top - merged[index - 1].bottom) / regionRect.height);
+                  }
+                  if (Number.isFinite(region.maximumLeadingWhitespaceRatio) && leadingWhitespaceRatio > region.maximumLeadingWhitespaceRatio) {
+                    issues.push({ code: "region-leading-whitespace", message: `${regionName} leaves ${(leadingWhitespaceRatio * 100).toFixed(1)}% empty before its first content, maximum is ${(region.maximumLeadingWhitespaceRatio * 100).toFixed(1)}%.` });
+                  }
+                  if (Number.isFinite(region.maximumTrailingWhitespaceRatio) && trailingWhitespaceRatio > region.maximumTrailingWhitespaceRatio) {
+                    issues.push({ code: "region-trailing-whitespace", message: `${regionName} leaves ${(trailingWhitespaceRatio * 100).toFixed(1)}% empty after its last content, maximum is ${(region.maximumTrailingWhitespaceRatio * 100).toFixed(1)}%.` });
+                  }
+                  if (Number.isFinite(region.maximumInternalEmptyBandRatio) && maximumInternalEmptyBandRatio > region.maximumInternalEmptyBandRatio) {
+                    issues.push({ code: "region-internal-empty-band", message: `${regionName} contains an empty vertical band of ${(maximumInternalEmptyBandRatio * 100).toFixed(1)}%, maximum is ${(region.maximumInternalEmptyBandRatio * 100).toFixed(1)}%.` });
                   }
                 }
               }
@@ -584,7 +765,9 @@ try {
                   overlapIgnoreSelectors,
                   overlapTolerance,
                   overflowTolerance,
-                  headerContract: config.header || null
+                  headerContract: config.header || null,
+                  headingRules,
+                  viewportName: viewport.name
                 });
 
                 const record = { engine, viewport, route, family: rule.family, archetype: rule.archetype, ...measurement };

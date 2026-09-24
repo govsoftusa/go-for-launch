@@ -193,7 +193,9 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] The interface-quality verifier covers every indexable route at 1440, 1024, 768, 390, and 320 CSS pixel widths in Chromium and WebKit.
 - [ ] Visible controls do not overlap, clip, or leave the horizontal viewport.
 - [ ] Important action groups meet their configured clearance from separators, status bands, media, and following structural regions.
-- [ ] Header and hero regions meet the reviewed project and route proportions.
+- [ ] Every marked hero has a route contract, fits within one viewport, meets its tighter reviewed route limit, and keeps its heading within the reviewed line count.
+- [ ] Visible headings are not clipped and do not leave one-character fragments on a final line.
+- [ ] Reviewed cards, panels, and sections meet configured height and empty-space limits.
 - [ ] Inline wrapped links are measured by rendered line fragments, and closed disclosure content is excluded from visible-control checks.
 - [ ] No horizontal overflow at 390, 375, 360, and 320 CSS pixels.
 - [ ] Fixed navigation clears the first heading.
@@ -232,7 +234,7 @@ Complete the remaining items in this section only when design review is applicab
 
 - [ ] Astro diagnostics pass.
 - [ ] Production build passes.
-- [ ] The mandatory interface-quality and page-differentiation gate passes against the exact built candidate and its JSON report is preserved.
+- [ ] The mandatory interface-quality and page-differentiation gate passes against the exact built candidate, all release screenshots are captured, and its JSON report is preserved.
 - [ ] The mandatory render sharpness gate passes against the exact built candidate and its JSON report is preserved.
 - [ ] The side-navigation verifier passes against the exact built candidate and its JSON report is preserved.
 - [ ] Every CSS illustration, diagram, generated page graphic, chart, hero artwork, and website email graphic in scope is marked for visual composition verification.

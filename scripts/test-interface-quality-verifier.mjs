@@ -256,15 +256,19 @@ const invalidStyle = `<style>
   body { margin: 0; }
   .site-header { height: 160px; }
   main { width: 520px; background: white; color: black; }
-  .hero { height: 800px; position: relative; }
+  .hero { height: 1600px; position: relative; overflow: hidden; }
   .actions { position: relative; width: 200px; height: 44px; }
   .actions button { position: absolute; inset: 0; width: 160px; height: 44px; }
   .divider { border-top: 1px solid black; }
+  .clipped-heading { height: 20px; overflow: hidden; font-size: 36px; line-height: 44px; }
+  .sparse { position: relative; height: 700px; }
+  .sparse .first { position: absolute; top: 0; }
+  .sparse .last { position: absolute; bottom: 0; }
 </style>`;
 for (const [route, archetype, routeClass] of [["/", "cover", "home-layout"], ["/about/", "record", "about-layout"]]) {
   await page(invalidDirectory, route, `<!doctype html><html><head><link rel="canonical" href="https://example.com${route}">${invalidStyle}</head><body>
     <header class="site-header"><a href="/">Home</a></header>
-    <main class="${routeClass}" data-page-archetype="${archetype}"><section class="hero"><h1>Same layout</h1><div class="actions"><button>First</button><button>Second</button></div><div class="divider">Status</div></section></main>
+    <main class="${routeClass}" data-page-archetype="${archetype}"><section class="hero" data-page-hero><h1>Same layout</h1><h2>NeedleTrave<br>l</h2><h3 class="clipped-heading">Clipped heading</h3><div class="actions"><button>First</button><button>Second</button></div><div class="divider">Status</div><section class="sparse"><p class="first">First item</p><p class="last">Last item</p></section></section></main>
   </body></html>`);
 }
 const invalidReport = join(root, "invalid", "report.json");
@@ -282,14 +286,14 @@ await writeFile(invalidConfig, `export default ${JSON.stringify({
   header: { selector: ".site-header", maximumViewportHeightRatio: 0.15 },
   controls: { targetSize: { enabled: false } },
   routes: [
-    { path: "/", family: "home", archetype: "cover", purpose: "Orient", contentRhythm: "Opening", visualIdentity: "Cover", requiredSelectors: ["main"], distinctiveSelectors: [".home-layout"], hero: { selector: ".hero", maximumViewportHeightRatio: 0.6 }, clearance: [{ from: ".actions", to: ".divider", minimum: 16 }] },
+    { path: "/", family: "home", archetype: "cover", purpose: "Orient", contentRhythm: "Opening", visualIdentity: "Cover", requiredSelectors: ["main"], distinctiveSelectors: [".home-layout"], hero: { selector: ".hero", maximumViewportHeightRatio: 1.5 }, regions: [{ name: "Sparse panel", selector: ".sparse", maximumViewportHeightRatio: 0.8, maximumInternalEmptyBandRatio: 0.2 }], clearance: [{ from: ".actions", to: ".divider", minimum: 16 }] },
     { path: "/about/", family: "about", archetype: "record", purpose: "Explain", contentRhythm: "Narrative", visualIdentity: "Record", requiredSelectors: ["main"], distinctiveSelectors: [".about-layout"] }
   ]
 })};\n`);
 const invalidResult = run(invalidConfig);
 if (invalidResult.status === 0) throw new Error("Invalid interface fixture passed.");
 const invalidData = JSON.parse(await readFile(invalidReport, "utf8"));
-for (const expected of ["horizontal-overflow", "controls-overlap", "clearance-too-small", "hero-too-tall", "site-header-too-tall", "route-families-too-similar"]) {
+for (const expected of ["horizontal-overflow", "controls-overlap", "clearance-too-small", "hero-maximum-invalid", "hero-too-tall", "hero-contract-missing", "heading-orphan-fragment", "heading-clipped", "region-too-tall", "region-internal-empty-band", "site-header-too-tall", "route-families-too-similar"]) {
   if (!invalidData.findings.some((finding) => finding.code === expected)) throw new Error(`Invalid interface fixture did not report ${expected}.`);
 }
 

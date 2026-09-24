@@ -3,7 +3,7 @@ export default {
   report: "artifacts/interface-quality-report.json",
   progressEvery: 1_000,
   screenshotDirectory: "artifacts/interface-quality",
-  screenshots: "failures",
+  screenshots: "all",
   routeConcurrency: 1,
   coverageMode: "every-route",
   requireIndexableCoverage: true,
@@ -31,6 +31,11 @@ export default {
     selector: "[data-site-header]",
     maximumViewportHeightRatio: 0.2
   },
+  headings: {
+    selector: "h1, h2, h3",
+    minimumLastLineCharacters: 2,
+    maximumHeroLines: 4
+  },
   controls: {
     selector: 'a[href], button, summary, input:not([type="hidden"]), textarea, select',
     overlap: {
@@ -57,9 +62,27 @@ export default {
       hero: {
         selector: "[data-page-hero]",
         maximumViewportHeightRatio: 0.78,
+        maximumViewportHeightRatioByViewport: {
+          expanded: 0.7,
+          "compact-desktop": 0.75,
+          tablet: 0.8,
+          mobile: 0.85,
+          minimum: 0.9
+        },
+        maximumHeadingLines: 4,
         nextContentSelector: "[data-after-hero]",
         minimumNextContentPixels: 24
       },
+      regions: [
+        {
+          name: "Primary content panel",
+          selector: "[data-primary-panel]",
+          maximumViewportHeightRatio: 0.8,
+          maximumInternalEmptyBandRatio: 0.2,
+          maximumLeadingWhitespaceRatio: 0.18,
+          maximumTrailingWhitespaceRatio: 0.18
+        }
+      ],
       clearance: [
         {
           name: "Primary actions above the next bordered region",

@@ -106,16 +106,26 @@ silently become traffic against a CDN or production host.
 
 ## Header and hero contracts
 
-There is no universal correct hero height. A campaign page, reading page, application screen, and legal record have different needs. Each project sets reviewed limits where a hero exists.
+There is no single ideal hero height. A campaign page, reading page, application screen, and legal record have different needs. Each project sets a reviewed limit where a hero exists. A passing limit cannot exceed one viewport height. Content taller than one viewport is not a complete first-view hero and must be split into subsequent page content.
 
 Use a route contract to define:
 
 - The hero selector.
 - The maximum share of the viewport height it may occupy.
+- Optional tighter limits for named desktop, tablet, and mobile viewports.
 - The next meaningful region.
 - How much of that next region should be visible in the first viewport, when appropriate.
+- The maximum number of rendered heading lines.
+
+Any visible `[data-page-hero]` requires a route hero contract. The verifier rejects missing contracts, limits above one viewport, hero headings that exceed the reviewed line count, clipped headings, and final heading lines that contain only an orphaned character.
 
 Use the global header contract to keep stacked navigation, announcements, and utility controls from consuming an excessive share of the compact viewport. The number is a project decision supported by the design brief, not a universal design-system rule.
+
+## Heading and spatial-density contracts
+
+The interface gate inspects visible `h1`, `h2`, and `h3` elements by default. It fails on clipped headings and one-character final-line fragments, including broken brand names. Projects may adjust the selector, the minimum final-line character count, and the default maximum hero-heading line count through the `headings` configuration.
+
+Use route `regions` contracts for large cards, service panels, callouts, or other compositions where overlap checks are insufficient. A region contract can limit viewport-height occupancy and the proportion of leading, internal, or trailing empty vertical bands. These thresholds should reflect a reviewed composition, not be raised until a poor layout passes.
 
 ## Clearance contracts
 
@@ -155,7 +165,7 @@ Both reports are required evidence. Neither report proves design quality or huma
 6. Run the verifier after the exact production build.
 7. Wire it into the normal build or unskippable release verification command.
 8. Preserve the JSON report and failure screenshots with candidate evidence.
-9. Inspect first-viewport and full-page captures for every route family at native size.
+9. Capture and inspect first-viewport and full-page evidence for every route family at native size. Production candidates should use `screenshots: "all"`; failure-only screenshots are appropriate only during targeted development.
 10. Repeat the gate after any HTML, CSS, font, content, asset, breakpoint, or global-header change.
 
 ## Human review

@@ -6,7 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
-No changes have been recorded since 0.5.0.
+### Changed
+
+- Strengthened the interface-quality gate after an oversized editorial layout passed permissive project contracts. Hero limits above one viewport now fail configuration review, every marked hero requires a route contract, and rendered hero headings have a default four-line maximum.
+- Added visible-heading checks for clipping and one-character final-line fragments so broken names and display headings cannot pass because the document has no horizontal overflow.
+- Added project-controlled spatial-density contracts for tall cards, panels, and sections. Projects can now limit viewport-height occupancy and excessive leading, internal, or trailing empty bands.
+- Updated the starter interface configuration to capture every release viewport and demonstrate hero, heading, and spatial-density limits.
 
 ## 0.5.0, 2026-08-14
 
