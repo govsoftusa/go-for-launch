@@ -73,6 +73,7 @@ const targetSize = {
 const overlapIgnoreSelectors = config.controls?.overlap?.ignoreSelectors || [];
 const headingRules = {
   selector: config.headings?.selector || "h1, h2, h3",
+  ignoreSelectors: config.headings?.ignoreSelectors || [],
   minimumLastLineCharacters: config.headings?.minimumLastLineCharacters ?? 2,
   maximumHeroLines: config.headings?.maximumHeroLines ?? 4
 };
@@ -637,7 +638,10 @@ try {
                 }
               }
 
-              const headingMeasurements = [...document.querySelectorAll(headingRules.selector)].filter(visible).map((heading) => {
+              const headingMeasurements = [...document.querySelectorAll(headingRules.selector)]
+                .filter(visible)
+                .filter((heading) => !headingRules.ignoreSelectors.some((selector) => heading.matches(selector)))
+                .map((heading) => {
                 const style = getComputedStyle(heading);
                 const summary = textLineSummary(heading);
                 return {

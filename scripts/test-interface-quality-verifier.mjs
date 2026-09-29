@@ -31,6 +31,7 @@ const sharedValidStyle = `<style>
   .home-layout { background: #071321; color: white; }
   .about-layout { background: #f4efe5; color: #171717; }
   .citation { overflow: visible; }
+  .screen-reader-text { position: absolute; width: 1px; height: 1px; overflow: hidden; }
 </style>`;
 await page(validDirectory, "/", `<!doctype html><html><head><link rel="canonical" href="https://example.com/">${sharedValidStyle}</head><body>
   <header class="site-header"><a href="/about/">About</a></header>
@@ -39,7 +40,7 @@ await page(validDirectory, "/", `<!doctype html><html><head><link rel="canonical
     <section class="hero"><h1>Start with a useful question</h1><div class="actions"><button>Begin</button><a href="/about/">Learn more</a></div><div class="divider">Current status</div></section>
     <section class="next"><figure>Distinctive home illustration</figure><p>Read the evidence before deciding what a claim means.</p></section>
     <img src="https://cdn.example.com/must-not-load.png" alt="">
-  </main></body></html>`);
+  </main><footer><h2 class="screen-reader-text">Footer</h2></footer></body></html>`);
 await page(validDirectory, "/about/", `<!doctype html><html><head><link rel="canonical" href="https://example.com/about/">${sharedValidStyle}</head><body>
   <header class="site-header"><a href="/">Home</a></header>
   <main class="about-layout" data-page-archetype="narrative-record">
@@ -64,6 +65,7 @@ await writeFile(validConfig, `export default ${JSON.stringify({
   differentiationBrowsers: ["chromium"],
   differentiationViewports: ["mobile"],
   minimumDistinctiveDimensions: 2,
+  headings: { ignoreSelectors: [".screen-reader-text"] },
   routeConcurrency: 2,
   progressEvery: 1,
   coverageMode: "representatives",
