@@ -211,6 +211,108 @@ lockfile. Traverse from the root production dependency set. When a cache-key
 algorithm changes, adopt an old fixture only after proving every schema,
 content, importer, patch, and reachable production input is identical.
 
+## Schema-Only CMS Upgrades Must Not Reimport the Archive
+
+### Symptom
+
+A supported CMS version upgrade correctly changed the production dependency
+fingerprint. The private release harness therefore missed the prior fixture and
+began importing several thousand unchanged articles. The database content,
+seed, importer, media objects, and taxonomy reconciliation inputs had not
+changed. Only the CMS runtime and its schema had changed.
+
+The first attempt was stopped after a small fraction of the archive had been
+processed. Continuing would have spent most of an hour reconstructing records
+that were already present in a verified private fixture.
+
+### Root cause
+
+One fixture key represented two different identities:
+
+- the durable imported data;
+- the runtime version, schema, cache plugin, and object-cache behavior.
+
+Changing either identity forced the same full import path. This was safe but
+unnecessarily expensive. Reusing the old archive without any additional proof
+would have been unsafe because it could preserve old HTML, object-cache entries,
+or a database that lacked required migrations.
+
+### Fix
+
+The harness now records a separate content fingerprint for the seed, content
+archive, importer, and deterministic reconciliation inputs. A runtime-only
+upgrade may derive a new fixture from a prior archive only when all of these
+conditions pass:
+
+1. The prior fixture identity is explicitly pinned.
+2. The archive SHA-256 matches the reviewed value.
+3. The current content fingerprint equals the pinned content fingerprint.
+4. The prior KV and Cache API state are removed.
+5. The exact production-format local Worker starts against the private D1 and
+   applies the supported pending migrations.
+6. A read-only database report proves the required migration names and confirms
+   that no migration lock remains held.
+7. The normal taxonomy reconciliation, admin-console, route, browser, and
+   performance gates run against the derived fixture.
+
+R2 and private image objects remain in place because their object identity is
+part of the verified fixture and the content inputs did not change. A content
+fingerprint or archive checksum mismatch fails closed and selects the complete
+import path.
+
+### Failed experiment
+
+The framework migration command exposed a direct database-path option, but the
+active Cloudflare D1 adapter still required remote account selection and a
+credential even when the requested database was a local Miniflare SQLite file.
+Using a production credential for a private fixture migration would have
+weakened the isolation boundary. The harness instead exercised the framework's
+documented automatic runtime migration policy through the exact local Worker,
+then inspected the private SQLite state read-only.
+
+### Acceptance evidence
+
+The upgrade proof recorded the prior migration count, started the local Worker,
+and then recorded two additional supported migrations, the expected latest
+migration, and zero held lock rows. The complete content import was not run.
+The resulting candidate still had to pass the normal CMS and public-route gates.
+
+### Reusable rule
+
+Separate durable content identity from runtime identity. A dependency-only CMS
+upgrade should migrate a checksum-pinned private fixture, discard version-bound
+caches, and run the complete gates. It should not reimport an unchanged archive,
+and it should never reuse old state without content, schema, and lock evidence.
+
+## Plugin Hooks Need Explicit Capabilities After a CMS Upgrade
+
+### Symptom
+
+The upgraded runtime started successfully but logged that every content
+lifecycle hook in a publication cache plugin was being skipped. Publishing
+would have succeeded in the CMS while old public HTML remained cached.
+
+### Root cause
+
+The newer CMS enforced hook capabilities during registration. The plugin
+declared save, publish, unpublish, and restore hooks but did not declare the
+content-read capability required by those hooks. The older version had not
+made the omission visible.
+
+### Fix and proof
+
+The native plugin descriptor and runtime definition now declare the same
+minimum content-read capability. A source regression gate checks both files.
+The compiled private Worker must start without a skipped-hook warning, and the
+CMS proof must publish and reload a disposable record before cleanup.
+
+### Reusable rule
+
+Treat framework upgrades as contract changes, not package-number changes.
+Review startup warnings and validate every registered lifecycle hook through a
+real private workflow. A clean build alone does not prove that publishing side
+effects still run.
+
 ## Legacy Routing and Content Scope
 
 WordPress remained the routing authority for ambiguous legacy URLs even after
