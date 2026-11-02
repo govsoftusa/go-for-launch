@@ -14,6 +14,8 @@ node scripts/verify-interface-quality.mjs --config=interface-quality.config.mjs
 
 The verifier serves the exact built output and checks every configured route in Chromium and WebKit at the reviewed viewport matrix. The standard template includes 1440, 1024, 768, 390, and 320 CSS pixel widths.
 
+Before it measures a route or takes a full-page screenshot, the verifier activates every same-origin lazy image, waits for those images to load and decode, and records the result. A failed or pending local image blocks the gate. External images remain subject to the configured network policy and are not activated as local evidence.
+
 The blocking geometry checks cover:
 
 - Horizontal document overflow.

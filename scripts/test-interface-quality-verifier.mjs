@@ -39,8 +39,10 @@ await page(validDirectory, "/", `<!doctype html><html><head><link rel="canonical
   <main class="home-layout" data-page-archetype="editorial-cover">
     <section class="hero"><h1>Start with a useful question</h1><div class="actions"><button>Begin</button><a href="/about/">Learn more</a></div><div class="divider">Current status</div></section>
     <section class="next"><figure>Distinctive home illustration</figure><p>Read the evidence before deciding what a claim means.</p></section>
+    <img src="/lazy-local.svg" loading="lazy" style="display:block;margin-top:1200px" alt="Lazy local evidence">
     <img src="https://cdn.example.com/must-not-load.png" alt="">
   </main><footer><h2 class="screen-reader-text">Footer</h2></footer></body></html>`);
+await writeFile(join(validDirectory, "lazy-local.svg"), '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="#16a34a"/></svg>');
 await page(validDirectory, "/about/", `<!doctype html><html><head><link rel="canonical" href="https://example.com/about/">${sharedValidStyle}</head><body>
   <header class="site-header"><a href="/">Home</a></header>
   <main class="about-layout" data-page-archetype="narrative-record">
@@ -140,6 +142,14 @@ if (
   validData.network.blockedExternalRequests < 1
 ) {
   throw new Error("Representative coverage or external-network isolation was not recorded.");
+}
+const validHomeImageReadiness = validData.imageReadiness.find((item) => item.route === "/");
+if (
+  validData.counts.lazyImagesActivated !== 1 ||
+  validHomeImageReadiness?.activatedSources?.[0] !== "/lazy-local.svg" ||
+  validHomeImageReadiness?.readyImages !== 1
+) {
+  throw new Error("Local lazy image readiness was not recorded before measurement and capture.");
 }
 
 const recoveredFontDirectory = join(root, "recovered-font", "dist");
@@ -257,6 +267,8 @@ if (
 }
 
 const invalidDirectory = join(root, "invalid", "dist");
+await mkdir(invalidDirectory, { recursive: true });
+await writeFile(join(invalidDirectory, "decode-failure.svg"), '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="#dc2626"/></svg>');
 const invalidStyle = `<style>
   * { box-sizing: border-box; }
   body { margin: 0; }
@@ -277,9 +289,16 @@ const invalidStyle = `<style>
 </style>`;
 for (const [route, archetype, routeClass] of [["/", "cover", "home-layout"], ["/about/", "record", "about-layout"]]) {
   await page(invalidDirectory, route, `<!doctype html><html><head><link rel="canonical" href="https://example.com${route}">${invalidStyle}</head><body>
+    <script>
+      const originalDecode = HTMLImageElement.prototype.decode;
+      HTMLImageElement.prototype.decode = function decodeFixture() {
+        if (this.dataset.decodeFailure === "true") return Promise.reject(new Error("Fixture decode failure"));
+        return originalDecode.call(this);
+      };
+    </script>
     <header class="site-header"><a href="/">Home</a></header>
     ${route === "/" ? '<nav class="breadcrumbs" data-breadcrumbs aria-label="Breadcrumb"><ol><li><a data-breadcrumb-label href="/about/">Services</a><span data-breadcrumb-separator aria-hidden="true">/</span></li><li><span data-breadcrumb-label aria-current="page">Book digitization for AI</span></li></ol></nav>' : ""}
-    <main class="${routeClass}" data-page-archetype="${archetype}"><section class="hero" data-page-hero><h1>Same layout</h1><h2>NeedleTrave<br>l</h2><h3 class="clipped-heading">Clipped heading</h3><div class="actions"><button>First</button><button>Second</button></div><div class="divider">Status</div><section class="sparse"><p class="first">First item</p><p class="last">Last item</p></section></section></main>
+    <main class="${routeClass}" data-page-archetype="${archetype}"><section class="hero" data-page-hero><h1>Same layout</h1><h2>NeedleTrave<br>l</h2><h3 class="clipped-heading">Clipped heading</h3><div class="actions"><button>First</button><button>Second</button></div><div class="divider">Status</div><section class="sparse"><p class="first">First item</p><p class="last">Last item</p></section><img src="/missing-lazy.png" loading="lazy" alt="Missing local evidence"><img src="/decode-failure.svg" loading="lazy" data-decode-failure="true" alt="Decode failure evidence"></section></main>
   </body></html>`);
 }
 const invalidReport = join(root, "invalid", "report.json");
@@ -305,8 +324,11 @@ await writeFile(invalidConfig, `export default ${JSON.stringify({
 const invalidResult = run(invalidConfig);
 if (invalidResult.status === 0) throw new Error("Invalid interface fixture passed.");
 const invalidData = JSON.parse(await readFile(invalidReport, "utf8"));
-for (const expected of ["horizontal-overflow", "controls-overlap", "clearance-too-small", "hero-maximum-invalid", "hero-too-tall", "hero-contract-missing", "heading-orphan-fragment", "heading-clipped", "breadcrumb-separator-misaligned", "breadcrumb-reading-order", "breadcrumb-too-many-rows", "breadcrumb-label-clipped", "region-too-tall", "region-internal-empty-band", "site-header-too-tall", "route-families-too-similar"]) {
+for (const expected of ["horizontal-overflow", "controls-overlap", "clearance-too-small", "hero-maximum-invalid", "hero-too-tall", "hero-contract-missing", "heading-orphan-fragment", "heading-clipped", "breadcrumb-separator-misaligned", "breadcrumb-reading-order", "breadcrumb-too-many-rows", "breadcrumb-label-clipped", "local-image-readiness-failed", "region-too-tall", "region-internal-empty-band", "site-header-too-tall", "route-families-too-similar"]) {
   if (!invalidData.findings.some((finding) => finding.code === expected)) throw new Error(`Invalid interface fixture did not report ${expected}.`);
+}
+if (!invalidData.imageReadiness.some((item) => item.decodeFailedSources.includes("/decode-failure.svg"))) {
+  throw new Error("Invalid interface fixture did not record the local image decode failure.");
 }
 
 await rm(root, { recursive: true, force: true });

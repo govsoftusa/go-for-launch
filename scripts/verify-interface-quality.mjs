@@ -60,6 +60,15 @@ const fontReadinessTimeoutMs =
   configuredFontReadinessTimeoutMs >= 10
     ? configuredFontReadinessTimeoutMs
     : 15_000;
+const configuredImageReadinessTimeoutMs = Number.parseInt(
+  config.imageReadinessTimeoutMs || "15000",
+  10
+);
+const imageReadinessTimeoutMs =
+  Number.isFinite(configuredImageReadinessTimeoutMs) &&
+  configuredImageReadinessTimeoutMs >= 10
+    ? configuredImageReadinessTimeoutMs
+    : 15_000;
 const fontReadinessFreshPageConfirmations = 3;
 const differentiationScope = config.differentiationScope || "all-pairs";
 const controlSelector = config.controls?.selector || 'a[href], button, summary, input:not([type="hidden"]), textarea, select';
@@ -95,6 +104,7 @@ const maximumConfiguredHeroViewportHeightRatio = 1;
 const findings = [];
 const records = [];
 const fontReadinessRecoveries = [];
+const imageReadiness = [];
 const networkActivity = {
   attemptedExternalRequests: 0,
   blockedExternalRequests: 0,
@@ -386,6 +396,94 @@ async function preparePageForAudit(page) {
   }, { timeoutMs: fontReadinessTimeoutMs });
 }
 
+async function prepareLocalImagesForAudit(page) {
+  return page.evaluate(async ({ timeoutMs }) => {
+    const sourceFor = (image) => image.currentSrc || image.getAttribute("src") || "";
+    const localImages = [...document.images].filter((image) => {
+      const source = sourceFor(image);
+      if (!source) return false;
+      try {
+        return new URL(source, document.baseURI).origin === window.location.origin;
+      } catch {
+        return false;
+      }
+    });
+    const activatedSources = [];
+
+    for (const image of localImages) {
+      if (image.loading === "lazy" || image.getAttribute("loading")?.toLowerCase() === "lazy") {
+        image.loading = "eager";
+        image.setAttribute("loading", "eager");
+        activatedSources.push(new URL(sourceFor(image), document.baseURI).pathname);
+      }
+    }
+
+    const waitForImage = (image) => {
+      if (image.complete) return Promise.resolve();
+      return new Promise((resolveImage) => {
+        image.addEventListener("load", resolveImage, { once: true });
+        image.addEventListener("error", resolveImage, { once: true });
+      });
+    };
+    let timedOut = false;
+    await Promise.race([
+      Promise.all(localImages.map(waitForImage)),
+      new Promise((resolveTimeout) => {
+        window.setTimeout(() => {
+          timedOut = true;
+          resolveTimeout();
+        }, timeoutMs);
+      })
+    ]);
+
+    const decodeFailedSources = [];
+    await Promise.race([
+      Promise.all(
+        localImages
+          .filter((image) => image.complete && image.naturalWidth > 0)
+          .map(async (image) => {
+            try {
+              await image.decode();
+            } catch {
+              decodeFailedSources.push(new URL(sourceFor(image), document.baseURI).pathname);
+            }
+          })
+      ),
+      new Promise((resolveTimeout) => {
+        window.setTimeout(() => {
+          timedOut = true;
+          resolveTimeout();
+        }, timeoutMs);
+      })
+    ]);
+    await new Promise((resolveFrame) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolveFrame));
+    });
+
+    const failedSources = localImages
+      .filter((image) => image.complete && image.naturalWidth === 0)
+      .map((image) => new URL(sourceFor(image), document.baseURI).pathname);
+    const pendingSources = localImages
+      .filter((image) => !image.complete)
+      .map((image) => new URL(sourceFor(image), document.baseURI).pathname);
+
+    return {
+      totalLocalImages: localImages.length,
+      activatedLazyImages: activatedSources.length,
+      activatedSources,
+      readyImages:
+        localImages.length -
+        failedSources.length -
+        pendingSources.length -
+        decodeFailedSources.length,
+      failedSources,
+      decodeFailedSources,
+      pendingSources,
+      timedOut
+    };
+  }, { timeoutMs: imageReadinessTimeoutMs });
+}
+
 try {
   if (screenshotMode !== "none") await mkdir(screenshotDirectory, { recursive: true });
   for (const engine of engines) {
@@ -495,6 +593,35 @@ try {
                   recovery.status = recoveryFailed ? "failed" : "recovered";
                   fontReadinessRecoveries.push(recovery);
                   if (recoveryFailed) continue;
+                }
+
+                const imageStatus = await prepareLocalImagesForAudit(page);
+                imageReadiness.push({
+                  engine,
+                  viewport: viewport.name,
+                  route,
+                  ...imageStatus
+                });
+                if (
+                  imageStatus.timedOut ||
+                  imageStatus.failedSources.length > 0 ||
+                  imageStatus.decodeFailedSources.length > 0 ||
+                  imageStatus.pendingSources.length > 0
+                ) {
+                  addFinding(
+                    "error",
+                    "local-image-readiness-failed",
+                    `${engine}/${viewport.name}${route} did not finish rendering every local image before measurement and capture.`,
+                    {
+                      engine,
+                      viewport: viewport.name,
+                      route,
+                      timeoutMs: imageReadinessTimeoutMs,
+                      failedSources: imageStatus.failedSources,
+                      decodeFailedSources: imageStatus.decodeFailedSources,
+                      pendingSources: imageStatus.pendingSources
+                    }
+                  );
                 }
 
                 const measurement = await page.evaluate(({ rule, controlSelector, targetSize, overlapIgnoreSelectors, overlapTolerance, overflowTolerance, headerContract, headingRules, breadcrumbRules, viewportName }) => {
@@ -988,6 +1115,8 @@ const counts = {
   browsers: engines.length,
   checks: records.length,
   fontReadinessRecoveries: fontReadinessRecoveries.length,
+  localImages: imageReadiness.reduce((total, item) => total + item.totalLocalImages, 0),
+  lazyImagesActivated: imageReadiness.reduce((total, item) => total + item.activatedLazyImages, 0),
   errors: findings.filter((item) => item.severity === "error").length,
   warnings: findings.filter((item) => item.severity === "warning").length
 };
@@ -1009,6 +1138,7 @@ const report = {
   counts,
   records,
   fontReadinessRecoveries,
+  imageReadiness,
   differentiation,
   findings
 };
