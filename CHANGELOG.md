@@ -13,6 +13,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- Made interface-quality evidence wait for every same-origin lazy image to load and decode before geometry measurement or full-page capture. Broken or pending local images now fail the gate and appear in its machine-readable report.
+- Updated the development baseline to Astro 7.4.5, Astro Check 0.9.12, and Playwright 1.64.1. Updated Sharp to 0.35.5 and pinned compatible Undici security releases for Cheerio and `unifont`.
 - Strengthened the interface-quality gate after an oversized editorial layout passed permissive project contracts. Hero limits above one viewport now fail configuration review, every marked hero requires a route contract, and rendered hero headings have a default four-line maximum.
 - Added visible-heading checks for clipping and one-character final-line fragments so broken names and display headings cannot pass because the document has no horizontal overflow.
 - Added project-controlled spatial-density contracts for tall cards, panels, and sections. Projects can now limit viewport-height occupancy and excessive leading, internal, or trailing empty bands.
