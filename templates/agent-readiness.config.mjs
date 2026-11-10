@@ -9,6 +9,10 @@
 //                   fails if it finds the item published anyway. DNS records
 //                   and paid routes are only looked for with --live.
 //
+// The checks the scanner scores and any site can pass are marked required:
+// robots.txt, the sitemap, Link headers, AI crawler rules, Content Signals, and
+// Markdown negotiation. llms.txt is required as well. Keep those required.
+//
 // The reasons below describe an informational site with no public API, no
 // sign-in for agents, and no checkout. Replace each one with the true reason
 // for this project, and change the status of anything the site really offers.
@@ -52,9 +56,9 @@ export default {
 
     // Content
     markdownNegotiation: {
-      // Counts toward the scanner's score. Needs a server or edge feature that
-      // answers `Accept: text/markdown`, so the project owner decides.
-      status: "optional",
+      // Counts toward the scanner's score. Needs a host feature or a Worker
+      // that answers `Accept: text/markdown`. Checked only with --live.
+      status: "required",
       paths: ["/"]
     },
     llmsTxt: { status: "required" },
@@ -66,9 +70,10 @@ export default {
       // mustName: ["GPTBot", "ClaudeBot"]  // crawlers that need their own rules
     },
     contentSignals: {
-      // The values are the owner's decision about how AI systems may use the
-      // content. Record the decision in `expected` so a changed robots.txt fails.
-      status: "optional"
+      // The scanner scores whether the line is present. The values are the
+      // owner's decision about how AI systems may use the content. Record the
+      // decision in `expected` so a changed robots.txt fails.
+      status: "required"
       // expected: { "ai-train": "no", search: "yes", "ai-input": "yes" }
     },
     webBotAuth: {

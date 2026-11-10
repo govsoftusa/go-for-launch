@@ -35,7 +35,7 @@ function brochureSite(name) {
   put(directory, "index.html", page("/"));
   put(directory, "about/index.html", page("/about/"));
   put(directory, "sitemap.xml", `<?xml version="1.0"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${site}/</loc></url><url><loc>${site}/about/</loc></url></urlset>`);
-  put(directory, "robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${site}/sitemap.xml\n`);
+  put(directory, "robots.txt", `User-agent: *\nContent-Signal: search=yes, ai-input=yes, ai-train=no\nAllow: /\n\nSitemap: ${site}/sitemap.xml\n`);
   put(directory, "llms.txt", "# Example\n\n> Public information from Example.\n\n## About\n\nExample publishes public information.\n");
   put(directory, "_headers", '/*\n  Link: </llms.txt>; rel="describedby"; type="text/plain"\n  Link: </sitemap.xml>; rel="sitemap"\n');
   return directory;
@@ -259,9 +259,20 @@ try {
 
   // The same site against a server that answers unknown addresses with its
   // HTML shell: nothing is treated as published.
-  const shell = verify({ directory: brochure, checks: templateChecks(), live: { link: linkHeader, htmlFallback: true } });
+  const shell = verify({ directory: brochure, checks: templateChecks(), live: { link: linkHeader, markdown: true, htmlFallback: true } });
   if (shell.status !== 0 || !shell.report.complete) fail("An HTML fallback page was treated as a published document.", shell);
-  if (shell.byId.markdownNegotiation.result !== "absent" || shell.byId.mcpServerCard.result !== "not-applicable") fail("Live results for the informational site are wrong.", shell);
+  if (shell.byId.markdownNegotiation.result !== "pass" || shell.byId.mcpServerCard.result !== "not-applicable") fail("Live results for the informational site are wrong.", shell);
+
+  // The template requires what the scanner scores and any site can pass.
+  for (const id of ["robotsTxt", "sitemap", "linkHeaders", "markdownNegotiation", "llmsTxt", "aiBotRules", "contentSignals"]) {
+    if (template.checks[id].status !== "required") fail(`The template should mark ${id} required.`);
+  }
+  const noMarkdown = verify({ directory: brochure, checks: templateChecks(), live: { link: linkHeader } });
+  if (noMarkdown.status !== 1 || noMarkdown.byId.markdownNegotiation.result !== "fail") fail("The template passed a site that does not answer Markdown requests.", noMarkdown);
+  const noSignals = brochureSite("no-signals");
+  put(noSignals, "robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${site}/sitemap.xml\n`);
+  const unsigned = verify({ directory: noSignals, checks: templateChecks() });
+  if (unsigned.status !== 1 || unsigned.byId.contentSignals.result !== "fail") fail("The template passed a site with no Content-Signal line.", unsigned);
 
   // A check ruled out in the config fails when the site publishes it anyway.
   const contradicted = verify({ directory: complete, checks: everyCheck("required", { mcpServerCard: { status: "not-applicable", reason: "The site runs no MCP server." } }) });
@@ -280,7 +291,7 @@ try {
   const dangling = verify({ directory: noLlms, checks: templateChecks({ llmsTxt: { status: "optional" } }) });
   if (dangling.status !== 1 || !dangling.byId.linkHeaders.problems.join(" ").includes("llms.txt is not in the built output")) fail("A Link entry for a missing llms.txt did not fail.", dangling);
   put(noLlms, "_headers", '/*\n  Link: </sitemap.xml>; rel="sitemap"\n');
-  const sitemapOnly = verify({ directory: noLlms, checks: templateChecks({ llmsTxt: { status: "optional" } }), live: { link: '</sitemap.xml>; rel="sitemap"' } });
+  const sitemapOnly = verify({ directory: noLlms, checks: templateChecks({ llmsTxt: { status: "optional" } }), live: { link: '</sitemap.xml>; rel="sitemap"', markdown: true } });
   if (sitemapOnly.status !== 0 || sitemapOnly.byId.linkHeaders.result !== "pass" || sitemapOnly.byId.llmsTxt.result !== "absent") fail("A site with no llms.txt and a sitemap Link entry did not pass.", sitemapOnly);
   const missingRequired = verify({ directory: noLlms, checks: templateChecks() });
   if (missingRequired.status !== 1 || missingRequired.byId.llmsTxt.result !== "fail" || missingRequired.byId.linkHeaders.result !== "fail") fail("A required llms.txt that is missing did not fail.", missingRequired);

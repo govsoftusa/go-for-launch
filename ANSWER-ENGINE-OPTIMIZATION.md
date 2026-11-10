@@ -67,7 +67,7 @@ Google currently limits FAQ rich results primarily to well-known government and 
 
 Search engines, AI crawlers, and autonomous agents discover content through signals beyond HTML. Cloudflare's scanner at [isitagentready.com](https://isitagentready.com/) checks a site for 22 of them, and an informational or lead-generation site can truthfully publish only some.
 
-Publish what the site really offers, and write down the reason for each item it leaves out. llms.txt and HTTP Link headers are required for any site built with the Go for Launch toolkit. Every other item is decided per project in `agent-readiness.config.mjs`, where each check is marked required, optional, or not-applicable.
+Publish what the site really offers, and write down the reason for each item it leaves out. Every site built with the Go for Launch toolkit publishes the items the scanner scores and any site can offer: `robots.txt` with rules for AI crawlers and a Content-Signal line, a sitemap, HTTP Link headers, and Markdown content negotiation. llms.txt is required as well, although the scanner leaves that check off unless it is selected. Every other item is decided per project in `agent-readiness.config.mjs`, where each check is marked required, optional, or not-applicable.
 
 ### llms.txt
 
@@ -120,7 +120,7 @@ Content-Signal: search=yes, ai-input=yes, ai-train=no
 Allow: /
 ```
 
-The three values are the site owner's decision, and the toolkit does not choose them. Once the owner has decided, record the values under `contentSignals.expected` in the config. The verifier then fails when `robots.txt` says something else.
+The line is required, because the scanner scores it. The three values are the site owner's decision, and the toolkit does not choose them. Once the owner has decided, record the values under `contentSignals.expected` in the config. The verifier then fails when `robots.txt` says something else.
 
 Some hosts add these lines when they serve `robots.txt`, so the built file never contains them. Set `liveOnly: true` on the check in that case, and it is judged against the running site.
 
@@ -128,9 +128,9 @@ Some hosts add these lines when they serve `robots.txt`, so the built file never
 
 Some AI crawlers send `Accept: text/markdown` to request a Markdown version of a page rather than HTML. Responding correctly requires server-side logic that detects the header and returns Markdown for the same URL. The response must use `Content-Type: text/markdown`, and the same URL must still return HTML to a browser. An `x-markdown-tokens` header with the token count is optional.
 
-The scanner counts this check toward its score, and a site cannot reach the scanner's "Agent-Readable" level without it. llms.txt does not satisfy it. Turning it on is still a project decision, because a static site cannot answer the header by itself. The template marks the check optional until the project owner decides.
+The scanner counts this check toward its score, and a site cannot reach the scanner's "Agent-Readable" level without it. llms.txt does not satisfy it. The template therefore marks the check required.
 
-When a project turns it on, use a host feature that converts pages to Markdown on request, or a Cloudflare Worker in front of the static Astro output. The Worker inspects the `Accept` header and returns a pre-built `.md` file with `Content-Type: text/markdown; charset=utf-8`. Pre-build the Markdown files during the Astro build step.
+A static site cannot answer the header by itself. Use a host feature that converts pages to Markdown on request, or a Cloudflare Worker in front of the static Astro output. The Worker inspects the `Accept` header and returns a pre-built `.md` file with `Content-Type: text/markdown; charset=utf-8`. Pre-build the Markdown files during the Astro build step.
 
 ### Publish Only What the Site Offers
 
@@ -166,7 +166,7 @@ node scripts/verify-aeo.mjs --dir=dist --site=https://www.example.com
 
 Add `--live` to also check response headers on the deployed staging URL. The script writes a machine-readable JSON report and exits with a non-zero code when signals are missing or malformed.
 
-Run [`scripts/verify-agent-readiness.mjs`](scripts/verify-agent-readiness.mjs) to check the site against the scanner's whole list. Copy [`templates/agent-readiness.config.mjs`](templates/agent-readiness.config.mjs) into the project first and give every check a status:
+Run [`scripts/verify-agent-readiness.mjs`](scripts/verify-agent-readiness.mjs) for every release to check the site against the scanner's whole list. Copy [`templates/agent-readiness.config.mjs`](templates/agent-readiness.config.mjs) into the project first and give every check a status:
 
 - `required`: the site must publish it, and it must be valid.
 - `optional`: the site may leave it out. If it is published, it must be valid.
@@ -245,7 +245,7 @@ For agent discoverability signals, run `verify-aeo.mjs` and confirm:
 - llms.txt is present in the build output and contains a level-one heading and an About section.
 - `_headers` includes `Link: </llms.txt>; rel="describedby"` and `Link: </sitemap.xml>; rel="sitemap"`.
 - The Link headers are confirmed present in the actual HTTP response on the deployed site. Run `curl -sI https://www.example.com/ | grep -i "^link:"` and confirm the llms.txt and sitemap entries appear. A missing header on the live site is a blocker even when `_headers` is correct in the build output.
-- No verify-aeo.mjs blockers are reported. Warnings do not block release but must be triaged.
+- No verify-aeo.mjs blockers are reported. Triage its warnings. A missing llms.txt or Link entry is one of them, and it blocks release through `verify-agent-readiness.mjs` when the config marks that check required.
 - `agent-readiness.config.mjs` gives every scanner check a status, and each not-applicable check has a reason that is true for this site.
 - `verify-agent-readiness.mjs` reports no blockers against the built output, and none with `--live` against staging. A check reported as "not checked" has not passed.
 
