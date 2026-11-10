@@ -65,7 +65,9 @@ Google currently limits FAQ rich results primarily to well-known government and 
 
 ## Agent-Facing Discovery Signals
 
-Search engines, AI crawlers, and autonomous agents discover content through signals beyond HTML. Three additions improve agent discoverability for a typical informational or lead-generation site. The first two, llms.txt and HTTP Link headers, are required for any site built with the Go for Launch toolkit. Markdown content negotiation is optional. Implement them in the order they appear here.
+Search engines, AI crawlers, and autonomous agents discover content through signals beyond HTML. Cloudflare's scanner at [isitagentready.com](https://isitagentready.com/) checks a site for 22 of them, and an informational or lead-generation site can truthfully publish only some.
+
+Publish what the site really offers, and write down the reason for each item it leaves out. llms.txt and HTTP Link headers are required for any site built with the Go for Launch toolkit. Every other item is decided per project in `agent-readiness.config.mjs`, where each check is marked required, optional, or not-applicable.
 
 ### llms.txt
 
@@ -104,25 +106,55 @@ curl -sI https://www.example.com/ | grep -i "^link:"
 
 A missing Link header on the live site is a release blocker even when the `_headers` file is correctly present in the build output. Cloudflare Pages configuration, caching layers, or a misconfigured Worker can suppress headers that appear correct locally.
 
+### AI Crawler Rules and Content Signals in robots.txt
+
+The scanner reads two things in `robots.txt` beyond the sitemap line.
+
+It looks for rules that apply to AI crawlers. A `User-agent: *` group with at least one `Allow` or `Disallow` line is enough. Name a crawler only when it needs different rules from everyone else. The scanner's guidance lists `OAI-SearchBot`, `Claude-SearchBot`, and `PerplexityBot` for search, and `GPTBot`, `ClaudeBot`, `Google-Extended`, `Applebot-Extended`, `CCBot`, `Bytespider`, and `Amazonbot` for training.
+
+It also looks for a `Content-Signal` line, which tells AI systems how they may use the content. The line sits inside a `User-agent` group and sets `search`, `ai-input`, and `ai-train` to `yes` or `no`:
+
+```text
+User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=no
+Allow: /
+```
+
+The three values are the site owner's decision, and the toolkit does not choose them. Once the owner has decided, record the values under `contentSignals.expected` in the config. The verifier then fails when `robots.txt` says something else.
+
+Some hosts add these lines when they serve `robots.txt`, so the built file never contains them. Set `liveOnly: true` on the check in that case, and it is judged against the running site.
+
 ### Markdown Content Negotiation
 
-Some AI crawlers send `Accept: text/markdown` to request a Markdown version of a page rather than HTML. Responding correctly requires server-side logic that detects the header and returns a Markdown file for the same URL.
+Some AI crawlers send `Accept: text/markdown` to request a Markdown version of a page rather than HTML. Responding correctly requires server-side logic that detects the header and returns Markdown for the same URL. The response must use `Content-Type: text/markdown`, and the same URL must still return HTML to a browser. An `x-markdown-tokens` header with the token count is optional.
 
-This is optional for most informational sites. llms.txt satisfies the primary machine-readable content need. Prioritize llms.txt and Link headers before implementing Markdown negotiation middleware.
+The scanner counts this check toward its score, and a site cannot reach the scanner's "Agent-Readable" level without it. llms.txt does not satisfy it. Turning it on is still a project decision, because a static site cannot answer the header by itself. The template marks the check optional until the project owner decides.
 
-If Markdown negotiation is required, use a Cloudflare Worker deployed in front of the static Astro output. The Worker inspects the `Accept` header and returns a corresponding pre-built `.md` file with `Content-Type: text/markdown; charset=utf-8`. Pre-build the Markdown files during the Astro build step.
+When a project turns it on, use a host feature that converts pages to Markdown on request, or a Cloudflare Worker in front of the static Astro output. The Worker inspects the `Accept` header and returns a pre-built `.md` file with `Content-Type: text/markdown; charset=utf-8`. Pre-build the Markdown files during the Astro build step.
 
-### What Not to Implement for Informational Sites
+### Publish Only What the Site Offers
 
-The following signals apply only when a site exposes APIs, agent tools, or commerce integrations. Do not implement them for standard informational or lead-generation sites:
+The remaining items on the scanner's list each describe something a site runs. Publish one when the description is true for the site:
 
-- `/.well-known/mcp.json`: Required only when the site runs a Model Context Protocol server.
-- `/.well-known/ai-plugin.json`: Required only when the site exposes an agent skill or plugin.
-- OAuth and OIDC discovery endpoints: Required only when the site offers an API that agents can authenticate against.
-- DNS-AIG records: An early experimental approach to DNS-based agent discovery. Skip until adoption is established. Re-evaluate quarterly.
-- Commerce agent protocols (AAEI, MPP, KCP): Required only for commerce-enabled sites with agent-facing checkout flows.
+| Item | Where it lives | Publish it when |
+| --- | --- | --- |
+| DNS for AI Discovery | SVCB or HTTPS records under `_agents`, such as `_index._agents.example.com` | The site runs an agent endpoint for the records to point to. |
+| Web Bot Auth | `/.well-known/http-message-signatures-directory` | The site sends signed bot requests to other sites. A site that only serves pages does not need it. |
+| API Catalog | `/.well-known/api-catalog` | The site has a public API. |
+| OAuth discovery | `/.well-known/openid-configuration` or `/.well-known/oauth-authorization-server` | Agents can sign in. |
+| OAuth Protected Resource | `/.well-known/oauth-protected-resource` | The site has an API that needs a sign-in. |
+| Auth.md | `/auth.md` | Agents can register with the site. |
+| MCP Server Card | `/.well-known/mcp/server-card.json` | The site runs a Model Context Protocol server. |
+| A2A Agent Card | `/.well-known/agent-card.json` | The site runs an agent that other agents can call. |
+| Agent Skills | `/.well-known/agent-skills/index.json` | The site has written instructions for agents. Each entry carries a SHA-256 digest of its file, so recalculate the digest whenever the file changes. |
+| WebMCP | A page script that registers tools, or `toolname` attributes on a form | A page offers a form or action an agent may use. |
+| ARD manifest | `/.well-known/ai-catalog.json` | The site publishes at least one of the items above and wants one list of them. |
+| Personal Agent Protocol | `/.well-known/poppy.json` | The organization takes part in the protocol. The scanner reports it without scoring it. |
+| x402, MPP, UCP, ACP | A paid route that answers HTTP 402, `/openapi.json` with payment details, `/.well-known/ucp`, `/.well-known/acp.json` | The site sells to agents. The scanner reports these without scoring them. |
 
-Third-party site assessment tools often score all of these signals as missing without distinguishing which apply to a given site type. A low score on inapplicable infrastructure is not a defect.
+A discovery file that describes something the site does not run misleads every agent that reads it. Leave the file out and write the reason in the config. A low scanner score caused only by items that do not apply is not a defect.
+
+The scanner awards levels in order, as read on 2026-11-10. Level 1 needs two of `robots.txt`, a sitemap, and Link headers. Level 2 adds AI crawler rules and Content Signals. Level 3 adds Markdown negotiation. Level 4 adds one of an MCP Server Card, an A2A Agent Card, Agent Skills, or an API Catalog. Level 5 adds two of three: Web Bot Auth, "all integrations", and sign-in metadata (OAuth or Auth.md). The scanner's page does not define "all integrations".
 
 ### Verify Agent Discovery Signals
 
@@ -133,6 +165,36 @@ node scripts/verify-aeo.mjs --dir=dist --site=https://www.example.com
 ```
 
 Add `--live` to also check response headers on the deployed staging URL. The script writes a machine-readable JSON report and exits with a non-zero code when signals are missing or malformed.
+
+Run [`scripts/verify-agent-readiness.mjs`](scripts/verify-agent-readiness.mjs) to check the site against the scanner's whole list. Copy [`templates/agent-readiness.config.mjs`](templates/agent-readiness.config.mjs) into the project first and give every check a status:
+
+- `required`: the site must publish it, and it must be valid.
+- `optional`: the site may leave it out. If it is published, it must be valid.
+- `not-applicable`: the site does not offer it. The config must give a written reason, and the verifier fails if it finds the item published anyway. DNS records and paid routes can only be looked for with `--live`, and a paid route only at the addresses the config lists.
+
+```bash
+node scripts/verify-agent-readiness.mjs --config=agent-readiness.config.mjs
+node scripts/verify-agent-readiness.mjs --config=agent-readiness.config.mjs --live --live-url=https://staging.example.com
+```
+
+The first command reads the built output. Markdown negotiation, DNS records, and paid routes need a running site. Without `--live` they are reported as "not checked" unless the config marks them not-applicable, and the run can still pass. The second command also asks the staging site. It checks the served files the same way and fails when something in the build is missing from staging. It sends at most the number of requests the config allows, and fails any check it could not finish.
+
+The verifier never sends the site to the scanner. The DNS check asks a public resolver for the site's host name, and every other request goes to the site itself.
+
+| Scanner check | Verified by |
+| --- | --- |
+| robots.txt | `verify-sitemap.mjs` for the file and its sitemap line, and `verify-site-health.mjs` for the `User-agent` line. The agent readiness verifier runs `verify-sitemap.mjs` and reports its result. |
+| Sitemap | `verify-sitemap.mjs`, run by the agent readiness verifier. |
+| Link headers | `verify-aeo.mjs` for the built `_headers` file, run by the agent readiness verifier. The agent readiness verifier adds two rules of its own. An entry that points to `llms.txt` fails when the site has no `llms.txt`, and the entry is not expected when the config marks `llms.txt` optional and the site has none. With `--live`, it reads the home page response itself and fails when a built entry is missing from it. |
+| llms.txt | `verify-aeo.mjs`, run by the agent readiness verifier. The scanner leaves this check off unless it is selected. |
+| DNS for AI Discovery, Markdown negotiation, x402 | `verify-agent-readiness.mjs` with `--live`. |
+| AI bot rules, Content Signals | `verify-agent-readiness.mjs`, from the built `robots.txt` and, with `--live`, the served one. |
+| Web Bot Auth, API Catalog, OAuth discovery, OAuth Protected Resource, Auth.md, MCP Server Card, A2A Agent Card, Agent Skills, ARD manifest, Personal Agent Protocol, MPP, UCP, ACP | `verify-agent-readiness.mjs`, from the built file and, with `--live`, the served one. |
+| WebMCP | `verify-agent-readiness.mjs`, by reading the built pages and scripts. The scanner loads the page in a browser, so this is an approximation. |
+
+The verifier also checks `llms-full.txt` when a site publishes one. The scanner documents that file without listing it as a check.
+
+The scanner's pages do not state everything. They do not say whether DNS for AI Discovery and the ARD manifest count toward the score. They do not say which checks belong to its "Content Site" and "API / Application" presets, what exactly makes the Link header check pass, which DNS names it looks up, or which address it requests for x402. The verifier therefore takes DNS names and paid routes from the config. Where the scanner's guidance lists a field without calling it required, the verifier reports a note instead of a failure.
 
 ## Astro Implementation Pattern
 
@@ -184,6 +246,8 @@ For agent discoverability signals, run `verify-aeo.mjs` and confirm:
 - `_headers` includes `Link: </llms.txt>; rel="describedby"` and `Link: </sitemap.xml>; rel="sitemap"`.
 - The Link headers are confirmed present in the actual HTTP response on the deployed site. Run `curl -sI https://www.example.com/ | grep -i "^link:"` and confirm the llms.txt and sitemap entries appear. A missing header on the live site is a blocker even when `_headers` is correct in the build output.
 - No verify-aeo.mjs blockers are reported. Warnings do not block release but must be triaged.
+- `agent-readiness.config.mjs` gives every scanner check a status, and each not-applicable check has a reason that is true for this site.
+- `verify-agent-readiness.mjs` reports no blockers against the built output, and none with `--live` against staging. A check reported as "not checked" has not passed.
 
 Do not block a release because an answer engine did not cite a new page. Citation selection is outside the site's control. Block the release for invalid schema, hidden or contradictory content, unsupported claims, broken sources, missing sitemap coverage, missing or malformed llms.txt, missing Link headers for llms.txt and sitemap on the deployed site, or a failed standard SEO gate.
 
@@ -209,11 +273,12 @@ Track for changes:
 
 - The llmstxt.org specification. The format is stable but may gain new optional sections or conventions. Update `templates/llms.txt` and any site-specific llms.txt files when the spec changes meaningfully.
 - Google Search Central documentation on AI features and structured data. Google does not require dedicated agent files today but its guidance changes. Re-read the AI features page quarterly.
-- Agent tool and plugin discovery standards (`/.well-known/mcp.json`, `/.well-known/ai-plugin.json`). These apply only to sites that expose APIs or agent tools, but the specs are maturing. Review quarterly if any GovSoft property adds an API.
-- DNS-AIG (DNS-based Agent Identification and Guidance). An early-stage experimental approach. Skip implementation for now; re-evaluate quarterly.
-- Commerce agent protocols (AAEI, MPP, KCP). Skip for informational sites; re-evaluate if a site adds commerce functionality.
+- The check list at isitagentready.com. Cloudflare adds checks and changes paths as the standards move. Compare the list with the catalogue in `scripts/lib/agent-readiness.mjs` and add any new check there, in the template, and in the test.
+- Agent tool discovery standards (the MCP Server Card at `/.well-known/mcp/server-card.json`, the A2A Agent Card, and Agent Skills). These apply only to sites that run a server, an agent, or published skills, and the specifications are still drafts. Review quarterly if any GovSoft property adds an API.
+- DNS for AI Discovery (DNS-AID). An early-stage approach that publishes agent endpoints in DNS. Skip it for sites with no agent endpoint and re-evaluate quarterly.
+- Commerce agent protocols (x402, MPP, UCP, ACP). Skip for informational sites; re-evaluate if a site adds commerce functionality.
 
-When a material change in standards is identified, update `ANSWER-ENGINE-OPTIMIZATION.md`, `verify-aeo.mjs` if the verification logic needs updating, and `templates/llms.txt` if the template format changes. Use a descriptive commit message referencing the source of the change.
+When a material change in standards is identified, update `ANSWER-ENGINE-OPTIMIZATION.md`, `verify-aeo.mjs` or `verify-agent-readiness.mjs` if the verification logic needs updating, and the templates if a format changes. Use a descriptive commit message referencing the source of the change.
 
 The Go for Launch toolkit itself must be kept current. When agent discovery or AEO requirements change, open a pull request against the `main` branch of the `govsoftusa/go-for-launch` repository with a description of what changed and why. Do not defer updates indefinitely; a toolkit that lags real-world requirements causes compounding remediation work on downstream sites.
 
@@ -226,3 +291,10 @@ The Go for Launch toolkit itself must be kept current. When agent discovery or A
 - [Google Search Central, Q&A structured data](https://developers.google.com/search/docs/appearance/structured-data/qapage)
 - [llmstxt.org, The llms.txt specification](https://llmstxt.org)
 - [IETF RFC 8288, Web Linking](https://www.rfc-editor.org/rfc/rfc8288) (the standard governing HTTP Link headers)
+- [Cloudflare, Is It Agent Ready](https://isitagentready.com/) (the scanner and its per-check guidance, read 2026-11-10)
+- [Cloudflare blog, agent readiness](https://blog.cloudflare.com/agent-readiness/)
+- [IETF RFC 9309, Robots Exclusion Protocol](https://www.rfc-editor.org/rfc/rfc9309)
+- [Content Signals](https://contentsignals.org/)
+- [IETF RFC 9727, api-catalog](https://www.rfc-editor.org/rfc/rfc9727)
+- [IETF RFC 8414, OAuth 2.0 Authorization Server Metadata](https://www.rfc-editor.org/rfc/rfc8414)
+- [IETF RFC 9728, OAuth 2.0 Protected Resource Metadata](https://www.rfc-editor.org/rfc/rfc9728)

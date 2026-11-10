@@ -11,7 +11,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### Added
+
+- Added an agent readiness verifier, `scripts/verify-agent-readiness.mjs`, that checks a site against the list used by Cloudflare's isitagentready.com scanner without sending the site to the scanner. A project config marks each check required, optional, or not-applicable. A not-applicable check needs a written reason. A site with no OAuth server, MCP server, or checkout passes, and fails only if it publishes a file saying it has one.
+- The new verifier runs `verify-sitemap.mjs` and `verify-aeo.mjs` for `robots.txt`, the sitemap, `llms.txt`, and the `_headers` Link entries. It fails a Link entry that points to a missing `llms.txt`, and it does not expect that entry when the config marks `llms.txt` optional and the site has none. It adds the 19 scanner checks the toolkit did not have, which are listed in `ANSWER-ENGINE-OPTIMIZATION.md`.
+- With `--live`, the verifier asks a staging site for the items that need a server, reads the home page's `Link` header, and fails when something in the build is missing from staging. It sends at most a configured number of requests and fails any check it could not finish. Without `--live`, checks that need a server are reported as "not checked" unless they are marked not-applicable.
+- Added `templates/agent-readiness.config.mjs` and `scripts/test-agent-readiness-verifier.mjs`, which tests every check on a sample site that should pass and one that should fail.
+
 ### Changed
+
+- Corrected the agent discovery guidance in `ANSWER-ENGINE-OPTIMIZATION.md`. Markdown negotiation is now described as a scored scanner check that the project owner decides on. The MCP Server Card path is `/.well-known/mcp/server-card.json`, replacing `/.well-known/mcp.json` and `/.well-known/ai-plugin.json`. "DNS-AIG" is now DNS for AI Discovery (DNS-AID), and the commerce protocols are x402, MPP, UCP, and ACP.
 
 - Made interface-quality evidence wait for every same-origin lazy image to load and decode before geometry measurement or full-page capture. Broken or pending local images now fail the gate and appear in its machine-readable report.
 - Updated the development baseline to Astro 7.4.5, Astro Check 0.9.12, and Playwright 1.64.1. Updated Sharp to 0.35.5 and pinned compatible Undici security releases for Cheerio and `unifont`.
