@@ -273,6 +273,9 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Every indexable page has an incoming internal link, or a documented approved exception.
 - [ ] Titles and descriptions are unique and within the configured length limits.
 - [ ] The machine-readable site-health report is preserved with release evidence.
+- [ ] `agent-readiness.config.mjs` gives every scanner check a status, with a written reason for each one marked not-applicable.
+- [ ] The config marks `robots.txt`, the sitemap, Link headers, llms.txt, AI crawler rules, Content Signals, and Markdown negotiation required. The verifier does not enforce this, so a reviewer confirms it.
+- [ ] The agent readiness verifier passes against the built output, and its report is preserved with release evidence.
 - [ ] Open Graph contact sheets include every indexable page and were reviewed at full size.
 - [ ] The authoritative brand reference and renderer source are hash-bound in the social-card adoption gate.
 - [ ] Representative social-card prototypes covered publication identity, a long headline, source artwork when applicable, and the designed fallback.
@@ -361,6 +364,7 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] SEO content work records credible question evidence from sources available to the project, with Search Console or optional Ahrefs evidence only when approved access exists.
 - [ ] Public discovery files include only intended public routes.
 - [ ] The staged `/sitemap.xml` and every referenced child sitemap return HTTP 200 with XML content.
+- [ ] The agent readiness verifier passes with `--live` against staging, and no required check is left "not checked".
 - [ ] Search Console property access and permission were checked when approved access exists.
 - [ ] The canonical sitemap is submitted in Search Console, or the exact access or verification blocker is recorded.
 - [ ] Private routes use appropriate metadata and response headers.

@@ -30,7 +30,7 @@ The toolbox serves twenty-five purposes:
 18. **CMS publishing without application rebuilds.** Classify CMS record and media changes into a dedicated editorial lane, validate the changed route graph and conserve performance without rebuilding Astro, and escalate any renderer or infrastructure change to the unchanged full application release gate. See [Editorial Publishing and Dynamic Content](EDITORIAL-PUBLISHING-AND-DYNAMIC-CONTENT.md).
 19. **CMS authentication and session continuity.** Prove the credential assertion, immediate authenticated identity, real collection lists, existing editors, and a disposable draft lifecycle against the compiled private candidate. See [CMS Authentication and Session Gate](CMS-AUTHENTICATION-SESSION-GATE.md).
 20. **Optional incremental static builds with a mandatory decision gate.** Before every Astro application build, inspect the changed content and rendering dependency graph, then select a standard, incremental, or forced build. Incremental reuse requires reviewed cache keys, persistent isolated cache state, measured benefit, and full-render parity. See [Incremental Static Build Decision Gate](INCREMENTAL-STATIC-BUILDS.md).
-21. **Agent-facing discovery signals.** Publish and validate an accurate `llms.txt`, advertise it and the sitemap through Cloudflare `Link` headers, and record which experimental agent protocols do not apply to the project. These signals supplement ordinary crawlability and never replace SEO, sitemaps, or useful content. See [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md).
+21. **Agent-facing discovery signals.** Publish and validate an accurate `llms.txt`, advertise it and the sitemap through Cloudflare `Link` headers, state AI crawler rules and Content Signals in `robots.txt`, and answer Markdown requests. Check every release against the list used by Cloudflare's isitagentready.com scanner, with every check marked required, optional, or not applicable, and a written reason for each one that does not apply. These signals supplement ordinary crawlability and never replace SEO, sitemaps, or useful content. See [Answer Engine Optimization](ANSWER-ENGINE-OPTIMIZATION.md).
 22. **Frozen release evidence and route convergence.** Bind browser, PageSpeed, deployment, artifact, public-route, and canonical-host evidence to one immutable candidate, then prove that staging and production converge on it before promotion is accepted. See [Production Release Policy](PRODUCTION-RELEASE-POLICY.md) and the reusable `release-evidence` and `route-convergence` templates.
 23. **Legacy content and cache integrity.** Sanitize noncontent rich text before structured conversion, preserve revision state, inventory generated output, detect executable text, and verify each cache layer against the canonical route. See [Legacy Rich Text Sanitization and Cache Repair](LEGACY-RICH-TEXT-SANITIZATION-AND-CACHE-REPAIR.md).
 24. **Provider topology and release closeout.** Inventory provider services, routes, bindings, queues, schedules, preview hosts, DNS, and shared workloads, then retire obsolete candidates without touching unrelated account resources. See [Production Release Policy](PRODUCTION-RELEASE-POLICY.md).
@@ -46,7 +46,7 @@ their build and release pipeline.
 | Capability | Shipped implementation |
 | --- | --- |
 | Sitemap, SEO, structured data, headings, images, i18n, and redirects | `verify-sitemap.mjs`, `verify-seo.mjs`, `verify-images.mjs`, `verify-redirects.mjs`, `SeoHead.astro`, `ResponsivePicture.astro`, and `localized-seo.ts` |
-| AEO content and agent discovery | `ANSWER-ENGINE-OPTIMIZATION.md`, `verify-aeo.mjs`, and `templates/llms.txt` |
+| AEO content and agent discovery | `ANSWER-ENGINE-OPTIMIZATION.md`, `verify-aeo.mjs`, `verify-agent-readiness.mjs`, `templates/llms.txt`, and `templates/agent-readiness.config.mjs` |
 | Site health, semantic SEO, citations, and content quality | `verify-site-health.mjs`, `verify-semantic-seo.mjs`, `verify-content-quality.mjs`, optional Ahrefs verification, and the Stanford Rule review records |
 | Open Graph, brand, artwork, and visual quality | Deterministic Open Graph generation and review, brand provenance, artwork suitability, visual composition, interface quality, side-navigation, render-sharpness, and configurable design-gate checks |
 | Browser, mobile, and performance release gates | Chromium, Playwright WebKit, native iOS Safari guidance, PageSpeed readiness, route parity, route convergence, Cloudflare observability, and exact-candidate release evidence |
@@ -170,6 +170,7 @@ This repository documents the process used to close those gaps while replacing l
 │   ├── verify-sitemap.mjs
 │   ├── verify-seo.mjs
 │   ├── verify-aeo.mjs
+│   ├── verify-agent-readiness.mjs
 │   ├── verify-images.mjs
 │   ├── verify-site-health.mjs
 │   ├── verify-semantic-seo.mjs
@@ -213,6 +214,7 @@ This repository documents the process used to close those gaps while replacing l
     ├── astro-assets/ResponsivePicture.astro
     ├── astro-i18n/localized-seo.ts
     ├── llms.txt
+    ├── agent-readiness.config.mjs
     ├── open-graph.config.mjs
     ├── brand-assets.config.mjs
     ├── visual-composition.config.mjs
