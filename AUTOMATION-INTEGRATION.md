@@ -61,7 +61,7 @@ For each eligible Astro root:
 13. Compare every indexable built canonical with the generated sitemap and verify the exact sitemap URL in `robots.txt`.
 14. Validate final HTML metadata, JSON-LD, heading hierarchy, Open Graph files, image dimensions, and responsive image output.
 15. Run the Ahrefs-style site-health audit against final HTML, CSS, referenced image weight, internal links, redirect targets, orphaned canonical pages, metadata limits, and `robots.txt`. Preserve its JSON report.
-16. Run the semantic SEO audit against canonical origin, title quality, title-to-content alignment, route-specific intent, reviewed content depth, citation URL availability, and citation evidence drift. Preserve its JSON report.
+16. Run the semantic SEO audit against canonical origin, title quality, title-to-content alignment, route-specific intent, reviewed content depth, citation URL availability, and citation evidence drift. Preserve its JSON report. For new or revised copy, complete the Stanford Rule Writing for people process and retain the private reader brief, source facts, and independent review findings. A writer's own second pass or automatically filled approval fields do not satisfy independent review.
 17. For localized sites, validate self-canonicals, reciprocal hreflang clusters, `x-default`, localized sitemap entries, and localized navigation.
 18. Always run accessibility preferences, text resize, reflow, interaction, and responsive safety checks. When design review applies, also capture and inspect the configured viewports, route families, and design-system criteria.
 19. Run Playwright WebKit with an iPhone profile when the repo has Playwright coverage or when the automation adds a temporary smoke suite.

@@ -13,6 +13,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Changed
 
+- Expanded the Stanford Rule with the Writing for people process: a private reader brief, real language and source facts before drafting, removal of drafting scaffolding, independent review, read-aloud checks, and comparison with neighboring pages.
+- Added the complete writing-tell checklist and a private brief template. Updated starter review fields to require explicit process attestations, defaulted every approval to false, and lowered the starter warning threshold for repeated sentence openings to two. Existing project records are not automatically migrated or approved.
 - Made interface-quality evidence wait for every same-origin lazy image to load and decode before geometry measurement or full-page capture. Broken or pending local images now fail the gate and appear in its machine-readable report.
 - Updated the development baseline to Astro 7.4.5, Astro Check 0.9.12, and Playwright 1.64.1. Updated Sharp to 0.35.5 and pinned compatible Undici security releases for Cheerio and `unifont`.
 - Strengthened the interface-quality gate after an oversized editorial layout passed permissive project contracts. Hero limits above one viewport now fail configuration review, every marked hero requires a route contract, and rendered hero headings have a default four-line maximum.

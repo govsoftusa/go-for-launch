@@ -10,6 +10,8 @@ Native Safari through the Xcode iOS Simulator requires a qualified macOS environ
 
 The Stanford Rule content quality gate is mandatory. Every route must name its intended audience and primary task, pass the configured final-output checks, and have a current hash-bound editorial approval using the senior psychology professor perspective. Compare openings, closings, and full copy across content families so unrelated pages do not repeat one generic argument. The Stanford Rule is a Go for Launch standard, not a Stanford University policy or an AI-authorship detector.
 
+Follow its Writing for people process before accepting new or revised copy: keep a sourced reader brief outside the content, gather real customer language, draft from the reader's situation, remove drafting scaffolding, and obtain review from a separate agent or person who did not write it. Give the reviewer only the copy and source facts, correct their findings, read aloud, and compare neighboring pages. The complete list of tells and delivery criteria is in [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md). Automated scores and checked approval fields cannot replace that independent judgment.
+
 ## Execution controls and non-waiver rule
 
 Before implementation begins, complete

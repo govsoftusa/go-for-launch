@@ -4,16 +4,26 @@
       "route": "/",
       "contentHash": "replace-with-hash-from-first-report",
       "audience": "People evaluating the organization and its services",
+      "writer": "Named author or drafting agent",
       "reviewer": "Named project editorial reviewer",
+      "briefReference": "Private reader-brief location, not published copy",
+      "sourceFactsReference": "Source ledger supplied with the draft",
+      "reviewFindingsReference": "Independent findings and recorded corrections",
       "perspective": "senior-psychology-professor",
       "reviewedAt": "2026-01-01",
-      "approachable": true,
-      "humanTone": true,
-      "clearPurpose": true,
-      "evidenceAware": true,
-      "readAloud": true,
-      "routeSpecific": true,
-      "notes": "Record why the page is appropriate for its audience and what was revised."
+      "approachable": false,
+      "humanTone": false,
+      "clearPurpose": false,
+      "evidenceAware": false,
+      "readAloud": false,
+      "routeSpecific": false,
+      "readerBrief": false,
+      "sourceGrounded": false,
+      "readerFirst": false,
+      "noScaffolding": false,
+      "independentReview": false,
+      "variedStructure": false,
+      "notes": "Unapproved starter. After independent review, record the source checks, writing corrections, read-aloud findings, and comparison with neighboring pages."
     }
   ]
 }

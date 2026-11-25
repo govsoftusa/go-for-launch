@@ -10,10 +10,10 @@ export default {
   maximumParagraphWords: 110,
   minimumReadingEase: 42,
   readingEaseSeverity: "error",
-  maximumRepeatedOpenings: 3,
+  maximumRepeatedOpenings: 2,
   phraseSeverity: "error",
   additionalPhrases: [],
-  requiredReviewFields: ["approachable", "humanTone", "clearPurpose", "evidenceAware", "readAloud", "routeSpecific"],
+  requiredReviewFields: ["approachable", "humanTone", "clearPurpose", "evidenceAware", "readAloud", "routeSpecific", "readerBrief", "sourceGrounded", "readerFirst", "noScaffolding", "independentReview", "variedStructure"],
   crossPageSimilarity: {
     enabled: true,
     severity: "error",
