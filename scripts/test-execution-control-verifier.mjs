@@ -1,3 +1,6 @@
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { strict as assert } from "node:assert";
 import { verifyExecutionControl } from "./verify-execution-control.mjs";
 
@@ -236,3 +239,29 @@ assert.equal(failedPageSpeedWithTriageResult.status, "passed");
 console.log(
   "Execution-control verifier tests passed for perfect scores, bounded attempts, reviewed exceptions, candidate phases, and failed PageSpeed triage.",
 );
+
+const discoveryRecord = record();
+discoveryRecord.taskEnvelope.agentDiscoveryRequired = true;
+assert.equal((await verifyExecutionControl(discoveryRecord)).status, "failed");
+const receipts = await mkdtemp(join(tmpdir(), "discovery-phase-"));
+try {
+  const origin = "https://staging.example.com";
+  const candidate = discoveryRecord.candidate.buildIdentity;
+  const staging = join(receipts, "staging.json");
+  const live = join(receipts, "live.json");
+  await writeFile(staging, JSON.stringify({ candidate,
+    mcp: { root: origin, mcpTool: "search", skillsDigestVerified: true, matches: 1, resultUrl: origin + "/a" },
+    webMcp: { origin, nativeWebMCP: true, tool: "search", matches: 1 },
+  }));
+  discoveryRecord.candidate.gates.agentDiscoveryStaging = { status: "passed", evidence: staging, tool: "search", origin };
+  assert.equal((await verifyExecutionControl(discoveryRecord)).status, "passed");
+  discoveryRecord.phase = "closed";
+  assert.equal((await verifyExecutionControl(discoveryRecord)).status, "failed");
+  discoveryRecord.candidate.gates.agentDiscoveryLive = { status: "passed", evidence: live };
+  for (const identity of ["old", candidate]) {
+    await writeFile(live, JSON.stringify({ candidate: identity, status: "passed", agentDiscovery: {status: "passed", hosts: ["example.com"]} }));
+    assert.equal((await verifyExecutionControl(discoveryRecord)).status, identity === candidate ? "passed" : "failed");
+  }
+} finally {
+  await rm(receipts, { recursive: true, force: true });
+}

@@ -11,6 +11,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ## Unreleased
 
+### Added
+
+- Added staged and live gates for public agent discovery releases, including per-host scans, authenticated DNS answers, functional searches and cached homepage evidence.
+
 ### Changed
 
 - Expanded the Stanford Rule with the Writing for people process: a private reader brief, real language and source facts before drafting, removal of drafting scaffolding, independent review, read-aloud checks, and comparison with neighboring pages.

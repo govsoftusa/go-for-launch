@@ -366,6 +366,7 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Technical, regulatory, legal, statistical, and time-sensitive claims cite current primary sources.
 - [ ] A last-reviewed date and responsible reviewer are visible on maintained guidance.
 - [ ] SEO content work records credible question evidence from sources available to the project, with Search Console or optional Ahrefs evidence only when approved access exists.
+- [ ] For a nine-check discovery release, declare the staging and live gates, run searches through both clients and retain fresh per-host scans, two authenticated DNS answers and visitor-cache evidence. See [the discovery release gate](AGENT-DISCOVERY-RELEASE.md).
 - [ ] Public discovery files include only intended public routes.
 - [ ] The staged `/sitemap.xml` and every referenced child sitemap return HTTP 200 with XML content.
 - [ ] Search Console property access and permission were checked when approved access exists.

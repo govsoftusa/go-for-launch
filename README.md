@@ -47,6 +47,7 @@ their build and release pipeline.
 | --- | --- |
 | Sitemap, SEO, structured data, headings, images, i18n, and redirects | `verify-sitemap.mjs`, `verify-seo.mjs`, `verify-images.mjs`, `verify-redirects.mjs`, `SeoHead.astro`, `ResponsivePicture.astro`, and `localized-seo.ts` |
 | AEO content and agent discovery | `ANSWER-ENGINE-OPTIMIZATION.md`, `verify-aeo.mjs`, and `templates/llms.txt` |
+| Nine-check public discovery releases | [Staging and production gates](AGENT-DISCOVERY-RELEASE.md), `templates/discovery-release.config.mjs` |
 | Site health, semantic SEO, citations, and content quality | `verify-site-health.mjs`, `verify-semantic-seo.mjs`, `verify-content-quality.mjs`, optional Ahrefs verification, and the Stanford Rule review records |
 | Open Graph, brand, artwork, and visual quality | Deterministic Open Graph generation and review, brand provenance, artwork suitability, visual composition, interface quality, side-navigation, render-sharpness, and configurable design-gate checks |
 | Browser, mobile, and performance release gates | Chromium, Playwright WebKit, native iOS Safari guidance, PageSpeed readiness, route parity, route convergence, Cloudflare observability, and exact-candidate release evidence |

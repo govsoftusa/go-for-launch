@@ -1,5 +1,9 @@
 # Production Release Policy
 
+## Agent discovery
+
+For releases that promise all nine discovery checks, require a staged search-tool test before deployment and a candidate-bound live manifest before closing the release. Follow [Releasing public agent discovery](AGENT-DISCOVERY-RELEASE.md).
+
 ## Project onboarding gate
 
 Before implementation or release work starts, complete [`templates/project-onboarding.md`](templates/project-onboarding.md) as directed by [`PROJECT-ONBOARDING.md`](PROJECT-ONBOARDING.md). Select the workflows in scope, distinguish required inputs from conditional and optional services, record paid-service approvals, validate external sources with masked least-privilege checks, and identify the release operating system.
