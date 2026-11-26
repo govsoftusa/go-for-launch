@@ -5,6 +5,8 @@ import { dirname, join, relative, resolve } from "node:path";
 import { promisify } from "node:util";
 import { pathToFileURL } from "node:url";
 
+import { inspectDiscoveryRelease } from "./lib/discovery-release.mjs";
+
 const execFileAsync = promisify(execFile);
 
 const cli = Object.fromEntries(
@@ -257,7 +259,7 @@ async function inspectArtifact(artifact, config, findings) {
 export async function verifyReleaseEvidence(inputConfig) {
   const config = { ...inputConfig };
   if (!config.candidate) throw new Error("Release evidence requires a candidate.");
-  if (!Array.isArray(config.artifacts) || config.artifacts.length === 0) {
+  if (!config.agentDiscovery && (!Array.isArray(config.artifacts) || config.artifacts.length === 0)) {
     throw new Error("Release evidence requires at least one artifact.");
   }
 
@@ -271,8 +273,19 @@ export async function verifyReleaseEvidence(inputConfig) {
     toolkits.push(await inspectToolkit(toolkit, findings));
   }
   const artifacts = [];
-  for (const artifact of config.artifacts) {
+  for (const artifact of config.artifacts ?? []) {
     artifacts.push(await inspectArtifact(artifact, config, findings));
+  }
+
+  let agentDiscovery;
+  if (Object.hasOwn(config, "agentDiscovery")) {
+    const before = findings.length;
+    try {
+      artifacts.push(...await inspectDiscoveryRelease(config.agentDiscovery, config.candidate, findings));
+    } catch (error) {
+      addFinding(findings, "agentDiscovery", error.message);
+    }
+    agentDiscovery = { status: findings.length === before ? "passed" : "failed", hosts: config.agentDiscovery?.hosts ?? [] };
   }
 
   const report = {
@@ -280,6 +293,7 @@ export async function verifyReleaseEvidence(inputConfig) {
     generatedAt: new Date().toISOString(),
     status: findings.length === 0 ? "passed" : "failed",
     candidate: config.candidate,
+    ...(agentDiscovery && { agentDiscovery }),
     sources,
     toolkits,
     artifacts,
