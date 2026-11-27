@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
+import { authenticatedAnswer, matchesService, parseLinkHeader } from "./discovery-protocols.mjs";
+
 export const discoveryChecks = {
   discoverability: ["linkHeaders", "dnsAid"],
   contentAccessibility: ["markdownNegotiation"],
@@ -15,31 +17,6 @@ function urlMatches(value, expected) {
   } catch {
     return false;
   }
-}
-
-function advertisesApiCatalog(header) {
-  // A quoted Link relation can contain multiple space-separated names.
-  for (const match of String(header).matchAll(/;\s*rel\s*=\s*(?:"([^"]*)"|([^;,\s]+))/gi)) {
-    if ((match[1] ?? match[2]).toLowerCase().split(/\s+/).includes("api-catalog")) return true;
-  }
-  return false;
-}
-
-function dnsName(value) {
-  return String(value ?? "").toLowerCase().replace(/\.$/, "");
-}
-
-function matchesService(record, spec) {
-  if (record?.type !== spec.type || dnsName(record.name) !== dnsName(spec.name)) return false;
-  const [priority, target, ...params] = String(record.data).trim().split(/\s+/);
-  const values = new Map(params.map((field) => {
-    const i = field.indexOf("=");
-    return [field.slice(0, i), field.slice(i + 1).replace(/^"(.*)"$/, "$1")];
-  }));
-  return /^\d+$/.test(priority) && Number(priority) > 0 && Number(priority) <= 65535
-    && dnsName(target) === dnsName(spec.target)
-    && values.get("alpn")?.split(",").includes(spec.alpn)
-    && (values.get("key65400") ?? values.get("endpoint")) === spec.endpoint;
 }
 
 export function checkSearch(runtime, candidate, canonical, tool, fail) {
@@ -126,8 +103,7 @@ export async function inspectDiscoveryRelease(spec, candidate, findings) {
     }
     for (const provider of ["google", "cloudflare"]) {
       const answer = await receipt("DNSSEC " + provider, dns.answers?.[provider]);
-      if (answer.Status !== 0 || answer.AD !== true || answer.CD === true || answer.TC === true
-          || !Array.isArray(answer.Question) || !answer.Question.some(q => q?.type === dns.type && dnsName(q.name) === dnsName(dns.name))
+      if (!authenticatedAnswer(answer, dns.name, dns.type)
           || !Array.isArray(answer.Answer) || !answer.Answer.some(rr => matchesService(rr, dns))) {
         fail(provider, "Resolver did not authenticate the configured ServiceMode discovery answer.");
       }
@@ -142,7 +118,7 @@ export async function inspectDiscoveryRelease(spec, candidate, findings) {
   for (const host of hosts) {
     const row = Array.isArray(runtime.cacheVerification) && runtime.cacheVerification.find(r => r?.requestedHost === host);
     if (row?.httpStatus !== 200 || !urlMatches(row.effectiveUrl, canonical)
-        || row.includesSearchScript !== true || !advertisesApiCatalog(row.link)
+        || row.includesSearchScript !== true || !parseLinkHeader(row.link).some(link => link.relations.includes("api-catalog"))
         || (spec.cached !== false && String(row.edgeCache).toUpperCase() !== "HIT")) {
       fail(host, "Visitor response must carry the discovery Link and search script, including on a cache hit when caching is enabled.");
     }
