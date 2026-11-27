@@ -2,6 +2,8 @@ export default {
   phase: "orientation",
   output: "artifacts/execution-control-report.json",
   taskEnvelope: {
+    // Set true for releases that promise all nine public discovery checks.
+    agentDiscoveryRequired: false,
     requestedOutcome: "Replace with the requested project outcome",
     acceptanceOwner: "Replace with the accountable project owner",
     targetRepository: "/workspace/example-project",

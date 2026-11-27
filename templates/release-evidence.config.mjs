@@ -1,4 +1,6 @@
 export default {
+  // For a discovery release, add the agentDiscovery section from
+  // templates/discovery-release.config.mjs to this manifest.
   candidate: "reviewed-candidate-id",
   report: "artifacts/release-evidence-manifest.json",
   sources: [

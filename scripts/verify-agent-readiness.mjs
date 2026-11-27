@@ -44,9 +44,11 @@ import {
   checkContentSignals,
   evaluateDocument,
   findWebMcp,
-  parseLinkHeader,
   validateConfig
 } from "./lib/agent-readiness.mjs";
+
+import { authenticatedAnswer, dnsName, matchesService, parseLinkHeader } from "./lib/discovery-protocols.mjs";
+import { tags } from "./lib/html.mjs";
 
 const scriptsDirectory = dirname(fileURLToPath(import.meta.url));
 const userAgent = "go-for-launch-agent-readiness-verifier/1.0";
@@ -80,7 +82,7 @@ function writeReport(path, report) {
     writeFileSync(path, `${JSON.stringify(report, null, 2)}\n`, "utf8");
     process.stdout.write(`Report written to ${path}\n`);
   } catch (err) {
-    process.stderr.write(`verify-agent-readiness: could not write report: ${err.message}\n`);
+    throw new Error(`could not write report: ${err.message}`);
   }
 }
 
@@ -130,21 +132,35 @@ async function liveGet(target, accept = "*/*") {
   const url = new URL(target, liveUrl).href;
   const key = `${accept} ${url}`;
   if (liveCache.has(key)) return liveCache.get(key);
-  if (live.requests >= maximumLiveRequests) {
-    throw new Error(`stopped at the limit of ${maximumLiveRequests} live requests`);
+  let next = new URL(url);
+  const origin = next.origin;
+  if (origin !== new URL(liveUrl).origin && origin !== new URL(dnsResolver).origin) {
+    throw new Error("Request destination is outside the configured staging site and resolver.");
   }
-  live.requests += 1;
-  live.requested.push(url);
-  const response = await fetch(url, {
-    headers: { Accept: accept, "User-Agent": userAgent },
-    redirect: "follow",
-    signal: AbortSignal.timeout(liveTimeoutMs)
-  });
+  let response;
+  for (;;) {
+    if (live.requests >= maximumLiveRequests) throw new Error(`stopped at the limit of ${maximumLiveRequests} live requests`);
+    live.requests += 1;
+    live.requested.push(next.href);
+    response = await fetch(next, {
+      headers: { Accept: accept, "User-Agent": userAgent },
+      redirect: "manual",
+      signal: AbortSignal.timeout(liveTimeoutMs)
+    });
+    if (![301, 302, 303, 307, 308].includes(response.status)) break;
+    await response.body?.cancel();
+    const location = response.headers.get("location");
+    if (!location) throw new Error("Redirect missing its Location header.");
+    next = new URL(location, next);
+    if (next.origin !== origin) throw new Error("Redirect left the configured origin.");
+  }
+  const bytes = Buffer.from(await response.arrayBuffer());
   const record = {
+    bytes,
     status: response.status,
     headers: response.headers,
     contentType: response.headers.get("content-type") || "",
-    text: await response.text()
+    text: bytes.toString("utf8")
   };
   liveCache.set(key, record);
   return record;
@@ -152,7 +168,7 @@ async function liveGet(target, accept = "*/*") {
 
 async function readLive(path) {
   const response = await liveGet(path);
-  if (response.status >= 500) throw new Error(`${path} answered HTTP ${response.status}`);
+  if (![200, 404, 410].includes(response.status)) throw new Error(`${path} answered HTTP ${response.status}`);
   return { found: response.status === 200, text: response.text, contentType: response.contentType };
 }
 
@@ -209,10 +225,7 @@ function runAeoVerifier() {
     }
     const aeo = JSON.parse(readFileSync(aeoReport, "utf8"));
     const linksPresent = aeo.linkHeaders.exists && (aeo.linkHeaders.hasLlmsTxt || aeo.linkHeaders.hasSitemap);
-    // verify-aeo.mjs expects a Link entry for llms.txt. That only applies when
-    // the site has an llms.txt or the config requires one.
-    const llmsExpected = aeo.llmsTxt.exists || config.checks.llmsTxt.status === "required";
-    const linkIssues = aeo.linkHeaders.issues.filter((issue) => llmsExpected || !/llms\.txt/i.test(issue));
+    const linkIssues = [...aeo.linkHeaders.issues];
     if (aeo.linkHeaders.hasLlmsTxt && !aeo.llmsTxt.exists) {
       linkIssues.push("The _headers file advertises llms.txt, but llms.txt is not in the built output.");
     }
@@ -239,6 +252,7 @@ function runAeoVerifier() {
 function liveLinkHeader(buildResult) {
   return onLive(async () => {
     const response = await liveGet("/", "text/html");
+    if (response.status !== 200) throw new Error(`Homepage answered HTTP ${response.status}.`);
     const links = parseLinkHeader(response.headers.get("link"));
     const result = { present: links.length > 0, problems: [], notes: [] };
     if (!result.present) {
@@ -246,7 +260,7 @@ function liveLinkHeader(buildResult) {
       return result;
     }
     if (!links.some((link) => link.relations.some((relation) => SCANNER_LINK_RELATIONS.includes(relation)))) {
-      result.notes.push(`The Link header uses none of the relation types the scanner's guidance lists: ${SCANNER_LINK_RELATIONS.join(", ")}.`);
+      result.problems.push(`The Link header uses none of the relation types the scanner's guidance lists: ${SCANNER_LINK_RELATIONS.join(", ")}.`);
     }
     if (buildResult?.advertises?.llmsTxt && !links.some((link) => /llms\.txt/i.test(link.target))) {
       result.problems.push("The built _headers file advertises llms.txt, but the live Link header does not.");
@@ -327,10 +341,23 @@ function webMcpInBuild() {
 
 function webMcpLive() {
   return onLive(async () => {
-    const found = findWebMcp((await liveGet("/", "text/html")).text);
+    const home = await liveGet("/", "text/html");
+    if (home.status !== 200) throw new Error(`Homepage answered HTTP ${home.status}.`);
+    const found = findWebMcp(home.text);
+    if (!found.length) {
+      for (const { attributes } of tags(home.text, "script")) {
+        if (!attributes.get("src")) continue;
+        const script = new URL(attributes.get("src"), new URL("/", liveUrl));
+        if (script.origin !== new URL(liveUrl).origin) continue;
+        const response = await liveGet(script.href);
+        if (response.status !== 200) throw new Error(`Linked script answered HTTP ${response.status}.`);
+        found.push(...findWebMcp(response.text));
+        if (found.length) break;
+      }
+    }
     return {
       present: found.length > 0,
-      notes: [found.length > 0 ? `Home page source contains a ${found.join(" and a ")}.` : "Only the home page source was read; linked scripts were not fetched.", webMcpCaveat]
+      notes: [found.length > 0 ? `Home page or linked script contains a ${found.join(" and a ")}.` : "No registration marker was found in the homepage or its same-origin scripts.", webMcpCaveat]
     };
   });
 }
@@ -346,7 +373,7 @@ function markdownNegotiation(entry) {
         const tokens = markdown.headers.get("x-markdown-tokens");
         result.notes.push(tokens ? `${path} returned Markdown with x-markdown-tokens: ${tokens}.` : `${path} returned Markdown without the optional x-markdown-tokens header.`);
         const html = await liveGet(path, "text/html");
-        if (mediaType(html) !== "text/html") {
+        if (html.status !== 200 || mediaType(html) !== "text/html") {
           result.problems.push(`${path} must still return HTML when Markdown is not requested, but returned ${mediaType(html) || "no content type"}.`);
         }
       } else {
@@ -361,22 +388,32 @@ function markdownNegotiation(entry) {
 
 function dnsAid(entry) {
   return onLive(async () => {
-    const domain = entry.domain ?? new URL(site).hostname;
+    const domain = entry.domain ?? new URL(liveUrl).hostname;
     const names = entry.names?.length ? entry.names : ["_index._agents", "_a2a._agents"];
     const records = [];
+    const problems = [];
     for (const name of names) {
-      for (const type of ["SVCB", "HTTPS"]) {
+      for (const type of [64, 65]) {
+        const owner = `${name}.${domain}`;
         const query = new URL(dnsResolver);
-        query.searchParams.set("name", `${name}.${domain}`);
+        query.searchParams.set("name", owner);
         query.searchParams.set("type", type);
+        query.searchParams.set("do", "true");
+        query.searchParams.set("cd", "false");
         const response = await liveGet(query.href, "application/dns-json");
         if (response.status !== 200) throw new Error(`the DNS resolver answered HTTP ${response.status}`);
-        const answers = (JSON.parse(response.text).Answer || []).filter((answer) => answer.type === 64 || answer.type === 65);
-        if (answers.length > 0) records.push(`${name}.${domain} (${type})`);
+        const answer = JSON.parse(response.text);
+        if (![0, 3].includes(answer.Status) || answer.TC === true) throw new Error(`Incomplete DNS answer for ${owner} (status ${answer.Status}).`);
+        const answers = (answer.Answer ?? []).filter(rr => rr?.type === type && dnsName(rr.name) === dnsName(owner));
+        if (!answers.length) continue;
+        records.push(`${owner} (${type})`);
+        if (!authenticatedAnswer(answer, owner, type) || !answers.some(rr => matchesService(rr, { ...entry.service, name: owner, type }))) {
+          problems.push(`${owner} lacks an authenticated ServiceMode answer with ALPN and an HTTPS endpoint.`);
+        }
       }
     }
     return {
-      present: records.length > 0,
+      present: records.length > 0, problems,
       notes: [records.length > 0 ? `Records found: ${records.join(", ")}.` : `No SVCB or HTTPS record at ${names.map((name) => `${name}.${domain}`).join(" or ")}.`]
     };
   });
@@ -424,6 +461,13 @@ function decide(check, entry, places) {
     return item;
   }
 
+  if (failedRequests.length > 0) {
+    item.result = "fail";
+    item.problems = failedRequests;
+    item.notes = notes;
+    return item;
+  }
+
   const publishedIn = places.filter((place) => place.present);
   if (entry.status === "not-applicable") {
     item.notes = [...notes, ...failedRequests];
@@ -433,13 +477,6 @@ function decide(check, entry, places) {
     } else {
       item.result = "not-applicable";
     }
-    return item;
-  }
-
-  if (failedRequests.length > 0) {
-    item.result = "fail";
-    item.problems = failedRequests;
-    item.notes = notes;
     return item;
   }
 
@@ -511,7 +548,25 @@ async function evaluate(check, entry, delegated) {
       }
       add(built);
     }
-    if (wantsLive) add(await onLive(() => evaluateDocument(definition, readLive, "live")));
+    if (wantsLive) add(await onLive(async () => {
+      const result = await evaluateDocument(definition, readLive, "live");
+      if (check.id === "agentSkills" && result.present && !result.problems.length) {
+        const index = JSON.parse((await readLive(result.path)).text);
+        const liveOrigin = new URL(liveUrl).origin;
+        for (const skill of index.skills) {
+          const url = new URL(skill.url, new URL(result.path, liveUrl));
+          if (url.origin !== liveOrigin && url.origin !== new URL(site).origin) {
+            result.notes.push(`${skill.name} uses another origin. Its bytes were not requested.`);
+            continue;
+          }
+          const response = await liveGet(liveOrigin + url.pathname + url.search);
+          if (response.status !== 200 || createHash("sha256").update(response.bytes).digest("hex") !== skill.digest.slice(7).toLowerCase()) {
+            result.problems.push(`${skill.name} does not match the published staging skill digest.`);
+          }
+        }
+      }
+      return result;
+    }));
   }
   return decide(check, entry, places);
 }

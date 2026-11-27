@@ -7,6 +7,8 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import process from "node:process";
 import { CHECKS, validateConfig } from "./lib/agent-readiness.mjs";
+import { parseLinkHeader } from "./lib/discovery-protocols.mjs";
+import { checkSearch } from "./lib/discovery-release.mjs";
 import template from "../templates/agent-readiness.config.mjs";
 
 const verifier = new URL("./verify-agent-readiness.mjs", import.meta.url);
@@ -124,11 +126,24 @@ writeFileSync(serverScript, `
     const control = JSON.parse(readFileSync(process.argv[2], "utf8"));
     const url = new URL(request.url, "http://127.0.0.1");
     const accept = request.headers.accept || "";
+    if (control.staleSkill && url.pathname.endsWith("/SKILL.md")) {
+      response.writeHead(200, { "content-type": "text/markdown" });
+      response.end("Cached previous release");
+      return;
+    }
+    if (control.redirect && url.pathname === "/") {
+      response.writeHead(302, {location: control.redirect});
+      response.end();
+      return;
+    }
     if (url.pathname === "/dns-query") {
       response.writeHead(200, { "content-type": "application/dns-json" });
-      response.end(JSON.stringify(control.dns
-        ? { Status: 0, Answer: [{ name: url.searchParams.get("name"), type: 64, TTL: 300, data: "1 agent.example.com. alpn=a2a port=443" }] }
-        : { Status: 3 }));
+      const name = url.searchParams.get("name");
+      const type = Number(url.searchParams.get("type"));
+      const signed = url.searchParams.get("do") === "true" && url.searchParams.get("cd") === "false" && control.dns !== "unsigned";
+      response.end(JSON.stringify({ Status: control.dns === "servfail" ? 2 : control.dns ? 0 : 3,
+        AD: signed, Question: [{name, type}],
+        Answer: control.dns && type === 64 ? [{name, type, data: "1 agent.example.com. alpn=h2 key65400=https://agent.example.com/catalog"}] : [] }));
       return;
     }
     if (url.pathname === "/paid") {
@@ -209,6 +224,26 @@ try {
   }
   if (served.report.live.requests < 1 || served.report.live.requests > served.report.live.maximumRequests) fail("The live request count is missing or over its limit.", served);
 
+  const bundled = completeSite("external-script");
+  put(bundled, "index.html", page("/", '<script src="/search.js?v=2"></script>'));
+  put(bundled, "search.js", 'navigator.modelContext.registerTool({name:"search"});');
+  const linked = verify({directory: bundled, checks: everyCheck("required"), live: healthy});
+  if (linked.status !== 0 || linked.byId.webMcp.result !== "pass") fail("Same-origin linked WebMCP script was missed.", linked);
+  const missingRuntime = [];
+  checkSearch(linked.report, "frozen-build", liveUrl, "search", area => missingRuntime.push(area));
+  if (!missingRuntime.includes("MCP") || !missingRuntime.includes("WebMCP")) fail("A readiness report was accepted as runtime evidence.", linked);
+  const stale = verify({directory: bundled, checks: everyCheck("required"), live: {...healthy, staleSkill: true}});
+  if (stale.status !== 1 || stale.byId.agentSkills.result !== "fail") fail("Stale served skill bytes passed.", stale);
+  const unsignedDns = verify({directory: complete, checks: everyCheck("required"), live: {...healthy, dns: "unsigned"}});
+  if (unsignedDns.status !== 1 || unsignedDns.byId.dnsAid.result !== "fail") fail("Unsigned discovery passed.", unsignedDns);
+  const unavailableDns = verify({directory: brochureSite("dns-error"), checks: templateChecks(), live: {...healthy, dns: "servfail"}});
+  if (unavailableDns.status !== 1 || unavailableDns.byId.dnsAid.result !== "fail") fail("Resolver failure was treated as absence.", unavailableDns);
+  const redirect = verify({directory: complete, checks: everyCheck("required"), live: {...healthy, redirect: "/"},
+    settings: {maximumLiveRequests: 3}});
+  if (redirect.status !== 1 || redirect.report.live.requests !== 3 || !redirect.report.blockers.join(" ").includes("limit of 3")) fail("Redirects escaped the request budget.", redirect);
+  const header = '<https://example.com/a,b>; title="a,b"; rel="alternate api-catalog", </doc>; rel=service-doc';
+  if (parseLinkHeader(header)[0]?.relations.join(" ") !== "alternate api-catalog") fail("Quoted commas broke a discovery Link relation.");
+
   // One broken site for every check.
   const broken = {
     robotsTxt: { change: (d) => rmSync(join(d, "robots.txt")), expect: "Missing dist/robots.txt" },
@@ -284,15 +319,13 @@ try {
   const optional = verify({ directory: optionalBroken, checks: templateChecks({ a2aAgentCard: { status: "optional" } }) });
   if (optional.status !== 1 || optional.byId.a2aAgentCard.result !== "fail") fail("An invalid optional file did not fail.", optional);
 
-  // Without an llms.txt, the Link entry for it is not expected, and an entry
-  // that points to a missing llms.txt fails.
+  // The baseline cannot be downgraded in a project config.
+  for (const id of ["robotsTxt", "sitemap", "linkHeaders", "markdownNegotiation", "llmsTxt", "aiBotRules", "contentSignals"]) {
+    const weakened = templateChecks({ [id]: {status: "optional"} });
+    if (!validateConfig({checks: weakened}).some(issue => issue.includes(id) && issue.includes("must be required"))) fail("Baseline check was optional: " + id);
+  }
   const noLlms = brochureSite("no-llms");
   rmSync(join(noLlms, "llms.txt"));
-  const dangling = verify({ directory: noLlms, checks: templateChecks({ llmsTxt: { status: "optional" } }) });
-  if (dangling.status !== 1 || !dangling.byId.linkHeaders.problems.join(" ").includes("llms.txt is not in the built output")) fail("A Link entry for a missing llms.txt did not fail.", dangling);
-  put(noLlms, "_headers", '/*\n  Link: </sitemap.xml>; rel="sitemap"\n');
-  const sitemapOnly = verify({ directory: noLlms, checks: templateChecks({ llmsTxt: { status: "optional" } }), live: { link: '</sitemap.xml>; rel="sitemap"', markdown: true } });
-  if (sitemapOnly.status !== 0 || sitemapOnly.byId.linkHeaders.result !== "pass" || sitemapOnly.byId.llmsTxt.result !== "absent") fail("A site with no llms.txt and a sitemap Link entry did not pass.", sitemapOnly);
   const missingRequired = verify({ directory: noLlms, checks: templateChecks() });
   if (missingRequired.status !== 1 || missingRequired.byId.llmsTxt.result !== "fail" || missingRequired.byId.linkHeaders.result !== "fail") fail("A required llms.txt that is missing did not fail.", missingRequired);
 

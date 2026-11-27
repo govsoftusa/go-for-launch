@@ -1,6 +1,8 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+
+import { checkSearch } from "./lib/discovery-release.mjs";
 
 const PHASES = [
   "orientation",
@@ -306,7 +308,7 @@ function verifyFailedPageSpeedTriage(gate, area, candidate, strategy, findings) 
   }
 }
 
-function verifyCandidate(record, findings) {
+async function verifyCandidate(record, findings) {
   const phaseIndex = PHASES.indexOf(record.phase);
   if (phaseIndex < PHASES.indexOf("candidate-frozen")) return;
   const candidate = record.candidate ?? {};
@@ -317,7 +319,16 @@ function verifyCandidate(record, findings) {
     finding(findings, "candidate.gates", "requires every mandatory gate declaration");
     return;
   }
-  for (const gateName of REQUIRED_GATES) {
+  const discovery = record.taskEnvelope?.agentDiscoveryRequired;
+  if (discovery !== undefined && typeof discovery !== "boolean") {
+    finding(findings, "taskEnvelope.agentDiscoveryRequired", "must be a boolean");
+  }
+  const gates = [...REQUIRED_GATES];
+  if (discovery === true) {
+    gates.push("agentDiscoveryStaging");
+    if (record.phase === "closed") gates.push("agentDiscoveryLive");
+  }
+  for (const gateName of gates) {
     const gate = candidate.gates[gateName];
     if (!gate || !["pending", "passed", "failed"].includes(gate.status)) {
       finding(findings, `candidate.gates.${gateName}.status`, "must be pending, passed, or failed");
@@ -346,6 +357,30 @@ function verifyCandidate(record, findings) {
         finding(findings, `candidate.gates.${gateName}.status`, "must be passed for production readiness");
       }
       requireText(findings, `candidate.gates.${gateName}.evidence`, gate.evidence);
+      if (gateName === "agentDiscoveryStaging" && gate.status === "passed") {
+        try {
+          const smoke = JSON.parse(await readFile(gate.evidence, "utf8"));
+          const origin = new URL(gate.origin);
+          if (origin.origin !== gate.origin || !["http:", "https:"].includes(origin.protocol)) {
+            throw new Error("Supply the exact staging origin.");
+          }
+          checkSearch(smoke, candidate.buildIdentity, gate.origin, gate.tool,
+            (area, message) => finding(findings, "candidate.gates.agentDiscoveryStaging." + area, message));
+        } catch (error) {
+          finding(findings, "candidate.gates.agentDiscoveryStaging.evidence", error.message);
+        }
+      }
+      if (gateName === "agentDiscoveryLive" && gate.status === "passed") {
+        try {
+          const report = JSON.parse(await readFile(gate.evidence, "utf8"));
+          if (report.candidate !== candidate.buildIdentity || report.status !== "passed"
+              || report.agentDiscovery?.status !== "passed" || !report.agentDiscovery.hosts?.length) {
+            finding(findings, "candidate.gates.agentDiscoveryLive", "requires a passing discovery release manifest for this build identity");
+          }
+        } catch (error) {
+          finding(findings, "candidate.gates.agentDiscoveryLive.evidence", error.message);
+        }
+      }
       if (gateName === "mobilePageSpeed" || gateName === "desktopPageSpeed") {
         verifyPageSpeedGate(gate, `candidate.gates.${gateName}`, findings);
       }
@@ -368,7 +403,7 @@ export async function verifyExecutionControl(record) {
   verifyFindings(record, findings);
   verifyCheckpoints(record, findings);
   verifyBlockers(record, findings);
-  verifyCandidate(record, findings);
+  await verifyCandidate(record, findings);
   return {
     version: 1,
     status: findings.length === 0 ? "passed" : "failed",

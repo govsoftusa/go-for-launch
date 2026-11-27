@@ -1,5 +1,9 @@
 # Production Release Policy
 
+## Agent discovery
+
+For releases that promise all nine discovery checks, require a staged search-tool test before deployment and a candidate-bound live manifest before closing the release. Follow [Releasing public agent discovery](AGENT-DISCOVERY-RELEASE.md).
+
 ## Project onboarding gate
 
 Before implementation or release work starts, complete [`templates/project-onboarding.md`](templates/project-onboarding.md) as directed by [`PROJECT-ONBOARDING.md`](PROJECT-ONBOARDING.md). Select the workflows in scope, distinguish required inputs from conditional and optional services, record paid-service approvals, validate external sources with masked least-privilege checks, and identify the release operating system.
@@ -9,6 +13,8 @@ Ahrefs is optional unless a reviewed project contract makes it required for one 
 Native Safari through the Xcode iOS Simulator requires a qualified macOS environment with full Xcode and an installed iOS runtime. Playwright WebKit on Windows, Linux, or macOS is not equivalent native Safari evidence. When the active operator is not using a qualified Mac, the exact candidate must be handed to a qualified Mac runner. Production remains blocked when that handoff and native Safari evidence are unavailable.
 
 The Stanford Rule content quality gate is mandatory. Every route must name its intended audience and primary task, pass the configured final-output checks, and have a current hash-bound editorial approval using the senior psychology professor perspective. Compare openings, closings, and full copy across content families so unrelated pages do not repeat one generic argument. The Stanford Rule is a Go for Launch standard, not a Stanford University policy or an AI-authorship detector.
+
+Follow its Writing for people process before accepting new or revised copy: keep a sourced reader brief outside the content, gather real customer language, draft from the reader's situation, remove drafting scaffolding, and obtain review from a separate agent or person who did not write it. Give the reviewer only the copy and source facts, correct their findings, read aloud, and compare neighboring pages. The complete list of tells and delivery criteria is in [Stanford Rule Content Quality Gate](STANFORD-RULE-CONTENT-QUALITY.md). Automated scores and checked approval fields cannot replace that independent judgment.
 
 ## Execution controls and non-waiver rule
 
@@ -334,7 +340,7 @@ The built candidate must prove that question headings and complete answers are p
 
 Run [`scripts/verify-aeo.mjs`](scripts/verify-aeo.mjs) against the built output and preserve the machine-readable JSON report with the release evidence. An empty or malformed llms.txt is a blocker. The script reports a missing llms.txt, a missing `_headers` file, or a missing Link header for llms.txt or sitemap.xml as a warning. The agent readiness check below decides whether a missing one blocks production. The JSON report must be retained alongside other release artifacts.
 
-For every release, run [`scripts/verify-agent-readiness.mjs`](scripts/verify-agent-readiness.mjs) with the project's `agent-readiness.config.mjs`, first against the built output and then with `--live` against staging. Preserve both JSON reports with the release evidence. The config must give every check on the isitagentready.com list a status, and a written reason for each one marked not-applicable. It must mark these checks required, because the scanner scores them and any site can pass them: `robots.txt`, the sitemap, Link headers, AI crawler rules, Content Signals, and Markdown negotiation. It must also mark llms.txt required. A failed required check, an invalid published file, or a published file that the config marks not-applicable blocks production. A required check reported as "not checked" has not passed, so the check is finished only after the staging run with `--live`.
+For every static-build release, run [`scripts/verify-agent-readiness.mjs`](scripts/verify-agent-readiness.mjs) with the project's `agent-readiness.config.mjs`, first against the built output and then with `--live` against staging. Preserve both JSON reports with the release evidence. Sites publishing all nine capabilities also follow [the public discovery release gates](AGENT-DISCOVERY-RELEASE.md). The config must give every check on the isitagentready.com list a status, and a written reason for each one marked not-applicable. It must mark these checks required, because the scanner scores them and any site can pass them: `robots.txt`, the sitemap, Link headers, AI crawler rules, Content Signals, and Markdown negotiation. It must also mark llms.txt required. A failed required check, an invalid published file, or a published file that the config marks not-applicable blocks production. A required check reported as "not checked" has not passed, so the check is finished only after the staging run with `--live`.
 
 Do not promise or require a particular ranking, rich result, AI citation, or answer-engine appearance. Those outcomes are not controlled by the site. The release gate evaluates content quality, technical eligibility, and measurement readiness.
 

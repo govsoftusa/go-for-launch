@@ -96,17 +96,24 @@ release.
 ## Stanford Rule content quality
 
 - [ ] `STANFORD-RULE-CONTENT-QUALITY.md` was read before public content was written or revised.
+- [ ] A private reader brief names one real reader, their situation, existing beliefs, and intended outcome; sourced facts, real customer language, and examples are recorded outside the shareable copy.
+- [ ] Unsupported claims and scenarios were omitted or left as questions for the owner in private source notes.
 - [ ] Every public route names its intended audience and the task that audience is trying to complete.
 - [ ] The opening addresses the reader's need before internal implementation details.
 - [ ] Requirements, optional tools, examples, and limitations are clearly distinguished.
 - [ ] Unfamiliar technical terms are defined before they carry an argument.
 - [ ] Machine-like filler, inflated marketing language, and repetitive sentence frames were removed.
+- [ ] An independent person or separate agent received only the copy and source facts, marked every applicable writing tell, checked each claim, and identified sentences someone at the company would not say to a customer across a table.
+- [ ] Meta copy, instruction leakage, persona lists, forced symmetry, decorative labels, abstract nouns, noun stacks, unnecessary implementation detail, and filler were revised.
+- [ ] The writer and reviewer are identified, findings and corrections are retained privately, and no opener or item structure appears more than twice on a page.
+- [ ] The revised copy was compared with neighboring pages for repeated openings and section shapes.
 - [ ] Openings, closings, and full copy pass the configured cross-route similarity thresholds for different content families.
 - [ ] Similarity findings are resolved through route-specific writing or a reviewed same-family classification, not arbitrary exceptions.
 - [ ] Sentence length, paragraph length, and reading ease pass the reviewed route thresholds.
 - [ ] A reviewer used the senior psychology professor perspective to assess approachability, human tone, clear purpose, and evidence awareness.
 - [ ] A reviewer read the page aloud, revised unnatural cadence, and confirmed that it makes a route-specific argument.
-- [ ] Every editorial review has a specific note, current date, audience match, and exact built-content hash.
+- [ ] Every editorial review has a specific note, current date, audience match, and matching hash of verifier-extracted text. Independent review also covers rendered copy excluded from that extraction.
+- [ ] The current starter review fields were adopted deliberately; existing records were not silently approved, bulk-filled, or rehashed to pass the gate.
 - [ ] The content quality verifier passes against the exact production build.
 - [ ] No result is described as AI detection or as a Stanford University policy.
 
@@ -273,9 +280,9 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Every indexable page has an incoming internal link, or a documented approved exception.
 - [ ] Titles and descriptions are unique and within the configured length limits.
 - [ ] The machine-readable site-health report is preserved with release evidence.
-- [ ] `agent-readiness.config.mjs` gives every scanner check a status, with a written reason for each one marked not-applicable.
-- [ ] The config marks `robots.txt`, the sitemap, Link headers, llms.txt, AI crawler rules, Content Signals, and Markdown negotiation required. The verifier does not enforce this, so a reviewer confirms it.
-- [ ] The agent readiness verifier passes against the built output, and its report is preserved with release evidence.
+- [ ] For a static build, `agent-readiness.config.mjs` gives every scanner check a status, with a written reason for each one marked not-applicable.
+- [ ] For static builds, the verifier requires `robots.txt`, the sitemap, Link headers, llms.txt, AI crawler rules, Content Signals, and Markdown negotiation to carry the required status.
+- [ ] For a static build, the agent readiness verifier passes against the built output, and its report is preserved with release evidence.
 - [ ] Open Graph contact sheets include every indexable page and were reviewed at full size.
 - [ ] The authoritative brand reference and renderer source are hash-bound in the social-card adoption gate.
 - [ ] Representative social-card prototypes covered publication identity, a long headline, source artwork when applicable, and the designed fallback.
@@ -362,9 +369,10 @@ Complete the remaining items in this section only when design review is applicab
 - [ ] Technical, regulatory, legal, statistical, and time-sensitive claims cite current primary sources.
 - [ ] A last-reviewed date and responsible reviewer are visible on maintained guidance.
 - [ ] SEO content work records credible question evidence from sources available to the project, with Search Console or optional Ahrefs evidence only when approved access exists.
+- [ ] For a nine-check discovery release, declare the staging and live gates, run searches through both clients and retain fresh per-host scans, two authenticated DNS answers and visitor-cache evidence. See [the discovery release gate](AGENT-DISCOVERY-RELEASE.md).
 - [ ] Public discovery files include only intended public routes.
 - [ ] The staged `/sitemap.xml` and every referenced child sitemap return HTTP 200 with XML content.
-- [ ] The agent readiness verifier passes with `--live` against staging, and no required check is left "not checked".
+- [ ] For a static build, the agent readiness verifier passes with `--live` against staging, and no required check is left "not checked".
 - [ ] Search Console property access and permission were checked when approved access exists.
 - [ ] The canonical sitemap is submitted in Search Console, or the exact access or verification blocker is recorded.
 - [ ] Private routes use appropriate metadata and response headers.

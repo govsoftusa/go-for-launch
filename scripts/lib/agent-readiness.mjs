@@ -92,6 +92,8 @@ function outcome() {
 
 // --- Configuration ---------------------------------------------------------
 
+export const REQUIRED_BASELINE = ["robotsTxt", "sitemap", "llmsTxt", "linkHeaders", "aiBotRules", "contentSignals", "markdownNegotiation"];
+
 export function validateConfig(config) {
   const errors = [];
   if (!isObject(config) || !isObject(config.checks)) {
@@ -117,6 +119,12 @@ export function validateConfig(config) {
     if (entry.liveOnly === true && check.needs === "build") {
       errors.push(`"${check.id}" is read from the built output, so it cannot be set to liveOnly.`);
     }
+  }
+  for (const id of REQUIRED_BASELINE) {
+    if (config.checks[id]?.status !== "required") errors.push(`"${id}" must be required for the build readiness gate.`);
+  }
+  if (config.maximumLiveRequests !== undefined && !(Number.isSafeInteger(config.maximumLiveRequests) && config.maximumLiveRequests > 0)) {
+    errors.push("maximumLiveRequests must be a positive integer.");
   }
   const signals = config.checks.contentSignals;
   if (isObject(signals?.expected)) {
@@ -214,15 +222,6 @@ export function checkContentSignals(robotsText, options = {}) {
 
 // Relation types the scanner's Link header guidance lists.
 export const SCANNER_LINK_RELATIONS = ["api-catalog", "service-desc", "service-doc", "describedby"];
-
-export function parseLinkHeader(value) {
-  const links = [];
-  for (const match of String(value || "").matchAll(/<([^>]*)>([^,<]*)/g)) {
-    const rel = match[2].match(/;\s*rel\s*=\s*"?([^";]+)"?/i)?.[1] || "";
-    links.push({ target: match[1], relations: rel.toLowerCase().split(/\s+/).filter(Boolean) });
-  }
-  return links;
-}
 
 // --- Published documents ---------------------------------------------------
 

@@ -48,9 +48,9 @@ export default {
     dnsAid: {
       status: "not-applicable",
       reason: "The site runs no agent endpoint, so there is nothing to advertise in DNS.",
-      // The scanner's guidance gives these two names as examples and does not
-      // say which names it looks up. Set `domain` when the records live on the
-      // bare domain instead of the www host.
+      // The query defaults to the live hostname. Set domain to the published
+      // DNS zone when the discovery records use a different name.
+      // Set service to pin target, alpn and endpoint if the project has approved them.
       names: ["_index._agents", "_a2a._agents"]
     },
 

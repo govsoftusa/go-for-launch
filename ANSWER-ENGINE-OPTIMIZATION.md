@@ -65,7 +65,7 @@ Google currently limits FAQ rich results primarily to well-known government and 
 
 ## Agent-Facing Discovery Signals
 
-Search engines, AI crawlers, and autonomous agents discover content through signals beyond HTML. Cloudflare's scanner at [isitagentready.com](https://isitagentready.com/) checks a site for 22 of them, and an informational or lead-generation site can truthfully publish only some.
+Search engines, AI crawlers, and autonomous agents discover content through signals beyond HTML. Cloudflare's scanner at [isitagentready.com](https://isitagentready.com/) checks the discovery signals a site publishes. An informational site may publish a different set from a site that offers an API or checkout.
 
 Publish what the site really offers, and write down the reason for each item it leaves out. Every site built with the Go for Launch toolkit publishes the items the scanner scores and any site can offer: `robots.txt` with rules for AI crawlers and a Content-Signal line, a sitemap, HTTP Link headers, and Markdown content negotiation. llms.txt is required as well, although the scanner leaves that check off unless it is selected. Every other item is decided per project in `agent-readiness.config.mjs`, where each check is marked required, optional, or not-applicable.
 
@@ -98,7 +98,7 @@ For Cloudflare Pages, create a `_headers` file in the Astro project `public/` di
 
 Each entry adds a `Link` header to every response from the site. Confirm the `_headers` file appears in the built output root after `astro build`.
 
-Before staging, verify the header is present in the actual HTTP response on the deployed site, not just in the build output. Run:
+After staging, verify that the homepage response carries the discovery Link header. Run:
 
 ```bash
 curl -sI https://www.example.com/ | grep -i "^link:"
@@ -166,18 +166,20 @@ node scripts/verify-aeo.mjs --dir=dist --site=https://www.example.com
 
 Add `--live` to also check response headers on the deployed staging URL. The script writes a machine-readable JSON report and exits with a non-zero code when signals are missing or malformed.
 
-Run [`scripts/verify-agent-readiness.mjs`](scripts/verify-agent-readiness.mjs) for every release to check the site against the scanner's whole list. Copy [`templates/agent-readiness.config.mjs`](templates/agent-readiness.config.mjs) into the project first and give every check a status:
+Run [`scripts/verify-agent-readiness.mjs`](scripts/verify-agent-readiness.mjs) for each static-build release to check the project’s declared capabilities. Copy [`templates/agent-readiness.config.mjs`](templates/agent-readiness.config.mjs) into the project first and give every check a status:
 
 - `required`: the site must publish it, and it must be valid.
 - `optional`: the site may leave it out. If it is published, it must be valid.
 - `not-applicable`: the site does not offer it. The config must give a written reason, and the verifier fails if it finds the item published anyway. DNS records and paid routes can only be looked for with `--live`, and a paid route only at the addresses the config lists.
 
 ```bash
-node scripts/verify-agent-readiness.mjs --config=agent-readiness.config.mjs
-node scripts/verify-agent-readiness.mjs --config=agent-readiness.config.mjs --live --live-url=https://staging.example.com
+node scripts/verify-agent-readiness.mjs --config=agent-readiness.config.mjs --report=artifacts/readiness-build.json
+node scripts/verify-agent-readiness.mjs --config=agent-readiness.config.mjs --live --live-url=https://staging.example.com --report=artifacts/readiness-staging.json
 ```
 
-The first command reads the built output. Markdown negotiation, DNS records, and paid routes need a running site. Without `--live` they are reported as "not checked" unless the config marks them not-applicable, and the run can still pass. The second command also asks the staging site. It checks the served files the same way and fails when something in the build is missing from staging. It sends at most the number of requests the config allows, and fails any check it could not finish.
+For static builds, the baseline checks apply before release. Where a release promises all nine public discovery capabilities, also run the [staging and production discovery gates](AGENT-DISCOVERY-RELEASE.md). Run the advertised tool through both clients on staging and production. The release verifier checks those saved receipts and the fresh scanner response for each public hostname. Managed CMS projects without a static output directory can run the discovery gates directly.
+
+The first command reads the built output. Markdown negotiation, DNS records, and paid routes need a running site. Without `--live` they are reported as "not checked" unless the config marks them not-applicable, and the run can still pass. The second command also asks the staging site. It checks served files, hashes same-origin skill downloads and reads the homepage and its same-origin scripts for WebMCP markers. For published DNS-AID records it checks an authenticated ServiceMode answer with ALPN and an HTTPS endpoint. Set `checks.dnsAid.domain` to the zone where discovery is published if it differs from the staging hostname. It sends at most the number of requests the config allows, and fails any check it could not finish.
 
 The verifier never sends the site to the scanner. The DNS check asks a public resolver for the site's host name, and every other request goes to the site itself.
 
@@ -185,12 +187,12 @@ The verifier never sends the site to the scanner. The DNS check asks a public re
 | --- | --- |
 | robots.txt | `verify-sitemap.mjs` for the file and its sitemap line, and `verify-site-health.mjs` for the `User-agent` line. The agent readiness verifier runs `verify-sitemap.mjs` and reports its result. |
 | Sitemap | `verify-sitemap.mjs`, run by the agent readiness verifier. |
-| Link headers | `verify-aeo.mjs` for the built `_headers` file, run by the agent readiness verifier. The agent readiness verifier adds two rules of its own. An entry that points to `llms.txt` fails when the site has no `llms.txt`, and the entry is not expected when the config marks `llms.txt` optional and the site has none. With `--live`, it reads the home page response itself and fails when a built entry is missing from it. |
+| Link headers | `verify-aeo.mjs` for the built `_headers` file, run by the agent readiness verifier. The baseline requires `llms.txt` and its Link entry. The staging check reads the homepage response and verifies the advertised discovery relations. |
 | llms.txt | `verify-aeo.mjs`, run by the agent readiness verifier. The scanner leaves this check off unless it is selected. |
 | DNS for AI Discovery, Markdown negotiation, x402 | `verify-agent-readiness.mjs` with `--live`. |
 | AI bot rules, Content Signals | `verify-agent-readiness.mjs`, from the built `robots.txt` and, with `--live`, the served one. |
 | Web Bot Auth, API Catalog, OAuth discovery, OAuth Protected Resource, Auth.md, MCP Server Card, A2A Agent Card, Agent Skills, ARD manifest, Personal Agent Protocol, MPP, UCP, ACP | `verify-agent-readiness.mjs`, from the built file and, with `--live`, the served one. |
-| WebMCP | `verify-agent-readiness.mjs`, by reading the built pages and scripts. The scanner loads the page in a browser, so this is an approximation. |
+| WebMCP | `verify-agent-readiness.mjs` checks built sources and the staging homepage and same-origin scripts for markers. The public discovery release also requires a native browser tool call. |
 
 The verifier also checks `llms-full.txt` when a site publishes one. The scanner documents that file without listing it as a check.
 
@@ -245,7 +247,7 @@ For agent discoverability signals, run `verify-aeo.mjs` and confirm:
 - llms.txt is present in the build output and contains a level-one heading and an About section.
 - `_headers` includes `Link: </llms.txt>; rel="describedby"` and `Link: </sitemap.xml>; rel="sitemap"`.
 - The Link headers are confirmed present in the actual HTTP response on the deployed site. Run `curl -sI https://www.example.com/ | grep -i "^link:"` and confirm the llms.txt and sitemap entries appear. A missing header on the live site is a blocker even when `_headers` is correct in the build output.
-- No verify-aeo.mjs blockers are reported. Triage its warnings. A missing llms.txt or Link entry is one of them, and it blocks release through `verify-agent-readiness.mjs` when the config marks that check required.
+- No verify-aeo.mjs blockers are reported. Triage its warnings. A missing llms.txt or Link entry is one of them, and it blocks release through `verify-agent-readiness.mjs` under the required baseline.
 - `agent-readiness.config.mjs` gives every scanner check a status, and each not-applicable check has a reason that is true for this site.
 - `verify-agent-readiness.mjs` reports no blockers against the built output, and none with `--live` against staging. A check reported as "not checked" has not passed.
 
